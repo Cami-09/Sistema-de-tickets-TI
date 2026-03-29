@@ -209,14 +209,16 @@
   }
 
   async function cargarUsuarios() {
-    if (currentRole !== "admin") return;
-    const snap = await db.collection("roles").get();
-    listaUsuarios.innerHTML = "<h4>Usuarios:</h4>";
-    snap.forEach(doc => {
-      const data = doc.data();
-      listaUsuarios.innerHTML += `<div>${doc.id} → <b>${data.rol}</b></div>`;
-    });
-  }
+  listaUsuarios.innerHTML = "";
+  if (currentRole !== "admin") return;
+
+  const snap = await db.collection("roles").get();
+  listaUsuarios.innerHTML = "<h4>Usuarios:</h4>";
+  snap.forEach(doc => {
+    const data = doc.data();
+    listaUsuarios.innerHTML += `<div>${doc.id} → <b>${data.rol}</b></div>`;
+  });
+}
 
   // ==================== AUTOMATIZACION ====================
   async function autoAsignar() {
