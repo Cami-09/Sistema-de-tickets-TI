@@ -7,3 +7,4 @@ const firebaseConfig = {
   appId: "1:356054718850:web:3a439d4ffbd4f017a7179b",
   measurementId: "G-MKESSZYG8P"
 };
+const storage = firebase.storage();
