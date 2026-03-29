@@ -182,8 +182,8 @@ async function login() {
   try {
     await auth.signInWithPopup(provider);
   } catch (e) {
-    error.innerText = "Error al iniciar sesión";
-    console.error(e);
+    console.error("ERROR REAL:", e);
+    alert(e.message); // 👈 MUY IMPORTANTE
   }
 }
 
