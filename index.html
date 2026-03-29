@@ -77,9 +77,9 @@
       <h3>Gestión de Roles (Solo Admin)</h3>
       <input id="emailUser" placeholder="Email usuario">
       <select id="rolUser">
-        <option>usuario</option>
-        <option>tecnico</option>
-        <option>admin</option>
+        <option>Usuario</option>
+        <option>Gestor</option>
+        <option>Admin</option>
       </select>
       <button onclick="guardarRol()">Guardar Rol</button>
       <h4>Usuarios Registrados:</h4>
@@ -265,13 +265,13 @@
 
   // ==================== AUTOMATIZACION ====================
   async function autoAsignar(){
-    const snap=await db.collection("roles").where("rol","==","tecnico").get();
-    const tecnicos = snap.docs.map(d=>d.id);
+    const snap=await db.collection("roles").where("rol","==","Gestor").get();
+    const Gestores = snap.docs.map(d=>d.id);
     if(!tecnicos.length) return;
-    const ticketsSnap = await db.collection("tickets").where("tecnico","==","").where("estado","==","abierto").get();
+    const ticketsSnap = await db.collection("tickets").where("Gestor","==","").where("estado","==","abierto").get();
     ticketsSnap.forEach(async doc=>{
       const random = Math.floor(Math.random()*tecnicos.length);
-      const tecnico = tecnicos[random];
+      const Gestores = Gestores[random];
       const historial = doc.data().historial||[];
       historial.push({accion:"Asignación automática",usuario:"Sistema",fecha:new Date()});
       await db.collection("tickets").doc(doc.id).update({tecnico,historial});
