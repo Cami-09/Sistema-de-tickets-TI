@@ -201,8 +201,8 @@
 
   async function cargar(){
     let query=db.collection("tickets");
-    if(currentRole==="usuario") query=query.where("usuario","==",currentUser.email);
-    if(currentRole==="tecnico") query=query.where("tecnico","in",["",currentUser.email]);
+    if(currentRole==="Usuario") query=query.where("usuario","==",currentUser.email);
+    if(currentRole==="Gestor") query=query.where("tecnico","in",["",currentUser.email]);
     query.onSnapshot(snapshot=>{
       lista.innerHTML="";
       snapshot.docs.forEach(doc=>{
