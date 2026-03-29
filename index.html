@@ -2,8 +2,6 @@
 <html>
 <head>
   <title>Tickets PRO - Dashboard</title>
-
-  <!-- Firebase SDK v8 -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -136,18 +134,19 @@
       // Auto-asignar admin a tu correo
       if(user.email === "camicarmona1212@gmail.com"){
         await ref.set({ rol:"admin" });
-        currentRole = "admin";
       } else {
         await ref.set({ rol:"usuario" });
-        currentRole = "usuario";
       }
-    } else {
-      currentRole = doc.data().rol;
     }
+
+    // Leer el rol otra vez después de asignarlo
+    const rolDoc = await db.collection("roles").doc(user.email).get();
+    currentRole = rolDoc.data().rol;
 
     // Mostrar módulos según rol
     document.getElementById("rolesSection").style.display = currentRole==="admin"?"block":"none";
 
+    // Cargar usuarios y tickets
     cargarUsuarios();
     cargar();
   });
@@ -199,9 +198,7 @@
       lista.innerHTML="";
       snapshot.docs.forEach(doc=>{
         const t=doc.data();
-        // Colores prioridad
         let color=t.prioridad==="alta"?"#F44336":t.prioridad==="media"?"#FF9800":"#4CAF50";
-
         const div=document.createElement("div");
         div.className="card";
         div.style.borderLeft=`6px solid ${color}`;
@@ -240,25 +237,19 @@
     snap.forEach(doc=>{
       const email = doc.id;
       const rol = doc.data().rol;
-
       const tr = document.createElement("tr");
       const tdEmail = document.createElement("td"); tdEmail.innerText = email; tr.appendChild(tdEmail);
       const tdRol = document.createElement("td");
       const selectRol = document.createElement("select");
       ["usuario","tecnico","admin"].forEach(r=>{ const opt = document.createElement("option"); opt.value=r; opt.text=r; if(r===rol) opt.selected=true; selectRol.appendChild(opt); });
       tdRol.appendChild(selectRol); tr.appendChild(tdRol);
-
       const tdAcc = document.createElement("td");
-      const btnActualizar = document.createElement("button");
-      btnActualizar.innerText="Actualizar"; btnActualizar.style.background="#4CAF50"; btnActualizar.style.color="white";
+      const btnActualizar = document.createElement("button"); btnActualizar.innerText="Actualizar"; btnActualizar.style.background="#4CAF50"; btnActualizar.style.color="white";
       btnActualizar.onclick = async ()=>{ await db.collection("roles").doc(email).set({ rol: selectRol.value }); alert("Rol actualizado"); cargarUsuarios();};
       tdAcc.appendChild(btnActualizar);
-
-      const btnEliminar = document.createElement("button");
-      btnEliminar.innerText="Eliminar"; btnEliminar.style.background="#F44336"; btnEliminar.style.color="white"; btnEliminar.style.marginLeft="5px";
+      const btnEliminar = document.createElement("button"); btnEliminar.innerText="Eliminar"; btnEliminar.style.background="#F44336"; btnEliminar.style.color="white"; btnEliminar.style.marginLeft="5px";
       btnEliminar.onclick = async ()=>{if(!confirm("Eliminar usuario y su rol?")) return; await db.collection("roles").doc(email).delete(); alert("Usuario eliminado"); cargarUsuarios();};
       tdAcc.appendChild(btnEliminar);
-
       tr.appendChild(tdAcc); tabla.appendChild(tr);
     });
   }
