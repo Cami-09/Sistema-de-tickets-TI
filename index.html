@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Tickets PRO - Profesional</title>
+  <title>Tickets PRO - Dashboard</title>
 
-  <!-- Firebase v8 SDK -->
+  <!-- Firebase SDK v8 -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -11,7 +11,7 @@
 
   <style>
     body { font-family: Arial; background:#f5f7fa; margin:0; padding:0; }
-    header { background:#4285F4; color:white; padding:15px; font-size:24px; text-align:center; }
+    header { background:#4285F4; color:white; padding:15px; font-size:24px; text-align:center; position:relative; }
     .tabs { display:flex; background:#e0e0e0; justify-content:center; }
     .tabs button { padding:12px 25px; border:none; background:none; cursor:pointer; font-size:16px; transition:0.3s; }
     .tabs button.active { background:#4285F4; color:white; border-radius:6px 6px 0 0; }
@@ -22,14 +22,21 @@
     .badge.baja { background:#4CAF50; }
     .badge.media { background:#FF9800; }
     .badge.alta { background:#F44336; }
-    button { cursor:pointer; margin:5px 0; }
-    #logoutBtn { float:right; padding:8px 15px; background:#F44336; color:white; border:none; border-radius:6px; }
+    button { cursor:pointer; margin:5px 0; padding:8px 12px; border:none; border-radius:6px; }
+    #logoutBtn { position:absolute; top:15px; right:15px; background:#F44336; color:white; }
     input, select { padding:8px; margin:5px 0; width:100%; box-sizing:border-box; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; }
+    table, th, td { border:1px solid #ccc; border-radius:6px; }
+    th { background:#4285F4; color:white; }
+    td button { padding:4px 8px; margin:2px; font-size:12px; }
+    @keyframes flash {0%{background-color:#fff;}50%{background-color:#ffff99;}100%{background-color:#fff;}}
   </style>
 </head>
 <body>
 
-<header>🎫 Tickets PRO</header>
+<header>🎫 Tickets PRO
+  <button id="logoutBtn" onclick="cerrarSesion()">Cerrar sesión</button>
+</header>
 
 <!-- LOGIN -->
 <div id="loginDiv" style="padding:20px; text-align:center;">
@@ -39,9 +46,6 @@
 <!-- DASHBOARD -->
 <div id="dashboard" style="display:none;">
 
-  <!-- Botón cerrar sesión -->
-  <button id="logoutBtn" onclick="cerrarSesion()">Cerrar sesión</button>
-
   <!-- TABS -->
   <div class="tabs">
     <button class="tabBtn active" onclick="mostrarModulo('crearTicket', this)">Crear Ticket</button>
@@ -49,7 +53,7 @@
     <button class="tabBtn" onclick="mostrarModulo('rolesSection', this)">Gestión de Roles</button>
   </div>
 
-  <!-- Módulo: Crear Ticket -->
+  <!-- Crear Ticket -->
   <div id="crearTicket" class="modulo" style="display:block;">
     <div class="card">
       <h3>Crear Ticket</h3>
@@ -65,12 +69,12 @@
     </div>
   </div>
 
-  <!-- Módulo: Lista de Tickets -->
+  <!-- Lista Tickets -->
   <div id="listaTickets" class="modulo">
     <div id="lista"></div>
   </div>
 
-  <!-- Módulo: Gestión de Roles -->
+  <!-- Gestión de Roles -->
   <div id="rolesSection" class="modulo">
     <div class="card">
       <h3>Gestión de Roles (Solo Admin)</h3>
@@ -81,14 +85,24 @@
         <option>admin</option>
       </select>
       <button onclick="guardarRol()">Guardar Rol</button>
-      <div id="listaUsuarios"></div>
+      <h4>Usuarios Registrados:</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Rol</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="tablaUsuarios"></tbody>
+      </table>
     </div>
   </div>
 
 </div>
 
 <script>
-  // ==================== FIREBASE CONFIG ====================
+  // ==================== FIREBASE ====================
   const firebaseConfig = {
     apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
     authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com",
@@ -110,41 +124,55 @@
   });
 
   auth.onAuthStateChanged(async user => {
-    if (!user) return;
+    if(!user) return;
     currentUser = user;
     document.getElementById("loginDiv").style.display="none";
     document.getElementById("dashboard").style.display="block";
 
-    // ROLES
     const ref = db.collection("roles").doc(user.email);
     const doc = await ref.get();
-    if (!doc.exists) await ref.set({ rol:"usuario" });
-    currentRole = (await ref.get()).data().rol;
 
+    if(!doc.exists){
+      // Auto-asignar admin a tu correo
+      if(user.email === "camicarmona1212@gmail.com"){
+        await ref.set({ rol:"admin" });
+        currentRole = "admin";
+      } else {
+        await ref.set({ rol:"usuario" });
+        currentRole = "usuario";
+      }
+    } else {
+      currentRole = doc.data().rol;
+    }
+
+    // Mostrar módulos según rol
     document.getElementById("rolesSection").style.display = currentRole==="admin"?"block":"none";
+
     cargarUsuarios();
     cargar();
   });
 
   // ==================== MODULOS ====================
-  function mostrarModulo(id, btn) {
+  function mostrarModulo(id, btn){
+    // Permisos por rol
+    if(currentRole==="usuario" && id==="rolesSection"){ alert("No tienes permiso"); return; }
     document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
     document.getElementById(id).style.display="block";
     document.querySelectorAll(".tabBtn").forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
   }
 
-  // ==================== FUNCIONES TICKETS ====================
-  async function crear() {
+  // ==================== TICKETS ====================
+  async function crear(){
     let url="";
     const f=file.files[0];
-    if(f){const ref=storage.ref("tickets/"+Date.now());await ref.put(f);url=await ref.getDownloadURL();}
+    if(f){const ref=storage.ref("tickets/"+Date.now()); await ref.put(f); url=await ref.getDownloadURL();}
     await db.collection("tickets").add({titulo:titulo.value,descripcion:desc.value,estado:"abierto",prioridad:prioridad.value,usuario:currentUser.email,tecnico:"",adjunto:url,fecha:new Date(),historial:[]});
     autoAsignar();
     alert("Ticket creado");
   }
 
-  function acciones(id,t) {
+  function acciones(id,t){
     let b="";
     if(currentRole==="tecnico"||currentRole==="admin"){
       b+=`<button onclick="asignar('${id}')">Asignarme</button>`;
@@ -171,32 +199,91 @@
       lista.innerHTML="";
       snapshot.docs.forEach(doc=>{
         const t=doc.data();
-        lista.innerHTML+=`<div class="card">
+        // Colores prioridad
+        let color=t.prioridad==="alta"?"#F44336":t.prioridad==="media"?"#FF9800":"#4CAF50";
+
+        const div=document.createElement("div");
+        div.className="card";
+        div.style.borderLeft=`6px solid ${color}`;
+        div.innerHTML=`
           <b>${t.titulo}</b> <span class="badge ${t.prioridad}">${t.prioridad}</span><br>
           ${t.descripcion}<br>
-          Estado: ${t.estado}<br>
+          Estado: <span style="font-weight:bold">${t.estado}</span><br>
           Técnico: ${t.tecnico||"Sin asignar"}<br>
           ${t.adjunto?`<a href="${t.adjunto}" target="_blank">Ver archivo</a>`:""}<br>
           ${acciones(doc.id,t)}
           <input id="c-${doc.id}" placeholder="Comentario"><button onclick="comentar('${doc.id}')">Enviar</button>
-        </div>`;
+        `;
+        lista.prepend(div);
+        div.style.animation="flash 1s ease-in-out";
       });
     });
   }
 
   // ==================== ROLES ====================
-  async function guardarRol(){if(currentRole!=="admin"){alert("Solo admins");return;}const email=emailUser.value.trim();const rol=rolUser.value;if(!email){alert("Ingresa email");return;}await db.collection("roles").doc(email).set({rol});alert("Rol guardado");emailUser.value="";cargarUsuarios();}
-  async function cargarUsuarios(){if(currentRole!=="admin")return;listaUsuarios.innerHTML="<h4>Usuarios:</h4>";const snap=await db.collection("roles").get();snap.forEach(doc=>listaUsuarios.innerHTML+=`<div>${doc.id} → <b>${doc.data().rol}</b></div>`);}
+  async function guardarRol(){
+    if(currentRole!=="admin"){alert("Solo admins");return;}
+    const email=emailUser.value.trim();
+    const rol=rolUser.value;
+    if(!email){alert("Ingresa email");return;}
+    await db.collection("roles").doc(email).set({ rol });
+    alert("Rol guardado");
+    emailUser.value="";
+    cargarUsuarios();
+  }
+
+  async function cargarUsuarios(){
+    if(currentRole!=="admin") return;
+    const tabla = document.getElementById("tablaUsuarios");
+    tabla.innerHTML="";
+    const snap = await db.collection("roles").get();
+    snap.forEach(doc=>{
+      const email = doc.id;
+      const rol = doc.data().rol;
+
+      const tr = document.createElement("tr");
+      const tdEmail = document.createElement("td"); tdEmail.innerText = email; tr.appendChild(tdEmail);
+      const tdRol = document.createElement("td");
+      const selectRol = document.createElement("select");
+      ["usuario","tecnico","admin"].forEach(r=>{ const opt = document.createElement("option"); opt.value=r; opt.text=r; if(r===rol) opt.selected=true; selectRol.appendChild(opt); });
+      tdRol.appendChild(selectRol); tr.appendChild(tdRol);
+
+      const tdAcc = document.createElement("td");
+      const btnActualizar = document.createElement("button");
+      btnActualizar.innerText="Actualizar"; btnActualizar.style.background="#4CAF50"; btnActualizar.style.color="white";
+      btnActualizar.onclick = async ()=>{ await db.collection("roles").doc(email).set({ rol: selectRol.value }); alert("Rol actualizado"); cargarUsuarios();};
+      tdAcc.appendChild(btnActualizar);
+
+      const btnEliminar = document.createElement("button");
+      btnEliminar.innerText="Eliminar"; btnEliminar.style.background="#F44336"; btnEliminar.style.color="white"; btnEliminar.style.marginLeft="5px";
+      btnEliminar.onclick = async ()=>{if(!confirm("Eliminar usuario y su rol?")) return; await db.collection("roles").doc(email).delete(); alert("Usuario eliminado"); cargarUsuarios();};
+      tdAcc.appendChild(btnEliminar);
+
+      tr.appendChild(tdAcc); tabla.appendChild(tr);
+    });
+  }
 
   // ==================== AUTOMATIZACION ====================
-  async function autoAsignar(){const snap=await db.collection("roles").where("rol","==","tecnico").get();const tecnicos=snap.docs.map(d=>d.id);if(!tecnicos.length) return;const ticketsSnap=await db.collection("tickets").where("tecnico","==","").where("estado","==","abierto").get();ticketsSnap.forEach(async doc=>{const random=Math.floor(Math.random()*tecnicos.length);const tecnico=tecnicos[random];const historial=doc.data().historial||[];historial.push({accion:"Asignación automática",usuario:"Sistema",fecha:new Date()});await db.collection("tickets").doc(doc.id).update({tecnico,historial});});}
+  async function autoAsignar(){
+    const snap=await db.collection("roles").where("rol","==","tecnico").get();
+    const tecnicos = snap.docs.map(d=>d.id);
+    if(!tecnicos.length) return;
+    const ticketsSnap = await db.collection("tickets").where("tecnico","==","").where("estado","==","abierto").get();
+    ticketsSnap.forEach(async doc=>{
+      const random = Math.floor(Math.random()*tecnicos.length);
+      const tecnico = tecnicos[random];
+      const historial = doc.data().historial||[];
+      historial.push({accion:"Asignación automática",usuario:"Sistema",fecha:new Date()});
+      await db.collection("tickets").doc(doc.id).update({tecnico,historial});
+    });
+  }
 
   // ==================== ELIMINAR / REASIGNAR ====================
-  async function eliminarTicket(id){if(!confirm("Eliminar ticket?"))return;await db.collection("tickets").doc(id).delete();alert("Ticket eliminado");}
-  async function reasignarTicket(id){const nuevoTecnico=prompt("Email del técnico:");if(!nuevoTecnico)return;const rolDoc=await db.collection("roles").doc(nuevoTecnico).get();if(!rolDoc.exists||rolDoc.data().rol!=="tecnico"){alert("No es técnico válido");return;}const docRef=db.collection("tickets").doc(id);const doc=await docRef.get();const historial=doc.data().historial||[];historial.push({accion:"Reasignado a "+nuevoTecnico,usuario:currentUser.email,fecha:new Date()});await docRef.update({tecnico:nuevoTecnico,historial});alert("Ticket reasignado a "+nuevoTecnico);}
+  async function eliminarTicket(id){if(!confirm("Eliminar ticket?")) return; await db.collection("tickets").doc(id).delete(); alert("Ticket eliminado");}
+  async function reasignarTicket(id){const nuevoTecnico=prompt("Email del técnico:"); if(!nuevoTecnico) return; const rolDoc=await db.collection("roles").doc(nuevoTecnico).get(); if(!rolDoc.exists||rolDoc.data().rol!=="tecnico"){alert("No es técnico válido");return;} const docRef=db.collection("tickets").doc(id); const doc=await docRef.get(); const historial=doc.data().historial||[]; historial.push({accion:"Reasignado a "+nuevoTecnico,usuario:currentUser.email,fecha:new Date()}); await docRef.update({tecnico:nuevoTecnico,historial}); alert("Ticket reasignado a "+nuevoTecnico);}
 
   // ==================== CERRAR SESION ====================
-  function cerrarSesion(){auth.signOut().then(()=>{currentUser=null;currentRole=null;document.getElementById("dashboard").style.display="none";document.getElementById("loginDiv").style.display="block";});}
+  function cerrarSesion(){auth.signOut().then(()=>{currentUser=null; currentRole=null; document.getElementById("dashboard").style.display="none"; document.getElementById("loginDiv").style.display="block";});}
 
 </script>
 </body>
