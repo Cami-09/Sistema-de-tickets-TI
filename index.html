@@ -1,418 +1,245 @@
 <!DOCTYPE html>
-
 <html>
 <head>
   <title>Tickets PRO</title>
 
+  <!-- Firebase v8 SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 
-  <script src="firebase.js"></script>
-
   <style>
-    body {
-      margin:0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-    }
-
-    .center {
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
-    }
-
-    .card {
-      background:white;
-      padding:25px;
-      border-radius:16px;
-      box-shadow:0 10px 30px rgba(0,0,0,0.2);
-      margin:10px 0;
-    }
-
-    .login-card {
-      width:320px;
-      text-align:center;
-      animation: fadeIn 0.5s ease;
-    }
-
-    .google-btn {
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:10px;
-      background:white;
-      border:1px solid #ddd;
-      padding:12px;
-      border-radius:8px;
-      cursor:pointer;
-      font-weight:bold;
-      transition:0.3s;
-    }
-
-    .google-btn:hover {
-      background:#f1f1f1;
-      transform:scale(1.03);
-    }
-
-    .container {
-      padding:20px;
-      background:#eef1f5;
-      min-height:100vh;
-    }
-
-    input, select {
-      padding:8px;
-      margin:5px 0;
-      width:100%;
-      border-radius:6px;
-      border:1px solid #ccc;
-    }
-
-    button {
-      padding:8px 12px;
-      border:none;
-      border-radius:6px;
-      background:#4facfe;
-      color:white;
-      cursor:pointer;
-    }
-
-    button:hover {
-      opacity:0.9;
-    }
-
-    .badge {
-      padding:4px 8px;
-      border-radius:6px;
-      background:#ddd;
-    }
-
-    @keyframes fadeIn {
-      from {opacity:0; transform:translateY(20px);}
-      to {opacity:1; transform:translateY(0);}
-    }
+    body { font-family: Arial; background:#eef1f5; padding:20px; }
+    .card { background:white; padding:15px; margin:10px 0; border-radius:12px; }
+    .badge { padding:4px 8px; border-radius:6px; background:#ddd; }
+    #loginBtn { padding:10px 20px; background:#4285F4; color:white; border:none; border-radius:6px; cursor:pointer; font-size:16px; }
   </style>
-
 </head>
-
 <body>
 
+<h2>🎫 Tickets PRO</h2>
+
 <!-- LOGIN -->
-
-<div id="loginView" class="center">
-  <div class="card login-card">
-    <h2>🎫 Tickets PRO</h2>
-    <p>Inicia sesión con Google</p>
-
-```
-<div class="google-btn" onclick="login()">
-  <img src="https://cdn-icons-png.flaticon.com/512/281/281764.png" width="20">
-  Iniciar sesión con Google
+<div id="loginDiv">
+  <button id="loginBtn">Iniciar sesión con Google</button>
 </div>
 
-<p id="error" style="color:red;"></p>
-```
+<!-- DASHBOARD -->
+<div id="dashboard" style="display:none;">
 
-  </div>
-</div>
-
-<!-- APP -->
-
-<div id="appView" style="display:none" class="container">
-
-<button onclick="logout()">Cerrar sesión</button>
-
-  <p id="userInfo"></p>
-
-  <!-- ADMIN -->
-
-  <div id="adminPanel" class="card" style="display:none">
-    <h3>👑 Usuarios</h3>
-
-```
-<input id="emailUser" placeholder="Email">
-<select id="rolUser">
-  <option value="usuario">usuario</option>
-  <option value="tecnico">tecnico</option>
-  <option value="admin">admin</option>
-</select>
-<button onclick="guardarRol()">Guardar</button>
-
-<div id="listaUsuarios"></div>
-```
-
-  </div>
-
-  <!-- CREAR -->
-
+  <h3>Crear Ticket</h3>
   <div class="card">
-    <input id="titulo" placeholder="Título">
-    <input id="desc" placeholder="Descripción">
+    <input id="titulo" placeholder="Título"><br>
+    <input id="desc" placeholder="Descripción"><br>
 
-```
-<select id="prioridad">
-  <option>baja</option>
-  <option>media</option>
-  <option>alta</option>
-</select>
+    <select id="prioridad">
+      <option>baja</option>
+      <option>media</option>
+      <option>alta</option>
+    </select><br>
 
-<input type="file" id="file">
-<button onclick="crear()">Crear Ticket</button>
-```
-
+    <input type="file" id="file"><br>
+    <button onclick="crear()">Crear Ticket</button>
   </div>
 
+  <h3>Lista de Tickets</h3>
   <div id="lista"></div>
 
+  <h3>Gestión de Roles (Solo Admin)</h3>
+  <div class="card">
+    <input id="emailUser" placeholder="Email usuario">
+    <select id="rolUser">
+      <option>usuario</option>
+      <option>tecnico</option>
+      <option>admin</option>
+    </select>
+    <button onclick="guardarRol()">Guardar Rol</button>
+    <div id="listaUsuarios"></div>
+  </div>
 </div>
 
 <script>
-let currentUser, currentRole;
-const provider = new firebase.auth.GoogleAuthProvider();
+  // ==================== FIREBASE CONFIG ====================
+  const firebaseConfig = {
+    apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
+    authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com",
+    projectId: "sistema-de-tickets-ti-b12f5",
+    storageBucket: "sistema-de-tickets-ti-b12f5.appspot.com",
+    messagingSenderId: "356054718850",
+    appId: "1:356054718850:web:3a439d4ffbd4f017a7179b"
+  };
 
-// LOGIN
-async function login() {
-  try {
-    await auth.signInWithPopup(provider);
-  } catch (e) {
-    console.error("ERROR REAL:", e);
-    alert(e.message); // 👈 MUY IMPORTANTE
-  }
-}
-// LOGOUT
-function logout() {
-  auth.signOut();
-}
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+  const storage = firebase.storage();
 
-// ROL
-async function getRole(email) {
-  const doc = await db.collection("roles").doc(email).get();
-  return doc.exists ? doc.data().rol : "usuario";
-}
+  let currentUser, currentRole;
 
-// GUARDAR ROL
-async function guardarRol() {
-  const email = emailUser.value.trim();
-  const rol = rolUser.value;
-
-  if (!email) {
-    alert("Ingresa un email");
-    return;
-  }
-
-  await db.collection("roles").doc(email).set({
-    rol: rol
+  // ==================== LOGIN GOOGLE ====================
+  const loginBtn = document.getElementById("loginBtn");
+  loginBtn.addEventListener("click", () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider);
   });
 
-  alert("Rol asignado correctamente");
+  auth.onAuthStateChanged(async user => {
+    if (!user) return;
 
-  emailUser.value = "";
-  cargarUsuarios();
-}
+    currentUser = user;
+    document.getElementById("loginDiv").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
 
-// LISTA USUARIOS
-async function cargarUsuarios() {
-  const snap = await db.collection("roles").get();
-  listaUsuarios.innerHTML = "<h4>Usuarios:</h4>";
+    // ==================== ROLES ====================
+    const ref = db.collection("roles").doc(user.email);
+    const doc = await ref.get();
+    if (!doc.exists) {
+      await ref.set({ rol: "usuario" }); // usuario por defecto
+    }
+    currentRole = (await ref.get()).data().rol;
 
-  snap.forEach(doc => {
-    const data = doc.data();
-
-    listaUsuarios.innerHTML += `
-      <div style="margin:5px 0;">
-        📧 ${doc.id} → <b>${data.rol}</b>
-      </div>
-    `;
+    cargarUsuarios();
+    cargar();
   });
-}
 
-// SESIÓN
-auth.onAuthStateChanged(async user => {
-  if (!user) {
-    loginView.style.display = "flex";
-    appView.style.display = "none";
-    return;
+  // ==================== FUNCIONES TICKETS ====================
+  async function crear() {
+    let url = "";
+    const f = file.files[0];
+
+    if (f) {
+      const ref = storage.ref("tickets/" + Date.now());
+      await ref.put(f);
+      url = await ref.getDownloadURL();
+    }
+
+    await db.collection("tickets").add({
+      titulo: titulo.value,
+      descripcion: desc.value,
+      estado: "abierto",
+      prioridad: prioridad.value,
+      usuario: currentUser.email,
+      tecnico: "",
+      adjunto: url,
+      fecha: new Date(),
+      historial: []
+    });
+
+    autoAsignar(); // 🔥 automatización
   }
 
-  currentUser = user;
-  currentRole = await getRole(user.email);
+  function acciones(id) {
+    let b = "";
+    if (currentRole === "admin" || currentRole === "tecnico") {
+      b += `<button onclick="asignar('${id}')">Asignarme</button>`;
+      b += `<button onclick="estado('${id}','proceso')">Proceso</button>`;
+      b += `<button onclick="estado('${id}','cerrado')">Cerrar</button>`;
+    }
+    return b;
+  }
 
-  loginView.style.display = "none";
-  appView.style.display = "block";
+  function asignar(id) {
+    actualizar(id, { tecnico: currentUser.email }, "Asignado");
+  }
 
-  userInfo.innerText = user.email + " (" + currentRole + ")";
+  function estado(id, e) {
+    actualizar(id, { estado: e }, "Cambio estado a " + e);
+  }
 
-  if (currentRole === "admin") {
-    adminPanel.style.display = "block";
+  async function actualizar(id, cambios, accion) {
+    const docRef = db.collection("tickets").doc(id);
+    const doc = await docRef.get();
+    const historial = doc.data().historial || [];
+    historial.push({ accion, usuario: currentUser.email, fecha: new Date() });
+    await docRef.update({ ...cambios, historial });
+  }
+
+  function comentar(id) {
+    const texto = document.getElementById("c-"+id).value;
+    db.collection("tickets").doc(id).collection("comentarios").add({
+      texto,
+      usuario: currentUser.email,
+      fecha: new Date()
+    });
+  }
+
+  // ==================== CARGAR TICKETS ====================
+  function cargar() {
+    let query = db.collection("tickets");
+
+    if (currentRole === "usuario") query = query.where("usuario", "==", currentUser.email);
+    if (currentRole === "tecnico") query = query.where("tecnico", "in", ["", currentUser.email]);
+
+    query.onSnapshot(snapshot => {
+      lista.innerHTML = "";
+      const tickets = snapshot.docs.map(doc => ({id: doc.id, data: doc.data()}));
+      tickets.sort((a,b) => ({alta:3,media:2,baja:1}[b.data.prioridad] - {alta:3,media:2,baja:1}[a.data.prioridad]));
+
+      tickets.forEach(t => {
+        const doc = t.data;
+        lista.innerHTML += `
+          <div class="card">
+            <b>${doc.titulo}</b>
+            <span class="badge">${doc.prioridad}</span><br>
+            ${doc.descripcion}<br>
+            Estado: ${doc.estado}<br>
+            Técnico: ${doc.tecnico || "Sin asignar"}<br>
+            ${doc.adjunto ? `<a href="${doc.adjunto}" target="_blank">Ver archivo</a>` : ""}
+            <br><br>
+            ${acciones(t.id)}
+            <input id="c-${t.id}" placeholder="Comentario">
+            <button onclick="comentar('${t.id}')">Enviar</button>
+          </div>
+        `;
+      });
+    });
+  }
+
+  // ==================== ROLES ====================
+  async function guardarRol() {
+    const email = emailUser.value.trim();
+    const rol = rolUser.value;
+    if (!email) { alert("Ingresa un email"); return; }
+
+    await db.collection("roles").doc(email).set({ rol });
+    alert("Rol asignado correctamente");
+    emailUser.value = "";
     cargarUsuarios();
   }
 
-  cargar();
-});
-
-// CREAR
-async function crear() {
-  let url = "";
-  const f = file.files[0];
-
-  if (f) {
-    const ref = storage.ref("tickets/" + Date.now());
-    await ref.put(f);
-    url = await ref.getDownloadURL();
+  async function cargarUsuarios() {
+    if (currentRole !== "admin") return;
+    const snap = await db.collection("roles").get();
+    listaUsuarios.innerHTML = "<h4>Usuarios:</h4>";
+    snap.forEach(doc => {
+      const data = doc.data();
+      listaUsuarios.innerHTML += `<div>${doc.id} → <b>${data.rol}</b></div>`;
+    });
   }
 
-  await db.collection("tickets").add({
-    titulo: titulo.value,
-    descripcion: desc.value,
-    estado: "abierto",
-    prioridad: prioridad.value,
-    usuario: currentUser.email,
-    tecnico: "",
-    adjunto: url,
-    fecha: new Date(),
-    historial: []
-  });
-  // 🔥 AUTOMÁTICO
-  autoAsignar();
-}
-
-// CARGAR
-function cargar() {
-
-  let query = db.collection("tickets");
-
-  // 🔥 FILTROS SEGÚN ROL
-  if (currentRole === "usuario") {
-    query = query.where("usuario", "==", currentUser.email);
-  }
-
-  if (currentRole === "tecnico") {
-    // ve tickets asignados a él o sin asignar
-    query = query.where("tecnico", "in", ["", currentUser.email]);
-  }
-  <script>
-  // otras funciones como crear(), cargar(), comentar() ya existentes
-
+  // ==================== AUTOMATIZACION ====================
   async function autoAsignar() {
-    // 1️⃣ Obtener todos los técnicos
-    const usuariosSnap = await db.collection("roles")
-      .where("rol", "==", "tecnico")
-      .get();
-
+    const usuariosSnap = await db.collection("roles").where("rol","==","tecnico").get();
     const tecnicos = usuariosSnap.docs.map(doc => doc.id);
     if (tecnicos.length === 0) return;
 
-    // 2️⃣ Buscar tickets sin técnico asignado
     const ticketsSnap = await db.collection("tickets")
-      .where("tecnico", "==", "")
-      .where("estado", "==", "abierto")
-      .get();
+      .where("tecnico","==","")
+      .where("estado","==","abierto").get();
 
     ticketsSnap.forEach(async ticketDoc => {
       const randomIndex = Math.floor(Math.random() * tecnicos.length);
       const tecnico = tecnicos[randomIndex];
 
       const historial = ticketDoc.data().historial || [];
-      historial.push({
-        accion: "Asignación automática",
-        usuario: "Sistema",
-        fecha: new Date()
-      });
+      historial.push({ accion:"Asignación automática", usuario:"Sistema", fecha:new Date() });
 
-      await db.collection("tickets").doc(ticketDoc.id).update({
-        tecnico: tecnico,
-        historial
-      });
-
-      console.log(`Ticket ${ticketDoc.id} asignado a ${tecnico}`);
+      await db.collection("tickets").doc(ticketDoc.id).update({ tecnico, historial });
     });
   }
+
 </script>
-
-  // admin no filtra (ve todo)
-
-  query.onSnapshot(snapshot => {
-    lista.innerHTML = "";
-
-    snapshot.forEach(doc => {
-      const t = doc.data();
-
-      lista.innerHTML += `
-        <div class="card">
-          <b>${t.titulo}</b>
-          <span class="badge">${t.prioridad}</span><br>
-
-          ${t.descripcion}<br>
-          Estado: ${t.estado}<br>
-          Técnico: ${t.tecnico || "Sin asignar"}<br>
-
-          ${t.adjunto ? `<a href="${t.adjunto}" target="_blank">Ver archivo</a>` : ""}
-
-          <br><br>
-          ${acciones(doc.id)}
-
-          <input id="c-${doc.id}" placeholder="Comentario">
-          <button onclick="comentar('${doc.id}')">Enviar</button>
-        </div>
-      `;
-    });
-  });
-}
-// ACCIONES
-function acciones(id) {
-  let b = "";
-
-  if (currentRole === "admin" || currentRole === "tecnico") {
-    b += `<button onclick="asignar('${id}')">Asignarme</button>`;
-    b += `<button onclick="estado('${id}','proceso')">Proceso</button>`;
-    b += `<button onclick="estado('${id}','cerrado')">Cerrar</button>`;
-  }
-
-  return b;
-}
-function asignar(id) {
-  actualizar(id, { tecnico: currentUser.email }, "Asignado");
-}
-
-function estado(id, e) {
-  actualizar(id, { estado: e }, "Cambio a " + e);
-}
-
-// ACTUALIZAR
-async function actualizar(id, cambios, accion) {
-  const ref = db.collection("tickets").doc(id);
-  const doc = await ref.get();
-
-  const historial = doc.data().historial || [];
-
-  historial.push({
-    accion,
-    usuario: currentUser.email,
-    fecha: new Date()
-  });
-
-  await ref.update({ ...cambios, historial });
-}
-
-// COMENTAR
-function comentar(id) {
-  const texto = document.getElementById("c-"+id).value;
-
-  db.collection("tickets").doc(id).collection("comentarios").add({
-    texto,
-    usuario: currentUser.email,
-    fecha: new Date()
-  });
-}
-</script>
-
 </body>
 </html>
 
