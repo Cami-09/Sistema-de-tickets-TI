@@ -250,7 +250,7 @@
       const tdEmail = document.createElement("td"); tdEmail.innerText = email; tr.appendChild(tdEmail);
       const tdRol = document.createElement("td");
       const selectRol = document.createElement("select");
-      ["usuario","tecnico","admin"].forEach(r=>{ const opt = document.createElement("option"); opt.value=r; opt.text=r; if(r===rol) opt.selected=true; selectRol.appendChild(opt); });
+      ["Usuario","Gestor","Admin"].forEach(r=>{ const opt = document.createElement("option"); opt.value=r; opt.text=r; if(r===rol) opt.selected=true; selectRol.appendChild(opt); });
       tdRol.appendChild(selectRol); tr.appendChild(tdRol);
       const tdAcc = document.createElement("td");
       const btnActualizar = document.createElement("button"); btnActualizar.innerText="Actualizar"; btnActualizar.style.background="#4CAF50"; btnActualizar.style.color="white";
