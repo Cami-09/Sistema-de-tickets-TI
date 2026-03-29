@@ -280,7 +280,7 @@
 
   // ==================== ELIMINAR / REASIGNAR ====================
   async function eliminarTicket(id){if(!confirm("Eliminar ticket?")) return; await db.collection("tickets").doc(id).delete(); alert("Ticket eliminado");}
-  async function reasignarTicket(id){const nuevoTecnico=prompt("Email del técnico:"); if(!nuevoTecnico) return; const rolDoc=await db.collection("roles").doc(nuevoTecnico).get(); if(!rolDoc.exists||rolDoc.data().rol!=="tecnico"){alert("No es técnico válido");return;} const docRef=db.collection("tickets").doc(id); const doc=await docRef.get(); const historial=doc.data().historial||[]; historial.push({accion:"Reasignado a "+nuevoTecnico,usuario:currentUser.email,fecha:new Date()}); await docRef.update({tecnico:nuevoTecnico,historial}); alert("Ticket reasignado a "+nuevoTecnico);}
+  async function reasignarTicket(id){const nuevoGestor=prompt("Email del técnico:"); if(!nuevoGestor) return; const rolDoc=await db.collection("roles").doc(nuevoGestor).get(); if(!rolDoc.exists||rolDoc.data().rol!=="Gestor"){alert("No es técnico válido");return;} const docRef=db.collection("tickets").doc(id); const doc=await docRef.get(); const historial=doc.data().historial||[]; historial.push({accion:"Reasignado a "+nuevoGestor,usuario:currentUser.email,fecha:new Date()}); await docRef.update({tecnico:nuevoGestor,historial}); alert("Ticket reasignado a "+nuevoGestor);}
 
   // ==================== CERRAR SESION ====================
   function cerrarSesion(){auth.signOut().then(()=>{currentUser=null; currentRole=null; document.getElementById("dashboard").style.display="none"; document.getElementById("loginDiv").style.display="block";});}
