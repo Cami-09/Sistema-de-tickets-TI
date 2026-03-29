@@ -182,7 +182,7 @@
 
   function acciones(id,t){
     let b="";
-    if(currentRole==="tecnico"||currentRole==="admin"){
+    if(currentRole==="Gestor"||currentRole==="admin"){
       b+=`<button onclick="asignar('${id}')">Asignarme</button>`;
       b+=`<button onclick="estado('${id}','proceso')">Proceso</button>`;
       b+=`<button onclick="estado('${id}','cerrado')">Cerrar</button>`;
