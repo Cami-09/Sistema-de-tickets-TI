@@ -186,15 +186,6 @@ async function login() {
     alert(e.message); // 👈 MUY IMPORTANTE
   }
 }
-function login() {
-  auth.signInWithRedirect(provider);
-}
-auth.getRedirectResult().then(result => {
-  if (result.user) {
-    console.log("Login correcto");
-  }
-}).catch(e => console.error(e));
-
 // LOGOUT
 function logout() {
   auth.signOut();
