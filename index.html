@@ -283,7 +283,22 @@ async function crear() {
 
 // CARGAR
 function cargar() {
-  db.collection("tickets").onSnapshot(snapshot => {
+
+  let query = db.collection("tickets");
+
+  // 🔥 FILTROS SEGÚN ROL
+  if (currentRole === "usuario") {
+    query = query.where("usuario", "==", currentUser.email);
+  }
+
+  if (currentRole === "tecnico") {
+    // ve tickets asignados a él o sin asignar
+    query = query.where("tecnico", "in", ["", currentUser.email]);
+  }
+
+  // admin no filtra (ve todo)
+
+  query.onSnapshot(snapshot => {
     lista.innerHTML = "";
 
     snapshot.forEach(doc => {
@@ -310,7 +325,6 @@ function cargar() {
     });
   });
 }
-
 // ACCIONES
 function acciones(id) {
   let b = "";
