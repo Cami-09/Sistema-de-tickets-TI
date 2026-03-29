@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Tickets PRO</title>
+
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+  <script src="firebase.js"></script>
+
+  <style>
+    body { font-family: Arial; background:#eef1f5; padding:20px; }
+    .card { background:white; padding:15px; margin:10px 0; border-radius:12px; }
+    .badge { padding:4px 8px; border-radius:6px; }
+  </style>
+</head>
+
+<body>
+
+<h2>🎫 Tickets Empresa</h2>
+
+<div class="card">
+  <input id="titulo" placeholder="Título"><br>
+  <input id="desc" placeholder="Descripción"><br>
+
+  <select id="prioridad">
+    <option>baja</option>
+    <option>media</option>
+    <option>alta</option>
+  </select><br>
+
+  <input type="file" id="file"><br>
+
+  <button onclick="crear()">Crear Ticket</button>
+</div>
+
+<div id="lista"></div>
+
+<script>
+let currentUser, currentRole;
+
+auth.onAuthStateChanged(async user => {
+  currentUser = user;
+  currentRole = await getRole(user.email);
+  cargar();
+});
+
+async function crear() {
+  let url = "";
+
+  const f = file.files[0];
+  if (f) {
+    const ref = storage.ref("tickets/" + Date.now());
+    await ref.put(f);
+    url = await ref.getDownloadURL();
+  }
+
+  await db.collection("tickets").add({
+    titulo: titulo.value,
+    descripcion: desc.value,
+    estado: "abierto",
+    prioridad: prioridad.value,
+    usuario: currentUser.email,
+    tecnico: "",
+    adjunto: url,
+    fecha: new Date(),
+    historial: []
+  });
+}
+
+function cargar() {
+  db.collection("tickets").onSnapshot(snapshot => {
+    lista.innerHTML = "";
+
+    snapshot.forEach(doc => {
+      const t = doc.data();
+
+      lista.innerHTML += `
+        <div class="card">
+          <b>${t.titulo}</b>
+          <span class="badge">${t.prioridad}</span><br>
+
+          ${t.descripcion}<br>
+          Estado: ${t.estado}<br>
+          Técnico: ${t.tecnico || "Sin asignar"}<br>
+
+          ${t.adjunto ? `<a href="${t.adjunto}" target="_blank">Ver archivo</a>` : ""}
+
+          <br><br>
+          ${acciones(doc.id, t)}
+
+          <div id="comentarios-${doc.id}"></div>
+          <input id="c-${doc.id}" placeholder="Comentario">
+          <button onclick="comentar('${doc.id}')">Enviar</button>
+        </div>
+      `;
+    });
+  });
+}
+
+function acciones(id, t) {
+  let b = "";
+
+  if (currentRole === "admin" || currentRole === "tecnico") {
+    b += `<button onclick="asignar('${id}')">Asignarme</button>`;
+    b += `<button onclick="estado('${id}','proceso')">Proceso</button>`;
+    b += `<button onclick="estado('${id}','cerrado')">Cerrar</button>`;
+  }
+
+  return b;
+}
+
+function asignar(id) {
+  actualizar(id, { tecnico: currentUser.email }, "Asignado");
+}
+
+function estado(id, e) {
+  actualizar(id, { estado: e }, "Cambio estado a " + e);
+}
+
+async function actualizar(id, cambios, accion) {
+  const docRef = db.collection("tickets").doc(id);
+  const doc = await docRef.get();
+
+  const historial = doc.data().historial || [];
+
+  historial.push({
+    accion,
+    usuario: currentUser.email,
+    fecha: new Date()
+  });
+
+  await docRef.update({
+    ...cambios,
+    historial
+  });
+}
+
+function comentar(id) {
+  const texto = document.getElementById("c-"+id).value;
+
+  db.collection("tickets").doc(id).collection("comentarios").add({
+    texto,
+    usuario: currentUser.email,
+    fecha: new Date()
+  });
+}
+</script>
+
+</body>
+</html>
