@@ -220,10 +220,16 @@ async function guardarRol() {
 // LISTA USUARIOS
 async function cargarUsuarios() {
   const snap = await db.collection("roles").get();
-  listaUsuarios.innerHTML = "";
+  listaUsuarios.innerHTML = "<h4>Usuarios:</h4>";
 
   snap.forEach(doc => {
-    listaUsuarios.innerHTML += `<div>${doc.id} → ${doc.data().rol}</div>`;
+    const data = doc.data();
+
+    listaUsuarios.innerHTML += `
+      <div style="margin:5px 0;">
+        📧 ${doc.id} → <b>${data.rol}</b>
+      </div>
+    `;
   });
 }
 
