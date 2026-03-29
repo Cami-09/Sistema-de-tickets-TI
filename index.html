@@ -199,9 +199,21 @@ async function getRole(email) {
 
 // GUARDAR ROL
 async function guardarRol() {
-  await db.collection("roles").doc(emailUser.value).set({
-    rol: rolUser.value
+  const email = emailUser.value.trim();
+  const rol = rolUser.value;
+
+  if (!email) {
+    alert("Ingresa un email");
+    return;
+  }
+
+  await db.collection("roles").doc(email).set({
+    rol: rol
   });
+
+  alert("Rol asignado correctamente");
+
+  emailUser.value = "";
   cargarUsuarios();
 }
 
