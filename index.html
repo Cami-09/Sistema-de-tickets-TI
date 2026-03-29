@@ -279,6 +279,8 @@ async function crear() {
     fecha: new Date(),
     historial: []
   });
+  // 🔥 AUTOMÁTICO
+  autoAsignar();
 }
 
 // CARGAR
@@ -295,6 +297,44 @@ function cargar() {
     // ve tickets asignados a él o sin asignar
     query = query.where("tecnico", "in", ["", currentUser.email]);
   }
+  <script>
+  // otras funciones como crear(), cargar(), comentar() ya existentes
+
+  async function autoAsignar() {
+    // 1️⃣ Obtener todos los técnicos
+    const usuariosSnap = await db.collection("roles")
+      .where("rol", "==", "tecnico")
+      .get();
+
+    const tecnicos = usuariosSnap.docs.map(doc => doc.id);
+    if (tecnicos.length === 0) return;
+
+    // 2️⃣ Buscar tickets sin técnico asignado
+    const ticketsSnap = await db.collection("tickets")
+      .where("tecnico", "==", "")
+      .where("estado", "==", "abierto")
+      .get();
+
+    ticketsSnap.forEach(async ticketDoc => {
+      const randomIndex = Math.floor(Math.random() * tecnicos.length);
+      const tecnico = tecnicos[randomIndex];
+
+      const historial = ticketDoc.data().historial || [];
+      historial.push({
+        accion: "Asignación automática",
+        usuario: "Sistema",
+        fecha: new Date()
+      });
+
+      await db.collection("tickets").doc(ticketDoc.id).update({
+        tecnico: tecnico,
+        historial
+      });
+
+      console.log(`Ticket ${ticketDoc.id} asignado a ${tecnico}`);
+    });
+  }
+</script>
 
   // admin no filtra (ve todo)
 
