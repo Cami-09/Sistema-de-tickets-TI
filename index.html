@@ -215,7 +215,7 @@
           <b>${t.titulo}</b> <span class="badge ${t.prioridad}">${t.prioridad}</span><br>
           ${t.descripcion}<br>
           Estado: <span style="font-weight:bold">${t.estado}</span><br>
-          Técnico: ${t.tecnico||"Sin asignar"}<br>
+          Gestor: ${t.tecnico||"Sin asignar"}<br>
           ${t.adjunto?`<a href="${t.adjunto}" target="_blank">Ver archivo</a>`:""}<br>
           ${acciones(doc.id,t)}
           <input id="c-${doc.id}" placeholder="Comentario"><button onclick="comentar('${doc.id}')">Enviar</button>
