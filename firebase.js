@@ -1,10 +1,16 @@
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
   authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com",
   projectId: "sistema-de-tickets-ti-b12f5",
-  storageBucket: "sistema-de-tickets-ti-b12f5.firebasestorage.app",
+  storageBucket: "sistema-de-tickets-ti-b12f5.appspot.com",
   messagingSenderId: "356054718850",
-  appId: "1:356054718850:web:3a439d4ffbd4f017a7179b",
-  measurementId: "G-MKESSZYG8P"
+  appId: "1:356054718850:web:3a439d4ffbd4f017a7179b"
 };
+
+// Inicializar Firebase
+firebase.initializeApp(firebaseConfig);
+
+// 🔥 VARIABLES GLOBALES (ESTO ARREGLA TODO)
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
