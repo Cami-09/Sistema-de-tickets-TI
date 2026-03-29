@@ -1,65 +1,172 @@
 <!DOCTYPE html>
+
 <html>
 <head>
   <title>Tickets PRO</title>
 
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+
   <script src="firebase.js"></script>
 
   <style>
-    body { font-family: Arial; background:#eef1f5; padding:20px; }
-    .card { background:white; padding:15px; margin:10px 0; border-radius:12px; }
-    .badge { padding:4px 8px; border-radius:6px; }
+    body {
+      margin:0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+    }
+
+    .center {
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+    }
+
+    .card {
+      background:white;
+      padding:25px;
+      border-radius:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.2);
+      margin:10px 0;
+    }
+
+    .login-card {
+      width:320px;
+      text-align:center;
+      animation: fadeIn 0.5s ease;
+    }
+
+    .google-btn {
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      background:white;
+      border:1px solid #ddd;
+      padding:12px;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:bold;
+      transition:0.3s;
+    }
+
+    .google-btn:hover {
+      background:#f1f1f1;
+      transform:scale(1.03);
+    }
+
+    .container {
+      padding:20px;
+      background:#eef1f5;
+      min-height:100vh;
+    }
+
+    input, select {
+      padding:8px;
+      margin:5px 0;
+      width:100%;
+      border-radius:6px;
+      border:1px solid #ccc;
+    }
+
+    button {
+      padding:8px 12px;
+      border:none;
+      border-radius:6px;
+      background:#4facfe;
+      color:white;
+      cursor:pointer;
+    }
+
+    button:hover {
+      opacity:0.9;
+    }
+
+    .badge {
+      padding:4px 8px;
+      border-radius:6px;
+      background:#ddd;
+    }
+
+    @keyframes fadeIn {
+      from {opacity:0; transform:translateY(20px);}
+      to {opacity:1; transform:translateY(0);}
+    }
   </style>
+
 </head>
 
 <body>
 
-<h2>🎫 Tickets Empresa</h2>
-
 <!-- LOGIN -->
-<div class="card" id="loginBox">
-  <button onclick="login()">🔐 Iniciar con Google</button>
+
+<div id="loginView" class="center">
+  <div class="card login-card">
+    <h2>🎫 Tickets PRO</h2>
+    <p>Inicia sesión con Google</p>
+
+```
+<div class="google-btn" onclick="login()">
+  <img src="https://cdn-icons-png.flaticon.com/512/281/281764.png" width="20">
+  Iniciar sesión con Google
 </div>
 
-<!-- PANEL USUARIO -->
-<div id="app" style="display:none">
+<p id="error" style="color:red;"></p>
+```
 
-  <button onclick="logout()">Cerrar sesión</button>
-  <p><b id="userInfo"></b></p>
+  </div>
+</div>
 
-  <!-- ADMIN PANEL -->
+<!-- APP -->
+
+<div id="appView" style="display:none" class="container">
+
+<button onclick="logout()">Cerrar sesión</button>
+
+  <p id="userInfo"></p>
+
+  <!-- ADMIN -->
+
   <div id="adminPanel" class="card" style="display:none">
-    <h3>👑 Administrar Usuarios</h3>
+    <h3>👑 Usuarios</h3>
 
-    <input id="emailUser" placeholder="Email usuario">
-    <select id="rolUser">
-      <option value="usuario">usuario</option>
-      <option value="tecnico">tecnico</option>
-      <option value="admin">admin</option>
-    </select>
-    <button onclick="guardarRol()">Guardar Rol</button>
+```
+<input id="emailUser" placeholder="Email">
+<select id="rolUser">
+  <option value="usuario">usuario</option>
+  <option value="tecnico">tecnico</option>
+  <option value="admin">admin</option>
+</select>
+<button onclick="guardarRol()">Guardar</button>
 
-    <div id="listaUsuarios"></div>
+<div id="listaUsuarios"></div>
+```
+
   </div>
 
-  <!-- CREAR TICKET -->
+  <!-- CREAR -->
+
   <div class="card">
-    <input id="titulo" placeholder="Título"><br>
-    <input id="desc" placeholder="Descripción"><br>
+    <input id="titulo" placeholder="Título">
+    <input id="desc" placeholder="Descripción">
 
-    <select id="prioridad">
-      <option>baja</option>
-      <option>media</option>
-      <option>alta</option>
-    </select><br>
+```
+<select id="prioridad">
+  <option>baja</option>
+  <option>media</option>
+  <option>alta</option>
+</select>
 
-    <input type="file" id="file"><br>
+<input type="file" id="file">
+<button onclick="crear()">Crear Ticket</button>
+```
 
-    <button onclick="crear()">Crear Ticket</button>
   </div>
 
   <div id="lista"></div>
@@ -68,60 +175,60 @@
 
 <script>
 let currentUser, currentRole;
+const provider = new firebase.auth.GoogleAuthProvider();
 
-// 🔐 LOGIN GOOGLE
-function login() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider);
+// LOGIN
+async function login() {
+  try {
+    await auth.signInWithPopup(provider);
+  } catch (e) {
+    error.innerText = "Error al iniciar sesión";
+    console.error(e);
+  }
 }
 
-// 🚪 LOGOUT
+// LOGOUT
 function logout() {
   auth.signOut();
 }
 
-// 🔎 OBTENER ROL
+// ROL
 async function getRole(email) {
   const doc = await db.collection("roles").doc(email).get();
   return doc.exists ? doc.data().rol : "usuario";
 }
 
-// 💾 GUARDAR ROL (ADMIN)
+// GUARDAR ROL
 async function guardarRol() {
-  const email = emailUser.value;
-  const rol = rolUser.value;
-
-  await db.collection("roles").doc(email).set({ rol });
-
-  alert("Rol guardado");
+  await db.collection("roles").doc(emailUser.value).set({
+    rol: rolUser.value
+  });
   cargarUsuarios();
 }
 
-// 📋 LISTA USUARIOS
+// LISTA USUARIOS
 async function cargarUsuarios() {
   const snap = await db.collection("roles").get();
-  listaUsuarios.innerHTML = "<h4>Usuarios:</h4>";
+  listaUsuarios.innerHTML = "";
 
   snap.forEach(doc => {
-    listaUsuarios.innerHTML += `
-      <div>${doc.id} → ${doc.data().rol}</div>
-    `;
+    listaUsuarios.innerHTML += `<div>${doc.id} → ${doc.data().rol}</div>`;
   });
 }
 
-// 👤 SESIÓN
+// SESIÓN
 auth.onAuthStateChanged(async user => {
   if (!user) {
-    loginBox.style.display = "block";
-    app.style.display = "none";
+    loginView.style.display = "flex";
+    appView.style.display = "none";
     return;
   }
 
   currentUser = user;
   currentRole = await getRole(user.email);
 
-  loginBox.style.display = "none";
-  app.style.display = "block";
+  loginView.style.display = "none";
+  appView.style.display = "block";
 
   userInfo.innerText = user.email + " (" + currentRole + ")";
 
@@ -133,11 +240,11 @@ auth.onAuthStateChanged(async user => {
   cargar();
 });
 
-// 🎫 CREAR TICKET
+// CREAR
 async function crear() {
   let url = "";
-
   const f = file.files[0];
+
   if (f) {
     const ref = storage.ref("tickets/" + Date.now());
     await ref.put(f);
@@ -157,7 +264,7 @@ async function crear() {
   });
 }
 
-// 📥 CARGAR TICKETS
+// CARGAR
 function cargar() {
   db.collection("tickets").onSnapshot(snapshot => {
     lista.innerHTML = "";
@@ -177,7 +284,7 @@ function cargar() {
           ${t.adjunto ? `<a href="${t.adjunto}" target="_blank">Ver archivo</a>` : ""}
 
           <br><br>
-          ${acciones(doc.id, t)}
+          ${acciones(doc.id)}
 
           <input id="c-${doc.id}" placeholder="Comentario">
           <button onclick="comentar('${doc.id}')">Enviar</button>
@@ -187,8 +294,8 @@ function cargar() {
   });
 }
 
-// ⚙️ ACCIONES
-function acciones(id, t) {
+// ACCIONES
+function acciones(id) {
   let b = "";
 
   if (currentRole === "admin" || currentRole === "tecnico") {
@@ -205,13 +312,13 @@ function asignar(id) {
 }
 
 function estado(id, e) {
-  actualizar(id, { estado: e }, "Cambio estado a " + e);
+  actualizar(id, { estado: e }, "Cambio a " + e);
 }
 
-// 🔄 ACTUALIZAR
+// ACTUALIZAR
 async function actualizar(id, cambios, accion) {
-  const docRef = db.collection("tickets").doc(id);
-  const doc = await docRef.get();
+  const ref = db.collection("tickets").doc(id);
+  const doc = await ref.get();
 
   const historial = doc.data().historial || [];
 
@@ -221,13 +328,10 @@ async function actualizar(id, cambios, accion) {
     fecha: new Date()
   });
 
-  await docRef.update({
-    ...cambios,
-    historial
-  });
+  await ref.update({ ...cambios, historial });
 }
 
-// 💬 COMENTAR
+// COMENTAR
 function comentar(id) {
   const texto = document.getElementById("c-"+id).value;
 
@@ -241,3 +345,4 @@ function comentar(id) {
 
 </body>
 </html>
+
