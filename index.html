@@ -20,32 +20,120 @@
 
 <h2>🎫 Tickets Empresa</h2>
 
-<div class="card">
-  <input id="titulo" placeholder="Título"><br>
-  <input id="desc" placeholder="Descripción"><br>
-
-  <select id="prioridad">
-    <option>baja</option>
-    <option>media</option>
-    <option>alta</option>
-  </select><br>
-
-  <input type="file" id="file"><br>
-
-  <button onclick="crear()">Crear Ticket</button>
+<!-- LOGIN -->
+<div class="card" id="loginBox">
+  <button onclick="login()">🔐 Iniciar con Google</button>
 </div>
 
-<div id="lista"></div>
+<!-- PANEL USUARIO -->
+<div id="app" style="display:none">
+
+  <button onclick="logout()">Cerrar sesión</button>
+  <p><b id="userInfo"></b></p>
+
+  <!-- ADMIN PANEL -->
+  <div id="adminPanel" class="card" style="display:none">
+    <h3>👑 Administrar Usuarios</h3>
+
+    <input id="emailUser" placeholder="Email usuario">
+    <select id="rolUser">
+      <option value="usuario">usuario</option>
+      <option value="tecnico">tecnico</option>
+      <option value="admin">admin</option>
+    </select>
+    <button onclick="guardarRol()">Guardar Rol</button>
+
+    <div id="listaUsuarios"></div>
+  </div>
+
+  <!-- CREAR TICKET -->
+  <div class="card">
+    <input id="titulo" placeholder="Título"><br>
+    <input id="desc" placeholder="Descripción"><br>
+
+    <select id="prioridad">
+      <option>baja</option>
+      <option>media</option>
+      <option>alta</option>
+    </select><br>
+
+    <input type="file" id="file"><br>
+
+    <button onclick="crear()">Crear Ticket</button>
+  </div>
+
+  <div id="lista"></div>
+
+</div>
 
 <script>
 let currentUser, currentRole;
 
+// 🔐 LOGIN GOOGLE
+function login() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider);
+}
+
+// 🚪 LOGOUT
+function logout() {
+  auth.signOut();
+}
+
+// 🔎 OBTENER ROL
+async function getRole(email) {
+  const doc = await db.collection("roles").doc(email).get();
+  return doc.exists ? doc.data().rol : "usuario";
+}
+
+// 💾 GUARDAR ROL (ADMIN)
+async function guardarRol() {
+  const email = emailUser.value;
+  const rol = rolUser.value;
+
+  await db.collection("roles").doc(email).set({ rol });
+
+  alert("Rol guardado");
+  cargarUsuarios();
+}
+
+// 📋 LISTA USUARIOS
+async function cargarUsuarios() {
+  const snap = await db.collection("roles").get();
+  listaUsuarios.innerHTML = "<h4>Usuarios:</h4>";
+
+  snap.forEach(doc => {
+    listaUsuarios.innerHTML += `
+      <div>${doc.id} → ${doc.data().rol}</div>
+    `;
+  });
+}
+
+// 👤 SESIÓN
 auth.onAuthStateChanged(async user => {
+  if (!user) {
+    loginBox.style.display = "block";
+    app.style.display = "none";
+    return;
+  }
+
   currentUser = user;
   currentRole = await getRole(user.email);
+
+  loginBox.style.display = "none";
+  app.style.display = "block";
+
+  userInfo.innerText = user.email + " (" + currentRole + ")";
+
+  if (currentRole === "admin") {
+    adminPanel.style.display = "block";
+    cargarUsuarios();
+  }
+
   cargar();
 });
 
+// 🎫 CREAR TICKET
 async function crear() {
   let url = "";
 
@@ -69,6 +157,7 @@ async function crear() {
   });
 }
 
+// 📥 CARGAR TICKETS
 function cargar() {
   db.collection("tickets").onSnapshot(snapshot => {
     lista.innerHTML = "";
@@ -90,7 +179,6 @@ function cargar() {
           <br><br>
           ${acciones(doc.id, t)}
 
-          <div id="comentarios-${doc.id}"></div>
           <input id="c-${doc.id}" placeholder="Comentario">
           <button onclick="comentar('${doc.id}')">Enviar</button>
         </div>
@@ -99,6 +187,7 @@ function cargar() {
   });
 }
 
+// ⚙️ ACCIONES
 function acciones(id, t) {
   let b = "";
 
@@ -119,6 +208,7 @@ function estado(id, e) {
   actualizar(id, { estado: e }, "Cambio estado a " + e);
 }
 
+// 🔄 ACTUALIZAR
 async function actualizar(id, cambios, accion) {
   const docRef = db.collection("tickets").doc(id);
   const doc = await docRef.get();
@@ -137,6 +227,7 @@ async function actualizar(id, cambios, accion) {
   });
 }
 
+// 💬 COMENTAR
 function comentar(id) {
   const texto = document.getElementById("c-"+id).value;
 
