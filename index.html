@@ -178,6 +178,14 @@ let currentUser, currentRole;
 const provider = new firebase.auth.GoogleAuthProvider();
 
 // LOGIN
+async function login() {
+  try {
+    await auth.signInWithPopup(provider);
+  } catch (e) {
+    console.error("ERROR REAL:", e);
+    alert(e.message); // 👈 MUY IMPORTANTE
+  }
+}
 function login() {
   auth.signInWithRedirect(provider);
 }
