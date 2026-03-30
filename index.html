@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <style>
-
 body{font-family:Arial;background:#f5f6fa;margin:0}
 
 #login{
@@ -81,7 +80,6 @@ border-radius:8px;
 display:flex;
 justify-content:space-between;
 }
-
 </style>
 </head>
 
@@ -129,7 +127,7 @@ Usuarios
 <h2>Crear Ticket</h2>
 
 <div class="form-card">
-<input id="titulo" placeholder="Titulo">
+<input id="titulo" placeholder="Título">
 <input id="descripcion" placeholder="Descripción">
 <button onclick="crearTicket()">Guardar</button>
 </div>
@@ -150,7 +148,6 @@ Usuarios
 <h2>Usuarios</h2>
 
 <div class="form-card">
-
 <input id="correoUser" placeholder="Correo">
 
 <select id="rolUser">
@@ -165,7 +162,6 @@ Usuarios
 <label><input type="checkbox" id="pUsuarios"> Usuarios</label>
 
 <button onclick="guardarUsuario()">Guardar</button>
-
 </div>
 
 <div id="listaUsuarios"></div>
@@ -178,6 +174,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* 🔥 TU CONFIGURACIÓN REAL */
 const firebaseConfig = {
   apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
   authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com",
@@ -196,10 +193,11 @@ let rolUsuario="usuario";
 let permisosUsuario={};
 let editId=null;
 
+/* LOGIN */
 window.login=()=>{
 const provider = new GoogleAuthProvider();
 signInWithRedirect(auth, provider);
-}
+};
 
 getRedirectResult(auth).then(result=>{
 if(result?.user){
@@ -207,6 +205,7 @@ mostrar(result.user);
 }
 });
 
+/* MOSTRAR DASHBOARD */
 function mostrar(u){
 user=u;
 login.style.display="none";
@@ -214,6 +213,7 @@ dashboard.style.display="block";
 obtenerRol(user.email);
 }
 
+/* OBTENER ROL */
 async function obtenerRol(email){
 const q = query(collection(db,"usuarios"), where("correo","==",email));
 const snap = await getDocs(q);
@@ -227,6 +227,7 @@ permisosUsuario = data.permisos || {};
 controlAcceso();
 }
 
+/* CONTROL DE PERMISOS */
 function controlAcceso(){
 
 document.querySelectorAll(".card").forEach(c=>c.style.display="none");
@@ -242,21 +243,22 @@ document.querySelector("[onclick=\"abrir('admin')\"]").style.display="block";
 
 if(permisosUsuario.usuarios)
 document.querySelector("[onclick=\"abrir('usuarios')\"]").style.display="block";
-
 }
 
+/* NAVEGACIÓN */
 window.abrir=(id)=>{
 document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
 document.getElementById(id).style.display="block";
 
 if(id==="admin") cargarAdmin();
 if(id==="usuarios") cargarUsuarios();
-}
+};
 
 window.volver=()=>{
 document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
-}
+};
 
+/* CREAR TICKET */
 window.crearTicket=async()=>{
 await addDoc(collection(db,"tickets"),{
 titulo: titulo.value,
@@ -264,9 +266,10 @@ descripcion: descripcion.value,
 estado:"pendiente",
 usuario:user.email
 });
-alert("Creado");
-}
+alert("Ticket creado");
+};
 
+/* ADMIN TICKETS */
 function cargarAdmin(){
 onSnapshot(collection(db,"tickets"), snap=>{
 listaAdmin.innerHTML="";
@@ -277,7 +280,7 @@ const id = docu.id;
 listaAdmin.innerHTML+=`
 <div class="ticket">
 <b>${t.titulo}</b><br>
-${t.estado}<br>
+Estado: ${t.estado}<br>
 
 <button onclick="enProceso('${id}')">⏳</button>
 <button onclick="eliminar('${id}')">🗑</button>
@@ -290,13 +293,14 @@ ${t.estado}<br>
 window.enProceso=async(id)=>{
 if(!permisosUsuario.admin) return alert("No autorizado");
 await updateDoc(doc(db,"tickets",id),{estado:"en proceso"});
-}
+};
 
 window.eliminar=async(id)=>{
 if(!permisosUsuario.admin) return alert("No autorizado");
 await deleteDoc(doc(db,"tickets",id));
-}
+};
 
+/* USUARIOS */
 window.guardarUsuario=async()=>{
 
 const data={
@@ -318,7 +322,7 @@ await addDoc(collection(db,"usuarios"),data);
 }
 
 cargarUsuarios();
-}
+};
 
 function cargarUsuarios(){
 onSnapshot(collection(db,"usuarios"), snap=>{
@@ -341,7 +345,7 @@ ${u.correo} - ${u.rol}
 }
 
 window.editar=async(id)=>{
-const q = await getDocs(query(collection(db,"usuarios")));
+const q = await getDocs(collection(db,"usuarios"));
 q.forEach(d=>{
 if(d.id===id){
 const u=d.data();
@@ -354,11 +358,11 @@ pUsuarios.checked=u.permisos.usuarios;
 editId=id;
 }
 });
-}
+};
 
 window.delUser=async(id)=>{
 await deleteDoc(doc(db,"usuarios",id));
-}
+};
 
 </script>
 </body>
