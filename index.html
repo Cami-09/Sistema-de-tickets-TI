@@ -13,7 +13,7 @@
     .tabs button { padding:12px 25px; border:none; background:none; cursor:pointer; font-size:16px; transition:0.3s; }
     .tabs button.active { background:#4285F4; color:white; border-radius:6px 6px 0 0; }
     .modulo { display:none; padding:20px; }
-    .card { background:white; border-radius:12px; padding:15px; margin:15px 0; transition:0.3s; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .card { background:white; border-radius:12px; padding:15px; margin:15px 0; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
     .card:hover { box-shadow:0 5px 15px rgba(0,0,0,0.2); }
     .badge { padding:4px 10px; border-radius:6px; color:white; font-weight:bold; }
     .badge.baja { background:#4CAF50; }
@@ -27,7 +27,12 @@
     th { background:#4285F4; color:white; }
     td button { padding:4px 8px; margin:2px; font-size:12px; }
     .edit-btn { background:#2196F3; color:white; border-radius:4px; font-size:14px; margin-left:5px; }
-    @keyframes flash {0%{background-color:#fff;}50%{background-color:#ffff99;}100%{background-color:#fff;}}
+
+    /* ================= MODAL ================= */
+    .modal { display:none; position:fixed; z-index:999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.5); }
+    .modal-content { background:white; margin:10% auto; padding:20px; border-radius:8px; width:300px; position:relative; }
+    .modal-content h3 { margin-top:0; }
+    .modal-content button { width:48%; margin:5px 1%; }
   </style>
 </head>
 <body>
@@ -101,6 +106,24 @@
 
 </div>
 
+<!-- ================= MODAL EDITAR USUARIO ================= -->
+<div id="modalEditar" class="modal">
+  <div class="modal-content">
+    <h3>Editar Usuario</h3>
+    <input id="modalNombre" placeholder="Nombre">
+    <input id="modalEmail" placeholder="Email">
+    <select id="modalRol">
+      <option>Usuario</option>
+      <option>Gestor</option>
+      <option>Admin</option>
+    </select>
+    <div style="text-align:center;">
+      <button id="btnAceptar">Aceptar</button>
+      <button id="btnCancelar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <script>
   // ==================== FIREBASE ====================
   const firebaseConfig = {
@@ -116,16 +139,12 @@
   const db = firebase.firestore();
   const storage = firebase.storage();
   let currentUser, currentRole;
+  let usuarioEditarEmail=null; // Guardar email original para edición
 
   // ==================== LOGIN ====================
   document.getElementById("loginBtn").addEventListener("click", async ()=>{
-    try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      await auth.signInWithPopup(provider);
-    } catch(error){
-      alert("Error al iniciar sesión: "+error.message);
-      console.error(error);
-    }
+    const provider = new firebase.auth.GoogleAuthProvider();
+    await auth.signInWithPopup(provider);
   });
 
   auth.onAuthStateChanged(async user=>{
@@ -137,12 +156,10 @@
     const roleRef=db.collection("roles").doc(user.email);
     let doc = await roleRef.get();
 
-    // Admin for your email
     if(user.email==="camicarmona1212@gmail.com"){
       await roleRef.set({rol:"admin", nombre:"Cami Carmona"});
       doc = await roleRef.get();
     }
-
     if(!doc.exists){
       await roleRef.set({rol:"usuario", nombre:user.displayName});
       doc = await roleRef.get();
@@ -150,7 +167,6 @@
 
     currentRole=doc.data().rol;
 
-    // Mostrar/ocultar módulo de usuarios
     document.querySelectorAll(".tabBtn").forEach(btn=>{
       if(btn.textContent==="Gestión de Usuarios"){
         btn.style.display = currentRole==="admin" ? "inline-block" : "none";
@@ -206,7 +222,6 @@
 
   function asignar(id){ actualizarTicket(id,{gestor:currentUser.email},"Asignado"); }
   function estado(id,e){ actualizarTicket(id,{estado:e},"Cambio de estado a "+e); }
-
   async function actualizarTicket(id, cambios, accion){
     const docRef=db.collection("tickets").doc(id);
     const doc=await docRef.get();
@@ -239,7 +254,6 @@
           <button onclick="comentar('${doc.id}')">Enviar</button>
         `;
         lista.prepend(div);
-        div.style.animation="flash 1s ease-in-out";
       });
     });
   }
@@ -257,38 +271,7 @@
     alert("Ticket eliminado");
   }
 
-  async function reasignarTicket(id){
-    const snap=await db.collection("roles").where("rol","==","gestor").get();
-    const gestores = snap.docs.map(d=>({email:d.id, nombre:d.data().nombre}));
-    const select=document.createElement("select");
-    gestores.forEach(g=>{
-      const opt=document.createElement("option");
-      opt.value=g.email;
-      opt.text=g.nombre;
-      select.appendChild(opt);
-    });
-    const div=document.createElement("div");
-    div.appendChild(select);
-    const btnOk=document.createElement("button"); btnOk.innerText="Aceptar"; btnOk.style.background="#4CAF50"; btnOk.style.color="white";
-    const btnCancel=document.createElement("button"); btnCancel.innerText="Cancelar"; btnCancel.style.background="#F44336"; btnCancel.style.color="white"; btnCancel.style.marginLeft="5px";
-    div.appendChild(btnOk); div.appendChild(btnCancel);
-    const tarjeta=document.createElement("div"); tarjeta.className="card"; tarjeta.style.marginTop="10px"; tarjeta.appendChild(div);
-    document.getElementById("lista").prepend(tarjeta);
-
-    btnOk.onclick=async ()=>{
-      const nuevo=select.value;
-      const docRef=db.collection("tickets").doc(id);
-      const doc=await docRef.get();
-      const historial=doc.data().historial||[];
-      historial.push({accion:"Reasignado a "+nuevo, usuario:currentUser.email, fecha:new Date()});
-      await docRef.update({gestor:nuevo,historial});
-      alert("Ticket reasignado");
-      tarjeta.remove();
-    };
-    btnCancel.onclick=()=>{ tarjeta.remove(); };
-  }
-
-  // ==================== GESTION DE USUARIOS ====================
+  // ==================== GESTION USUARIOS ====================
   async function agregarUsuario(){
     if(currentRole!=="admin"){ alert("Solo admin"); return; }
     const email = emailUser.value.trim();
@@ -309,57 +292,60 @@
     snap.forEach(doc=>{
       const data=doc.data();
       const tr=document.createElement("tr");
-
-      const tdNombre=document.createElement("td"); tdNombre.innerText=data.nombre; tr.appendChild(tdNombre);
-      const tdEmail=document.createElement("td"); tdEmail.innerText=doc.id; tr.appendChild(tdEmail);
-      const tdRol=document.createElement("td"); tdRol.innerText=data.rol; tr.appendChild(tdRol);
-
-      const tdAcc=document.createElement("td");
-      // Boton editar
-      const btnEdit=document.createElement("button"); 
-      btnEdit.innerHTML="✏️"; 
-      btnEdit.className="edit-btn";
-      btnEdit.onclick=()=>{ editarUsuario(doc.id,data.nombre,data.rol); };
-      tdAcc.appendChild(btnEdit);
-
-      // Boton eliminar
-      const btnEliminar=document.createElement("button"); 
-      btnEliminar.innerText="Eliminar"; 
-      btnEliminar.style.background="#F44336"; 
-      btnEliminar.style.color="white"; 
-      btnEliminar.style.marginLeft="5px";
-      btnEliminar.onclick=async ()=>{
-        if(!confirm("Eliminar usuario?")) return;
-        await db.collection("roles").doc(doc.id).delete();
-        alert("Usuario eliminado"); 
-        cargarUsuarios();
-      };
-      tdAcc.appendChild(btnEliminar);
-
-      tr.appendChild(tdAcc);
+      tr.innerHTML=`
+        <td>${data.nombre}</td>
+        <td>${doc.id}</td>
+        <td>${data.rol}</td>
+        <td>
+          <button class="edit-btn" onclick="abrirModal('${doc.id}','${data.nombre}','${data.rol}')">✏️</button>
+          <button style="background:#F44336;color:white;margin-left:5px;" onclick="eliminarUsuario('${doc.id}')">Eliminar</button>
+        </td>
+      `;
       tabla.appendChild(tr);
     });
   }
 
-  // ==================== FUNCION EDITAR USUARIO ====================
-  async function editarUsuario(email, nombre, rol){
-    const nuevoNombre = prompt("Nombre:", nombre);
-    if(nuevoNombre===null) return; 
-    const nuevoEmail = prompt("Email:", email);
-    if(nuevoEmail===null) return; 
-    const nuevoRol = prompt("Rol (Usuario, Gestor, Admin):", rol);
-    if(nuevoRol===null) return;
+  function eliminarUsuario(email){
+    if(!confirm("Eliminar usuario?")) return;
+    db.collection("roles").doc(email).delete().then(()=>cargarUsuarios());
+  }
 
-    // Si cambio email, crear nuevo doc y eliminar antiguo
-    if(nuevoEmail !== email){
+  // ==================== MODAL EDITAR ====================
+  const modal=document.getElementById("modalEditar");
+  const modalNombre=document.getElementById("modalNombre");
+  const modalEmail=document.getElementById("modalEmail");
+  const modalRol=document.getElementById("modalRol");
+  const btnAceptar=document.getElementById("btnAceptar");
+  const btnCancelar=document.getElementById("btnCancelar");
+
+  function abrirModal(email,nombre,rol){
+    usuarioEditarEmail=email;
+    modalNombre.value=nombre;
+    modalEmail.value=email;
+    modalRol.value=rol;
+    modal.style.display="block";
+  }
+
+  btnCancelar.onclick=()=>{ modal.style.display="none"; }
+
+  btnAceptar.onclick=async ()=>{
+    const nuevoNombre=modalNombre.value.trim();
+    const nuevoEmail=modalEmail.value.trim();
+    const nuevoRol=modalRol.value;
+
+    if(!nuevoNombre || !nuevoEmail){ alert("Nombre y email requeridos"); return; }
+
+    if(nuevoEmail!==usuarioEditarEmail){
       await db.collection("roles").doc(nuevoEmail).set({nombre:nuevoNombre, rol:nuevoRol});
-      await db.collection("roles").doc(email).delete();
+      await db.collection("roles").doc(usuarioEditarEmail).delete();
     } else {
-      await db.collection("roles").doc(email).update({nombre:nuevoNombre, rol:nuevoRol});
+      await db.collection("roles").doc(usuarioEditarEmail).update({nombre:nuevoNombre, rol:nuevoRol});
     }
-    alert("Usuario actualizado");
+    modal.style.display="none";
     cargarUsuarios();
   }
+
+  window.onclick=(e)=>{ if(e.target==modal) modal.style.display="none"; }
 
   // ==================== CERRAR SESION ====================
   function cerrarSesion(){
@@ -369,6 +355,7 @@
       document.getElementById("loginDiv").style.display="block";
     });
   }
+
 </script>
 </body>
 </html>
