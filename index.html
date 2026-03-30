@@ -8,51 +8,105 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 
 <!-- Iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-body{margin:0;font-family:Arial;background:#f5f7fa;}
-header{background:#4285F4;color:white;padding:15px;text-align:center;font-size:22px;position:relative;}
-#logoutBtn{position:absolute;right:15px;top:15px;background:red;color:white;border:none;padding:8px;border-radius:6px;}
+body{margin:0;font-family:Arial;background:#f4f6f9;}
 
-#login{padding:80px;text-align:center;}
+header{
+background:#1e293b;
+color:white;
+padding:15px;
+font-size:20px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+#login{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+}
+
+#login button{
+padding:12px 20px;
+background:#4285F4;
+color:white;
+border:none;
+border-radius:8px;
+font-size:16px;
+cursor:pointer;
+}
 
 #dashboard{display:none;padding:30px;}
 
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:25px;}
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+}
 
 .card{
-background:white;border-radius:15px;padding:30px;text-align:center;
-cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.1);transition:.3s;
+background:white;
+padding:25px;
+border-radius:15px;
+text-align:center;
+cursor:pointer;
+transition:.3s;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
-.card:hover{transform:translateY(-5px);box-shadow:0 8px 20px rgba(0,0,0,0.2);}
-.card i{font-size:45px;color:#4285F4;margin-bottom:10px;}
 
-.modulo{display:none;padding:20px;}
+.card:hover{
+transform:translateY(-5px);
+box-shadow:0 10px 25px rgba(0,0,0,0.2);
+}
 
-.ticket{background:white;padding:15px;margin:10px 0;border-radius:10px;}
+.card i{
+font-size:40px;
+margin-bottom:10px;
+color:#3b82f6;
+}
 
-button{padding:6px 10px;margin:3px;border:none;border-radius:6px;cursor:pointer;}
-input,select{width:100%;padding:8px;margin:5px 0;}
+.modulo{display:none;}
 
-.volver{background:#555;color:white;}
+.ticket{
+background:white;
+padding:15px;
+margin:10px 0;
+border-radius:10px;
+}
+
+button{
+padding:6px 10px;
+margin:3px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+.volver{
+background:#334155;
+color:white;
+}
 </style>
 </head>
 
 <body>
 
 <header>
-🎫 Tickets PRO
-<button id="logoutBtn" onclick="logout()">Salir</button>
+<span>🎫 Sistema Tickets TI</span>
+<button onclick="logout()">Salir</button>
 </header>
 
 <!-- LOGIN -->
 <div id="login">
 <h2>Iniciar sesión</h2>
-<button onclick="login()">Google</button>
+<button onclick="login()">Iniciar con Google</button>
 </div>
 
 <!-- DASHBOARD -->
@@ -60,16 +114,20 @@ input,select{width:100%;padding:8px;margin:5px 0;}
 
 <div id="panel" class="grid">
 
-<div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Consultar Tickets</h3></div>
-<div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Enviar Tickets</h3></div>
-<div class="card" onclick="abrir('admin')"><i class="fas fa-tools"></i><h3>Administrar Tickets</h3></div>
+<div class="card" onclick="abrir('consultar')">
+<i class="fas fa-search"></i>
+<h3>Consultar Tickets</h3>
+</div>
 
-<div class="card"><i class="fas fa-desktop"></i><h3>Equipos Administrativos</h3></div>
-<div class="card"><i class="fas fa-laptop"></i><h3>Equipos de Salas</h3></div>
-<div class="card"><i class="fas fa-calendar"></i><h3>Calendario</h3></div>
-<div class="card"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
-<div class="card"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
-<div class="card"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
+<div class="card" onclick="abrir('crear')">
+<i class="fas fa-paper-plane"></i>
+<h3>Crear Ticket</h3>
+</div>
+
+<div class="card" onclick="abrir('admin')">
+<i class="fas fa-user-shield"></i>
+<h3>Administración</h3>
+</div>
 
 </div>
 
@@ -86,32 +144,27 @@ input,select{width:100%;padding:8px;margin:5px 0;}
 <h2>Crear Ticket</h2>
 <input id="titulo" placeholder="Título">
 <input id="desc" placeholder="Descripción">
-<select id="prioridad">
-<option>baja</option><option>media</option><option>alta</option>
-</select>
-<input type="file" id="file">
 <button onclick="crearTicket()">Enviar</button>
 </div>
 
 <!-- ADMIN -->
 <div id="admin" class="modulo">
 <button class="volver" onclick="volver()">⬅ Volver</button>
-<h2>Administrar Tickets</h2>
+<h2>Administrar</h2>
 <div id="adminLista"></div>
 </div>
 
 </div>
 
 <script>
-// FIREBASE
 firebase.initializeApp({
-apiKey:"AIzaSy...",
-authDomain:"sistema-de-tickets-ti-b12f5.firebaseapp.com",
-projectId:"sistema-de-tickets-ti-b12f5"
+apiKey:"TU_API_KEY",
+authDomain:"TU_DOMINIO",
+projectId:"TU_ID"
 });
+
 const auth=firebase.auth();
 const db=firebase.firestore();
-const storage=firebase.storage();
 
 let user, rol;
 
@@ -122,18 +175,14 @@ auth.signInWithPopup(provider);
 }
 
 auth.onAuthStateChanged(async u=>{
-if(!u)return;
+if(!u) return;
+
 user=u;
-login.style.display="none";
-dashboard.style.display="block";
+document.getElementById("login").style.display="none";
+document.getElementById("dashboard").style.display="block";
 
 const ref=db.collection("roles").doc(u.email);
 let doc=await ref.get();
-
-if(u.email==="camicarmona1212@gmail.com"){
-await ref.set({rol:"admin"});
-doc=await ref.get();
-}
 
 if(!doc.exists){
 await ref.set({rol:"usuario"});
@@ -147,12 +196,13 @@ cargarTickets();
 
 // NAV
 function abrir(id){
-panel.style.display="none";
+document.getElementById("panel").style.display="none";
 document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
 document.getElementById(id).style.display="block";
 }
+
 function volver(){
-panel.style.display="grid";
+document.getElementById("panel").style.display="grid";
 document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
 }
 
@@ -162,56 +212,28 @@ await db.collection("tickets").add({
 titulo:titulo.value,
 descripcion:desc.value,
 estado:"abierto",
-prioridad:prioridad.value,
 usuario:user.email,
-gestor:"",
 fecha:new Date()
 });
 alert("Ticket creado");
 cargarTickets();
 }
 
-// CARGAR
+// LISTAR
 function cargarTickets(){
-db.collection("tickets").onSnapshot(async snap=>{
+db.collection("tickets").onSnapshot(snap=>{
 lista.innerHTML="";
 adminLista.innerHTML="";
-
-const gestoresSnap=await db.collection("roles").where("rol","==","gestor").get();
-let gestores=[];
-gestoresSnap.forEach(d=>gestores.push(d.id));
 
 snap.forEach(doc=>{
 const t=doc.data();
 const id=doc.id;
 
-if(rol==="usuario" && t.usuario!==user.email) return;
-if(rol==="gestor" && t.gestor!==user.email) return;
-
-let selector="";
-if(rol==="admin"){
-selector=`<select onchange="reasignar('${id}',this.value)">
-<option value="">Asignar gestor</option>
-${gestores.map(g=>`<option value="${g}">${g}</option>`).join("")}
-</select>`;
-}
-
 const html=`
 <div class="ticket">
 <b>${t.titulo}</b><br>
 ${t.descripcion}<br>
-Estado: ${t.estado}<br>
-Gestor: ${t.gestor||"Sin asignar"}<br>
-
-${rol!=="usuario"?`
-<button onclick="asignarme('${id}')">Asignarme</button>
-<button onclick="estado('${id}','proceso')">Proceso</button>
-<button onclick="estado('${id}','cerrado')">Cerrar</button>
-`:''}
-
-${selector}
-
-${rol==="admin"?`<button onclick="eliminar('${id}')">Eliminar</button>`:''}
+Estado: ${t.estado}
 </div>
 `;
 
@@ -220,24 +242,6 @@ adminLista.innerHTML+=html;
 
 });
 });
-}
-
-// ACCIONES
-function asignarme(id){
-db.collection("tickets").doc(id).update({gestor:user.email});
-}
-
-function estado(id,e){
-db.collection("tickets").doc(id).update({estado:e});
-}
-
-function eliminar(id){
-if(confirm("Eliminar?")) db.collection("tickets").doc(id).delete();
-}
-
-function reasignar(id,gestor){
-if(!gestor)return;
-db.collection("tickets").doc(id).update({gestor});
 }
 
 // LOGOUT
