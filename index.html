@@ -9,7 +9,6 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
-<!-- Iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
@@ -104,7 +103,7 @@ border-radius:8px;
 cursor:pointer;
 }
 
-/* ADMIN DASHBOARD */
+/* ADMIN */
 .stats{
 display:flex;
 gap:20px;
@@ -163,7 +162,6 @@ color:white;
 .procesoBtn{background:#eab308;}
 .cerrar{background:#22c55e;}
 .eliminar{background:#ef4444;}
-
 </style>
 </head>
 
@@ -184,11 +182,9 @@ color:white;
 <div id="dashboard">
 
 <div id="panel" class="grid">
-
 <div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Consultar Tickets</h3></div>
 <div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Crear Ticket</h3></div>
 <div class="card" onclick="abrir('admin')"><i class="fas fa-clipboard-list"></i><h3>Administrar Tickets</h3></div>
-
 </div>
 
 <!-- CREAR -->
@@ -260,9 +256,9 @@ color:white;
 <h2 style="color:#2563eb;">Administrar tickets</h2>
 
 <div class="stats">
-<div class="box abiertos">Abiertos <span id="abiertos">0</span></div>
-<div class="box proceso">En Proceso <span id="proceso">0</span></div>
-<div class="box cerrados">Cerrados <span id="cerrados">0</span></div>
+<div class="box abiertos">Abiertos <span id="abiertosEl">0</span></div>
+<div class="box proceso">En Proceso <span id="procesoEl">0</span></div>
+<div class="box cerrados">Cerrados <span id="cerradosEl">0</span></div>
 </div>
 
 <table>
@@ -286,7 +282,7 @@ color:white;
 </div>
 
 <script>
-// FIREBASE
+// 🔥 TU CONFIG ORIGINAL (NO SE TOCA)
 firebase.initializeApp({
 apiKey:"AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
 authDomain:"sistema-de-tickets-ti-b12f5.firebaseapp.com",
@@ -297,15 +293,18 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 let user;
 
-// LOGIN
+// ✅ LOGIN CORREGIDO (POPUP)
 function login(){
 const provider = new firebase.auth.GoogleAuthProvider();
-auth.signInWithRedirect(provider);
-}
 
-auth.getRedirectResult().then(result=>{
-if(result.user) mostrar(result.user);
+auth.signInWithPopup(provider)
+.then(result=>{
+mostrar(result.user);
+})
+.catch(error=>{
+alert("Error: " + error.message);
 });
+}
 
 auth.onAuthStateChanged(u=>{
 if(u) mostrar(u);
@@ -315,7 +314,6 @@ function mostrar(u){
 user=u;
 login.style.display="none";
 dashboard.style.display="block";
-cargarTickets();
 }
 
 // NAV
@@ -353,7 +351,6 @@ return;
 }
 
 await db.collection("tickets").add(data);
-
 alert("✅ Ticket creado");
 descripcion.value="";
 }
@@ -382,7 +379,7 @@ Estado: ${t.estado}
 });
 }
 
-// ADMIN NUEVO
+// ADMIN
 function cargarAdmin(){
 db.collection("tickets").onSnapshot(snap=>{
 
