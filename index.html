@@ -2,47 +2,48 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Tickets PRO</title>
+<title>Tickets TI PRO</title>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
 <!-- Iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-body{margin:0;font-family:Arial;background:#f4f6f9;}
+body{margin:0;font-family:Arial;background:#f1f5f9;}
 
+/* HEADER */
 header{
-background:#1e293b;
+background:#0f172a;
 color:white;
-padding:15px;
-font-size:20px;
+padding:15px 20px;
 display:flex;
 justify-content:space-between;
 align-items:center;
 }
 
+/* LOGIN */
 #login{
 height:100vh;
 display:flex;
+flex-direction:column;
 justify-content:center;
 align-items:center;
-flex-direction:column;
 }
 
 #login button{
-padding:12px 20px;
-background:#4285F4;
+background:#3b82f6;
 color:white;
 border:none;
+padding:12px 20px;
 border-radius:8px;
-font-size:16px;
 cursor:pointer;
+font-size:16px;
 }
 
+/* DASHBOARD */
 #dashboard{display:none;padding:30px;}
 
 .grid{
@@ -51,6 +52,7 @@ grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
 gap:20px;
 }
 
+/* TARJETAS */
 .card{
 background:white;
 padding:25px;
@@ -62,35 +64,26 @@ box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
 .card:hover{
-transform:translateY(-5px);
+transform:translateY(-6px);
 box-shadow:0 10px 25px rgba(0,0,0,0.2);
 }
 
 .card i{
 font-size:40px;
 margin-bottom:10px;
-color:#3b82f6;
+color:#2563eb;
 }
 
-.modulo{display:none;}
-
-.ticket{
-background:white;
-padding:15px;
-margin:10px 0;
-border-radius:10px;
-}
-
+/* BOTONES */
 button{
-padding:6px 10px;
-margin:3px;
 border:none;
+padding:8px 12px;
 border-radius:6px;
 cursor:pointer;
 }
 
-.volver{
-background:#334155;
+.logout{
+background:red;
 color:white;
 }
 </style>
@@ -100,7 +93,7 @@ color:white;
 
 <header>
 <span>🎫 Sistema Tickets TI</span>
-<button onclick="logout()">Salir</button>
+<button class="logout" onclick="logout()">Salir</button>
 </header>
 
 <!-- LOGIN -->
@@ -112,136 +105,61 @@ color:white;
 <!-- DASHBOARD -->
 <div id="dashboard">
 
-<div id="panel" class="grid">
+<h2>Panel de módulos</h2>
 
-<div class="card" onclick="abrir('consultar')">
-<i class="fas fa-search"></i>
-<h3>Consultar Tickets</h3>
-</div>
+<div class="grid">
 
-<div class="card" onclick="abrir('crear')">
-<i class="fas fa-paper-plane"></i>
-<h3>Crear Ticket</h3>
-</div>
+<div class="card"><i class="fas fa-search"></i><h3>Consultar Tickets</h3></div>
+<div class="card"><i class="fas fa-paper-plane"></i><h3>Crear Ticket</h3></div>
+<div class="card"><i class="fas fa-user-shield"></i><h3>Administración</h3></div>
 
-<div class="card" onclick="abrir('admin')">
-<i class="fas fa-user-shield"></i>
-<h3>Administración</h3>
-</div>
+<div class="card"><i class="fas fa-desktop"></i><h3>Equipos Administrativos</h3></div>
+<div class="card"><i class="fas fa-laptop"></i><h3>Equipos de Salas</h3></div>
+<div class="card"><i class="fas fa-calendar"></i><h3>Calendario</h3></div>
 
-</div>
+<div class="card"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
+<div class="card"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
+<div class="card"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
 
-<!-- CONSULTAR -->
-<div id="consultar" class="modulo">
-<button class="volver" onclick="volver()">⬅ Volver</button>
-<h2>Mis Tickets</h2>
-<div id="lista"></div>
-</div>
-
-<!-- CREAR -->
-<div id="crear" class="modulo">
-<button class="volver" onclick="volver()">⬅ Volver</button>
-<h2>Crear Ticket</h2>
-<input id="titulo" placeholder="Título">
-<input id="desc" placeholder="Descripción">
-<button onclick="crearTicket()">Enviar</button>
-</div>
-
-<!-- ADMIN -->
-<div id="admin" class="modulo">
-<button class="volver" onclick="volver()">⬅ Volver</button>
-<h2>Administrar</h2>
-<div id="adminLista"></div>
 </div>
 
 </div>
 
 <script>
+// CONFIG FIREBASE
 firebase.initializeApp({
-apiKey:"TU_API_KEY",
-authDomain:"TU_DOMINIO",
-projectId:"TU_ID"
+apiKey: "TU_API_KEY",
+authDomain: "TU_DOMINIO.firebaseapp.com",
+projectId: "TU_PROJECT_ID"
 });
 
-const auth=firebase.auth();
-const db=firebase.firestore();
+const auth = firebase.auth();
 
-let user, rol;
-
-// LOGIN
+// LOGIN (REDIRECT - SOLUCIONA BUG)
 function login(){
-const provider=new firebase.auth.GoogleAuthProvider();
-auth.signInWithPopup(provider);
+const provider = new firebase.auth.GoogleAuthProvider();
+auth.signInWithRedirect(provider);
 }
 
-auth.onAuthStateChanged(async u=>{
-if(!u) return;
+// DETECTAR LOGIN
+auth.getRedirectResult().then(result=>{
+if(result.user){
+mostrarSistema(result.user);
+}
+}).catch(error=>{
+console.error(error);
+});
 
-user=u;
+auth.onAuthStateChanged(user=>{
+if(user){
+mostrarSistema(user);
+}
+});
+
+// MOSTRAR SISTEMA
+function mostrarSistema(user){
 document.getElementById("login").style.display="none";
 document.getElementById("dashboard").style.display="block";
-
-const ref=db.collection("roles").doc(u.email);
-let doc=await ref.get();
-
-if(!doc.exists){
-await ref.set({rol:"usuario"});
-doc=await ref.get();
-}
-
-rol=doc.data().rol;
-
-cargarTickets();
-});
-
-// NAV
-function abrir(id){
-document.getElementById("panel").style.display="none";
-document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
-document.getElementById(id).style.display="block";
-}
-
-function volver(){
-document.getElementById("panel").style.display="grid";
-document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
-}
-
-// CREAR
-async function crearTicket(){
-await db.collection("tickets").add({
-titulo:titulo.value,
-descripcion:desc.value,
-estado:"abierto",
-usuario:user.email,
-fecha:new Date()
-});
-alert("Ticket creado");
-cargarTickets();
-}
-
-// LISTAR
-function cargarTickets(){
-db.collection("tickets").onSnapshot(snap=>{
-lista.innerHTML="";
-adminLista.innerHTML="";
-
-snap.forEach(doc=>{
-const t=doc.data();
-const id=doc.id;
-
-const html=`
-<div class="ticket">
-<b>${t.titulo}</b><br>
-${t.descripcion}<br>
-Estado: ${t.estado}
-</div>
-`;
-
-lista.innerHTML+=html;
-adminLista.innerHTML+=html;
-
-});
-});
 }
 
 // LOGOUT
