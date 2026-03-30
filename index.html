@@ -4,12 +4,10 @@
 <meta charset="UTF-8">
 <title>Sistema Tickets TI</title>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
-<!-- Iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
@@ -23,13 +21,12 @@ display:flex;
 justify-content:space-between;
 }
 
-/* LOGIN */
 #login{
 height:100vh;
 display:flex;
-flex-direction:column;
 justify-content:center;
 align-items:center;
+flex-direction:column;
 }
 
 #login button{
@@ -40,7 +37,6 @@ border:none;
 border-radius:8px;
 }
 
-/* DASHBOARD */
 #dashboard{display:none;padding:30px;}
 
 .grid{
@@ -55,40 +51,23 @@ padding:25px;
 border-radius:15px;
 text-align:center;
 cursor:pointer;
-transition:.3s;
 box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
-.card:hover{
-transform:translateY(-5px);
-}
+.card:hover{transform:translateY(-5px);}
 
-.card i{
-font-size:40px;
-color:#2563eb;
-}
-
-/* MODULOS */
 .modulo{display:none;}
 
-/* FORMULARIO */
 .form-card{
 background:white;
 padding:25px;
 border-radius:12px;
-box-shadow:0 4px 12px rgba(0,0,0,0.1);
 max-width:800px;
+box-shadow:0 4px 12px rgba(0,0,0,0.1);
 }
 
-.row{
-display:flex;
-gap:20px;
-margin-bottom:15px;
-}
-
+.row{display:flex;gap:20px;margin-bottom:15px;}
 .row div{flex:1;}
-
-label{font-weight:bold;}
 
 textarea, select{
 width:100%;
@@ -106,14 +85,59 @@ border-radius:8px;
 cursor:pointer;
 }
 
-/* TICKETS */
 .ticket{
 background:white;
 padding:15px;
 margin:10px 0;
 border-radius:10px;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
 }
+
+/* ADMIN */
+.stats{display:flex;gap:15px;margin:20px 0;}
+
+.box{
+padding:15px;
+background:white;
+border-radius:10px;
+}
+
+.abierto{border-left:5px solid green;}
+.proceso{border-left:5px solid orange;}
+.cerrado{border-left:5px solid red;}
+
+table{
+width:100%;
+background:white;
+border-collapse:collapse;
+}
+
+th,td{
+padding:10px;
+border:1px solid #ddd;
+text-align:center;
+}
+
+.badge{
+padding:5px 10px;
+border-radius:10px;
+color:white;
+}
+
+.verde{background:green;}
+.naranja{background:orange;}
+.rojo{background:red;}
+
+.acciones button{
+margin:2px;
+padding:5px 8px;
+border:none;
+border-radius:6px;
+cursor:pointer;
+}
+
+.btn-ok{background:green;color:white;}
+.btn-view{background:#0ea5e9;color:white;}
+.btn-del{background:red;color:white;}
 </style>
 </head>
 
@@ -135,17 +159,9 @@ box-shadow:0 2px 6px rgba(0,0,0,0.1);
 
 <div id="panel" class="grid">
 
-<div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Consultar Tickets</h3></div>
-<div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Crear Ticket</h3></div>
-<div class="card"><i class="fas fa-user-shield"></i><h3>Administración</h3></div>
-
-<div class="card"><i class="fas fa-desktop"></i><h3>Equipos Administrativos</h3></div>
-<div class="card"><i class="fas fa-laptop"></i><h3>Equipos de Salas</h3></div>
-<div class="card"><i class="fas fa-calendar"></i><h3>Calendario</h3></div>
-
-<div class="card"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
-<div class="card"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
-<div class="card"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
+<div class="card" onclick="abrir('consultar')"><h3>Consultar Tickets</h3></div>
+<div class="card" onclick="abrir('crear')"><h3>Crear Ticket</h3></div>
+<div class="card" onclick="abrir('admin')"><h3>Administrar Tickets</h3></div>
 
 </div>
 
@@ -158,7 +174,6 @@ box-shadow:0 2px 6px rgba(0,0,0,0.1);
 
 <div class="row">
 <div>
-<label>Dependencia</label>
 <select id="dependencia">
 <option>Seleccione Dependencia</option>
 <option>Sistemas</option>
@@ -168,7 +183,6 @@ box-shadow:0 2px 6px rgba(0,0,0,0.1);
 </div>
 
 <div>
-<label>Tipo de Solicitud</label>
 <select id="tipo">
 <option>Seleccione</option>
 <option>Soporte</option>
@@ -178,12 +192,10 @@ box-shadow:0 2px 6px rgba(0,0,0,0.1);
 </div>
 </div>
 
-<label>Descripción</label>
-<textarea id="descripcion"></textarea>
+<textarea id="descripcion" placeholder="Descripción"></textarea>
 
 <div class="row">
 <div>
-<label>Prioridad</label>
 <select id="prioridad">
 <option>Baja</option>
 <option>Media</option>
@@ -192,7 +204,6 @@ box-shadow:0 2px 6px rgba(0,0,0,0.1);
 </div>
 
 <div>
-<label>Campus</label>
 <select id="campus">
 <option>Principal</option>
 <option>Norte</option>
@@ -213,10 +224,41 @@ box-shadow:0 2px 6px rgba(0,0,0,0.1);
 <div id="lista"></div>
 </div>
 
+<!-- ADMIN -->
+<div id="admin" class="modulo">
+
+<button onclick="volver()">⬅ Volver</button>
+<h2>Administrar tickets</h2>
+
+<div class="stats">
+<div class="box abierto">Abiertos: <span id="abiertos">0</span></div>
+<div class="box proceso">En proceso: <span id="proceso">0</span></div>
+<div class="box cerrado">Cerrados: <span id="cerrados">0</span></div>
+</div>
+
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Tipo</th>
+<th>Dependencia</th>
+<th>Estado</th>
+<th>Prioridad</th>
+<th>Usuario</th>
+<th>Campus</th>
+<th>Acciones</th>
+</tr>
+</thead>
+
+<tbody id="tablaTickets"></tbody>
+</table>
+
+</div>
+
 </div>
 
 <script>
-// CONFIG FIREBASE
+// 🔥 CONFIG
 firebase.initializeApp({
 apiKey:"AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
 authDomain:"sistema-de-tickets-ti-b12f5.firebaseapp.com",
@@ -225,7 +267,11 @@ projectId:"sistema-de-tickets-ti-b12f5"
 
 const auth = firebase.auth();
 const db = firebase.firestore();
+
 let user;
+
+// 🔐 ADMIN
+const admins = ["camicarmona1212@gmail.com"];
 
 // LOGIN
 function login(){
@@ -233,59 +279,55 @@ const provider = new firebase.auth.GoogleAuthProvider();
 auth.signInWithRedirect(provider);
 }
 
-auth.getRedirectResult().then(result=>{
-if(result.user){
-mostrar(result.user);
-}
+auth.getRedirectResult().then(r=>{
+if(r.user) mostrar(r.user);
 });
 
 auth.onAuthStateChanged(u=>{
-if(u){
-mostrar(u);
-}
+if(u) mostrar(u);
 });
 
 function mostrar(u){
 user=u;
-document.getElementById("login").style.display="none";
-document.getElementById("dashboard").style.display="block";
+loginDiv.style.display="none";
+dashboard.style.display="block";
 cargarTickets();
 }
 
 // NAV
 function abrir(id){
-document.getElementById("panel").style.display="none";
+panel.style.display="none";
 document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
 document.getElementById(id).style.display="block";
+
+if(id==="admin") cargarAdmin();
 }
 
 function volver(){
-document.getElementById("panel").style.display="grid";
+panel.style.display="grid";
 document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
 }
 
-// CREAR TICKET
+// CREAR
 async function crearTicket(){
-
-const data = {
-dependencia: dependencia.value,
-tipo: tipo.value,
-descripcion: descripcion.value,
-prioridad: prioridad.value,
-campus: campus.value,
-usuario: user.email,
-estado: "abierto",
-fecha: new Date()
+const data={
+dependencia:dependencia.value,
+tipo:tipo.value,
+descripcion:descripcion.value,
+prioridad:prioridad.value,
+campus:campus.value,
+usuario:user.email,
+estado:"abierto",
+fecha:new Date()
 };
 
-if(data.descripcion === ""){
+if(data.descripcion===""){
 alert("Completa la descripción");
 return;
 }
 
 await db.collection("tickets").add(data);
-
-alert("✅ Ticket creado");
+alert("Ticket creado");
 descripcion.value="";
 }
 
@@ -294,24 +336,100 @@ function cargarTickets(){
 db.collection("tickets")
 .where("usuario","==",user.email)
 .onSnapshot(snap=>{
-
 lista.innerHTML="";
-
 snap.forEach(doc=>{
-const t=doc.data();
-
-lista.innerHTML += `
+let t=doc.data();
+lista.innerHTML+=`
 <div class="ticket">
 <b>${t.tipo}</b><br>
 ${t.descripcion}<br>
-📍 ${t.dependencia} | ${t.campus}<br>
-⚡ ${t.prioridad}<br>
 Estado: ${t.estado}
 </div>
 `;
 });
+});
+}
+
+// ADMIN
+function cargarAdmin(){
+
+db.collection("tickets").onSnapshot(snap=>{
+
+tablaTickets.innerHTML="";
+
+let abiertos=0, proceso=0, cerrados=0;
+
+snap.forEach(doc=>{
+const t=doc.data();
+const id=doc.id;
+
+if(t.estado==="abierto") abiertos++;
+if(t.estado==="en proceso") proceso++;
+if(t.estado==="cerrado") cerrados++;
+
+let color="verde";
+if(t.estado==="en proceso") color="naranja";
+if(t.estado==="cerrado") color="rojo";
+
+tablaTickets.innerHTML+=`
+<tr>
+<td>${id.substring(0,5)}</td>
+<td>${t.tipo}</td>
+<td>${t.dependencia}</td>
+<td><span class="badge ${color}">${t.estado}</span></td>
+<td>${t.prioridad}</td>
+<td>${t.usuario}</td>
+<td>${t.campus}</td>
+<td class="acciones">
+
+<button class="btn-ok" onclick="cambiarEstado('${id}')">✔</button>
+<button class="btn-view" onclick="verTicket('${t.descripcion}')">👁</button>
+
+${admins.includes(user.email) ?
+`<button class="btn-del" onclick="eliminarTicket('${id}')">🗑</button>` : ""}
+
+</td>
+</tr>
+`;
+});
+
+abiertos.innerText=abiertos;
+proceso.innerText=proceso;
+cerrados.innerText=cerrados;
 
 });
+}
+
+// CAMBIAR ESTADO
+async function cambiarEstado(id){
+const ref=db.collection("tickets").doc(id);
+const doc=await ref.get();
+let estado=doc.data().estado;
+
+if(estado==="abierto") estado="en proceso";
+else if(estado==="en proceso") estado="cerrado";
+else estado="abierto";
+
+await ref.update({estado});
+}
+
+// VER
+function verTicket(desc){
+alert(desc);
+}
+
+// ELIMINAR
+async function eliminarTicket(id){
+
+if(!admins.includes(user.email)){
+alert("No tienes permisos");
+return;
+}
+
+if(confirm("¿Eliminar ticket?")){
+await db.collection("tickets").doc(id).delete();
+}
+
 }
 
 // LOGOUT
