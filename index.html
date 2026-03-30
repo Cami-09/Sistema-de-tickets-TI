@@ -14,32 +14,26 @@
     <style>
         :root { --primary: #2563eb; --dark: #0f172a; --bg: #f1f5f9; --success: #22c55e; --danger: #ef4444; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #334155; }
+        header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
 
-        header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-
-        /* DASHBOARD */
         #dashboard { display: none; padding: 25px; }
         .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
-        
         .card { background: white; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); border-color: var(--primary); }
         .card i { font-size: 35px; color: var(--primary); margin-bottom: 12px; }
 
-        .modulo { display: none; background: white; padding: 25px; border-radius: 12px; min-height: 450px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-
-        /* FILTROS E INFO INVENTARIO */
+        .modulo { display: none; background: white; padding: 25px; border-radius: 12px; min-height: 450px; }
         .filtros-box { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
         .grid-filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
-        .resumen-celeste { background: #e0f2fe; padding: 12px; border-radius: 8px; color: #0369a1; margin-bottom: 15px; text-align: center; font-weight: 500; border: 1px solid #bae6fd; }
+        .resumen-celeste { background: #e0f2fe; padding: 12px; border-radius: 8px; color: #0369a1; margin-bottom: 15px; text-align: center; font-weight: 500; }
 
         input, select, textarea { padding: 9px; border: 1px solid #cbd5e1; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 0.9rem; }
 
-        /* TABLAS */
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 15px; }
         th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
         td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
 
-        /* ACCIONES ICONOS */
+        /* ICONOS DE ACCIONES */
         .btn-acc { width: 30px; height: 30px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; font-size: 12px; }
         .bg-edit { background: #f59e0b; }
         .bg-tools { background: #2563eb; }
@@ -47,19 +41,15 @@
         .bg-view { background: #00bcd4; }
         .bg-delete { background: #ef4444; }
 
-        /* MODAL */
+        /* MODALES */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
         .modal-content { background: white; margin: 2% auto; padding: 25px; width: 85%; max-width: 850px; border-radius: 12px; position: relative; max-height: 90vh; overflow-y: auto; }
         .grid-modal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .close-modal { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; color: #64748b; }
 
         .btn { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-gray { background: #64748b; color: white; }
-        
-        .badge { padding: 4px 10px; border-radius: 12px; color: white; font-size: 0.7rem; font-weight: bold; }
-        .abierto { background: #22c55e; }
-        .enproceso { background: #eab308; }
-        .cerrado { background: #ef4444; }
     </style>
 </head>
 <body>
@@ -75,124 +65,91 @@
 
 <div id="dashboard">
     <div id="panel-principal" class="grid-main">
-        <div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Consultar Tickets</h3></div>
-        <div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Enviar un Ticket</h3></div>
-        <div class="card" onclick="abrir('admin_tickets')"><i class="fas fa-clipboard-list"></i><h3>Administrar Tickets</h3></div>
         <div class="card" onclick="abrir('inv_admin')"><i class="fas fa-desktop"></i><h3>Equipos Administrativos</h3></div>
         <div class="card" onclick="abrir('inv_salas')"><i class="fas fa-laptop"></i><h3>Equipos de Salas</h3></div>
-        <div class="card"><i class="fas fa-calendar"></i><h3>Calendario</h3></div>
-        <div class="card"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
-        <div class="card"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
-        <div class="card"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
     </div>
 
     <div id="modulo_inv" class="modulo">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
             <h2 id="titulo_inv" style="color:var(--primary); margin:0;"></h2>
-            <button class="btn btn-blue" onclick="abrirModal()">+ Registrar nuevo equipo</button>
+            <button class="btn btn-blue" onclick="abrirModalRegistro()">+ Registrar nuevo equipo</button>
         </div>
-
         <div id="resumen_conteo" class="resumen-celeste" style="margin-top:15px;"></div>
-
         <div class="filtros-box">
-            <div class="grid-filtros">
-                <select id="f_tipo" onchange="filtrar()"><option value="">-- Tipo --</option><option>Portátil</option><option>AIO</option><option>Torre</option></select>
-                <input type="text" id="f_mod" placeholder="Modelo" onkeyup="filtrar()">
+            <div class="grid-filtros" id="filtrosInputs">
+                <input type="text" id="f_pc" placeholder="PC" onkeyup="filtrar()">
                 <input type="text" id="f_inv" placeholder="Inventario" onkeyup="filtrar()">
-                
-                <select id="f_dep" onchange="filtrar()">
-                    <option value="">-- Dependencia --</option>
-                    <option>Sistemas</option>
-                    <option>Tesorería</option>
-                    <option>Rectoría</option>
-                    <option>Auditorio menor</option>
-                    <option>Sala de sistemas IV</option>
-                </select>
-                
-                <select id="f_cam" onchange="filtrar()">
-                    <option value="">-- Campus --</option>
-                    <option>Bucaramanga</option>
-                    <option>Bogotá</option>
-                </select>
-
-                <select id="f_sed" onchange="filtrar()">
-                    <option value="">-- Sede --</option>
-                    <option>Sede A</option>
-                    <option>Sede B</option>
-                    <option>Sede C</option>
-                    <option>Sede D</option>
-                </select>
-            </div>
-            <div style="margin-top:12px; display:flex; gap:10px;">
-                <button class="btn btn-blue" onclick="filtrar()"><i class="fas fa-filter"></i> Filtrar</button>
-                <button class="btn btn-gray" onclick="limpiarFiltros()">Limpiar</button>
+                <input type="text" id="f_res" placeholder="Responsable" onkeyup="filtrar()">
             </div>
         </div>
-
         <div style="overflow-x:auto;">
             <table>
                 <thead>
-                    <tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Inventario</th><th>Responsable</th><th>Dependencia</th><th>Sede</th><th>Acciones</th></tr>
+                    <tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Inventario</th><th>Responsable</th><th>Dependencia</th><th>Acciones</th></tr>
                 </thead>
                 <tbody id="tablaData"></tbody>
             </table>
         </div>
     </div>
-
-    <div id="crear" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Crear Ticket</h2></div>
-    <div id="consultar" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Mis Tickets</h2></div>
-    <div id="admin_tickets" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Administrar Tickets</h2><tbody id="tablaAdminTickets"></tbody></div>
 </div>
 
 <div id="modalEquipo" class="modal">
     <div class="modal-content">
-        <h2 style="margin-top:0;">Registrar Nuevo Equipo</h2>
-        <div class="grid-modal">
-            <input type="text" id="n_pc" placeholder="Nombre PC">
-            <select id="n_tipo"><option value="">Seleccione Tipo</option><option>Portátil</option><option>AIO</option><option>Torre</option></select>
+        <span class="close-modal" onclick="cerrarModales()">&times;</span>
+        <h2 id="modalTitle">Registrar nuevo equipo</h2>
+        <div class="grid-modal" id="formEquipo">
+            <input type="text" id="n_pc" placeholder="PC">
+            <select id="n_tipo"><option value="">Tipo</option><option>AIO</option><option>Portátil</option><option>Torre</option></select>
             <input type="text" id="n_mod" placeholder="Modelo">
             <input type="text" id="n_inv" placeholder="Inventario">
-            <select id="n_so"><option value="">Seleccione SO</option><option>Windows 10</option><option>Windows 11</option></select>
+            <select id="n_so"><option>Windows 10</option><option>Windows 11</option></select>
             <input type="text" id="n_proc" placeholder="Procesador">
-            <select id="n_ram"><option value="">Seleccione RAM</option><option>8GB</option><option>16GB</option><option>32GB</option></select>
+            <select id="n_ram"><option>8 GB</option><option>16 GB</option><option>32 GB</option></select>
             <input type="text" id="n_disco" placeholder="Disco">
             <input type="text" id="n_ip" placeholder="IP">
+            <input type="text" id="n_term" placeholder="Terminal">
             <input type="text" id="n_res" placeholder="Responsable">
-            
-            <select id="n_dep">
-                <option value="">Seleccione Dependencia</option>
-                <option>Sistemas</option>
-                <option>Tesorería</option>
-                <option>Rectoría</option>
-                <option>Auditorio menor</option>
-                <option>Sala de sistemas IV</option>
-                <option>Consultorio Jurídico</option>
-            </select>
-            
+            <select id="n_dep"><option>Sistemas</option><option>Tesorería</option><option>Auditorio menor</option></select>
             <input type="text" id="n_correo" placeholder="Correo">
-            
-            <select id="n_cam">
-                <option value="">Seleccione Campus</option>
-                <option>Bucaramanga</option>
-                <option>Bogotá</option>
-            </select>
-            
-            <select id="n_sed">
-                <option value="">Seleccione Sede</option>
-                <option>Sede A</option>
-                <option>Sede B</option>
-                <option>Sede C</option>
-                <option>Sede D</option>
-            </select>
-            
+            <select id="n_cam"><option>Bucaramanga</option></select>
+            <select id="n_sed"><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select>
             <input type="text" id="n_ext" placeholder="Extensión">
             <input type="date" id="n_fecha">
         </div>
         <div style="margin-top:20px; text-align:right;">
-            <button class="btn btn-blue" onclick="guardarEquipo()"><i class="fas fa-save"></i> Guardar</button>
-            <button class="btn btn-gray" onclick="cerrarModal()">Cancelar</button>
+            <button class="btn btn-blue" id="btnGuardarEquipo" onclick="ejecutarGuardado()"><i class="fas fa-save"></i> Guardar</button>
+            <button class="btn btn-gray" onclick="cerrarModales()">Cancelar</button>
         </div>
+    </div>
+</div>
+
+<div id="modalMante" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <span class="close-modal" onclick="cerrarModales()">&times;</span>
+        <h2 id="manteTitle">Registrar Mantenimiento</h2>
+        <input type="date" id="m_fecha" style="margin-bottom:10px;">
+        <select id="m_tipo" style="margin-bottom:10px;">
+            <option value="">Seleccione el tipo</option>
+            <option>Preventivo</option>
+            <option>Correctivo</option>
+        </select>
+        <textarea id="m_desc" placeholder="Descripción del Mantenimiento" rows="6"></textarea>
+        <div style="margin-top:20px; text-align:right;">
+            <button class="btn btn-blue" onclick="guardarMantenimiento()">Registrar Mantenimiento</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalDetalles" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="cerrarModales()">&times;</span>
+        <h2 id="detallesTitle">Detalles de Mantenimientos</h2>
+        <table style="width:100%">
+            <thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th></tr></thead>
+            <tbody id="tablaMantes"></tbody>
+        </table>
+        <div style="text-align:right; margin-top:20px;"><button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button></div>
     </div>
 </div>
 
@@ -201,8 +158,11 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    
     let currentColl = "";
     let localData = [];
+    let selectedId = ""; // ID para editar o mantenimiento
+    let modoModal = "registro"; // registro, editar, copia
 
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { auth.signOut().then(() => location.reload()); }
@@ -210,18 +170,98 @@
 
     function abrir(id) {
         document.getElementById('panel-principal').style.display='none';
-        document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
-        if(id === 'inv_admin' || id === 'inv_salas') {
-            document.getElementById('modulo_inv').style.display='block';
-            currentColl = (id === 'inv_admin') ? "inventario" : "inventario_salas";
-            document.getElementById('titulo_inv').innerText = (id === 'inv_admin') ? "Inventario Administrativo" : "Inventario Equipos de Salas";
-            cargarInventario();
-        } else { document.getElementById(id).style.display='block'; }
+        document.getElementById('modulo_inv').style.display='block';
+        currentColl = (id === 'inv_admin') ? "inventario" : "inventario_salas";
+        document.getElementById('titulo_inv').innerText = (id === 'inv_admin') ? "Inventario de equipos TIC" : "Inventario de equipos TIC (Salas)";
+        cargarInventario();
     }
 
-    function volver() { document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
-    function abrirModal() { document.getElementById('modalEquipo').style.display='block'; }
-    function cerrarModal() { document.getElementById('modalEquipo').style.display='none'; }
+    function volver() { document.getElementById('panel-principal').style.display='grid'; document.getElementById('modulo_inv').style.display='none'; }
+    function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
+
+    // --- ACCIONES DE EQUIPO ---
+
+    function abrirModalRegistro() {
+        modoModal = "registro";
+        document.getElementById('modalTitle').innerText = "Registrar nuevo equipo";
+        document.querySelectorAll('#formEquipo input, #formEquipo select').forEach(i => i.value = "");
+        document.getElementById('modalEquipo').style.display = 'block';
+    }
+
+    function abrirEditar(id) {
+        modoModal = "editar";
+        selectedId = id;
+        const data = localData.find(e => e.id === id);
+        document.getElementById('modalTitle').innerText = "Editar equipo";
+        rellenarForm(data);
+        document.getElementById('modalEquipo').style.display = 'block';
+    }
+
+    function abrirCopiar(id) {
+        modoModal = "copia";
+        const data = localData.find(e => e.id === id);
+        document.getElementById('modalTitle').innerText = "Registrar equipo (copia)";
+        rellenarForm(data);
+        document.getElementById('modalEquipo').style.display = 'block';
+    }
+
+    function rellenarForm(d) {
+        n_pc.value = d.pc; n_tipo.value = d.tipo; n_mod.value = d.modelo; n_inv.value = d.inv;
+        n_so.value = d.so; n_proc.value = d.proc; n_ram.value = d.ram; n_disco.value = d.disco;
+        n_ip.value = d.ip; n_term.value = d.term; n_res.value = d.res; n_dep.value = d.dep;
+        n_correo.value = d.correo; n_cam.value = d.cam; n_sed.value = d.sed; n_ext.value = d.ext; n_fecha.value = d.fecha;
+    }
+
+    async function ejecutarGuardado() {
+        const obj = {
+            pc: n_pc.value, tipo: n_tipo.value, modelo: n_mod.value, inv: n_inv.value,
+            so: n_so.value, proc: n_proc.value, ram: n_ram.value, disco: n_disco.value,
+            ip: n_ip.value, term: n_term.value, res: n_res.value, dep: n_dep.value,
+            correo: n_correo.value, cam: n_cam.value, sed: n_sed.value, ext: n_ext.value, fecha: n_fecha.value
+        };
+
+        if(modoModal === "editar") {
+            await db.collection(currentColl).doc(selectedId).update(obj);
+        } else {
+            await db.collection(currentColl).add(obj);
+        }
+        cerrarModales();
+        alert("Operación exitosa");
+    }
+
+    // --- MANTENIMIENTO ---
+
+    function abrirMantenimiento(id) {
+        selectedId = id;
+        const data = localData.find(e => e.id === id);
+        document.getElementById('manteTitle').innerText = `Registrar Mantenimiento para Equipo: ${data.inv}`;
+        document.getElementById('m_fecha').value = new Date().toISOString().split('T')[0];
+        document.getElementById('modalMante').style.display = 'block';
+    }
+
+    async function guardarMantenimiento() {
+        await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({
+            fecha: m_fecha.value, tipo: m_tipo.value, desc: m_desc.value
+        });
+        cerrarModales();
+        alert("Mantenimiento registrado");
+    }
+
+    function abrirDetalles(id) {
+        const data = localData.find(e => e.id === id);
+        document.getElementById('detallesTitle').innerText = `Detalles de Mantenimientos para ${data.inv} (${data.pc})`;
+        db.collection(currentColl).doc(id).collection("mantenimientos").orderBy("fecha", "desc").get().then(snap => {
+            const tbody = document.getElementById('tablaMantes');
+            tbody.innerHTML = "";
+            snap.forEach(doc => {
+                const m = doc.data();
+                tbody.innerHTML += `<tr><td>${m.fecha}</td><td>${m.tipo}</td><td>${m.desc}</td></tr>`;
+            });
+            document.getElementById('modalDetalles').style.display = 'block';
+        });
+    }
+
+    // --- CARGA Y FILTROS ---
 
     function cargarInventario() {
         db.collection(currentColl).onSnapshot(snap => {
@@ -232,16 +272,14 @@
     }
 
     function filtrar() {
-        const ft = f_tipo.value.toLowerCase();
-        const fm = f_mod.value.toLowerCase();
-        const fd = f_dep.value.toLowerCase();
-        const fs = f_sed.value.toLowerCase();
+        const fpc = f_pc.value.toLowerCase();
+        const finv = f_inv.value.toLowerCase();
+        const fres = f_res.value.toLowerCase();
         
         const res = localData.filter(e => 
-            (e.tipo||"").toLowerCase().includes(ft) && 
-            (e.modelo||"").toLowerCase().includes(fm) &&
-            (e.dep||"").toLowerCase().includes(fd) &&
-            (e.sede||"").toLowerCase().includes(fs)
+            (e.pc||"").toLowerCase().includes(fpc) && 
+            (e.inv||"").toLowerCase().includes(finv) && 
+            (e.res||"").toLowerCase().includes(fres)
         );
         
         document.getElementById('resumen_conteo').innerText = `Equipos encontrados: ${res.length}`;
@@ -249,25 +287,19 @@
         tbody.innerHTML = "";
         res.forEach(e => {
             tbody.innerHTML += `<tr>
-                <td><b>${e.pc}</b></td><td>${e.tipo}</td><td>${e.modelo}</td><td>${e.inv}</td><td>${e.res}</td><td>${e.dep}</td><td>${e.sede}</td>
+                <td><b>${e.pc}</b></td><td>${e.tipo}</td><td>${e.modelo}</td><td>${e.inv}</td><td>${e.res}</td><td>${e.dep}</td>
                 <td>
-                    <button class="btn-acc bg-edit"><i class="fas fa-edit"></i></button>
-                    <button class="btn-acc bg-delete" onclick="eliminarEquipo('${e.id}')"><i class="fas fa-trash"></i></button>
+                    <button class="btn-acc bg-edit" onclick="abrirEditar('${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>
+                    <button class="btn-acc bg-tools" onclick="abrirMantenimiento('${e.id}')" title="Mantenimiento"><i class="fas fa-tools"></i></button>
+                    <button class="btn-acc bg-copy" onclick="abrirCopiar('${e.id}')" title="Copiar"><i class="fas fa-copy"></i></button>
+                    <button class="btn-acc bg-view" onclick="abrirDetalles('${e.id}')" title="Ver Mantenimientos"><i class="fas fa-eye"></i></button>
+                    <button class="btn-acc bg-delete" onclick="eliminar('${e.id}')"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>`;
         });
     }
 
-    async function guardarEquipo() {
-        await db.collection(currentColl).add({
-            pc: n_pc.value, tipo: n_tipo.value, modelo: n_mod.value, inv: n_inv.value,
-            dep: n_dep.value, campus: n_cam.value, sede: n_sed.value, res: n_res.value
-        });
-        cerrarModal(); alert("Registrado");
-    }
-
-    async function eliminarEquipo(id) { if(confirm("¿Eliminar?")) await db.collection(currentColl).doc(id).delete(); }
-    function limpiarFiltros() { document.querySelectorAll('.grid-filtros input, .grid-filtros select').forEach(i => i.value = ""); filtrar(); }
+    async function eliminar(id) { if(confirm("¿Eliminar equipo?")) await db.collection(currentColl).doc(id).delete(); }
 </script>
 </body>
 </html>
