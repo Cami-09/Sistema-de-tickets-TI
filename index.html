@@ -48,7 +48,6 @@ font-size:30px;
 margin-bottom:10px;
 }
 
-/* MODULOS */
 .modulo{display:none;padding:20px;}
 
 .form-card{
@@ -126,11 +125,10 @@ Usuarios
 </div>
 </div>
 
-<!-- CREAR -->
+<!-- MODULOS -->
 <div id="crear" class="modulo">
-<button onclick="volver()">⬅ Volver</button>
+<button onclick="volver()">⬅</button>
 <h2>Crear Ticket</h2>
-
 <div class="form-card">
 <input id="titulo" placeholder="Título">
 <input id="descripcion" placeholder="Descripción">
@@ -138,29 +136,24 @@ Usuarios
 </div>
 </div>
 
-<!-- CONSULTAR -->
 <div id="consultar" class="modulo">
-<button onclick="volver()">⬅ Volver</button>
-<h2>Consultar Tickets</h2>
+<button onclick="volver()">⬅</button>
+<h2>Consultar</h2>
 <div id="listaTickets"></div>
 </div>
 
-<!-- ADMIN -->
 <div id="admin" class="modulo">
-<button onclick="volver()">⬅ Volver</button>
-<h2>Administrar Tickets</h2>
+<button onclick="volver()">⬅</button>
+<h2>Admin</h2>
 <div id="listaAdmin"></div>
 </div>
 
-<!-- USUARIOS -->
 <div id="usuarios" class="modulo">
-<button onclick="volver()">⬅ Volver</button>
-
+<button onclick="volver()">⬅</button>
 <h2>Usuarios</h2>
 
 <div class="form-card">
 <input id="correoUser" placeholder="Correo">
-
 <select id="rolUser">
 <option value="usuario">Usuario</option>
 <option value="gestor">Gestor</option>
@@ -181,10 +174,10 @@ Usuarios
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithRedirect, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* FIREBASE CONFIG */
+/* CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
   authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com",
@@ -195,17 +188,21 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const db = getFirestore();
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 let user=null;
 let permisosUsuario={};
 let editId=null;
 
-/* LOGIN */
-window.login=()=>{
+/* LOGIN ESTABLE */
+window.login=async()=>{
 const provider = new GoogleAuthProvider();
-signInWithRedirect(auth, provider);
+try{
+await signInWithPopup(auth, provider);
+}catch(e){
+alert(e.message);
+}
 };
 
 /* SESION */
@@ -213,7 +210,7 @@ onAuthStateChanged(auth, (u)=>{
 if(u) mostrar(u);
 });
 
-/* MOSTRAR SIN PARPADEO */
+/* MOSTRAR */
 async function mostrar(u){
 user=u;
 
@@ -227,7 +224,6 @@ dashboard.style.display="block";
 
 /* PERMISOS */
 async function obtenerRol(email){
-
 const q = query(collection(db,"usuarios"), where("correo","==",email));
 const snap = await getDocs(q);
 
@@ -240,9 +236,8 @@ permisosUsuario = {crear:true,consultar:true,admin:false,usuarios:false};
 controlAcceso();
 }
 
-/* CONTROL TARJETAS */
+/* TARJETAS */
 function controlAcceso(){
-
 card-crear.style.display="none";
 card-consultar.style.display="none";
 card-admin.style.display="none";
@@ -254,7 +249,7 @@ if(permisosUsuario.admin) card-admin.style.display="block";
 if(permisosUsuario.usuarios) card-usuarios.style.display="block";
 }
 
-/* NAVEGACION */
+/* NAV */
 window.abrir=(id)=>{
 document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
 document.getElementById(id).style.display="block";
@@ -268,7 +263,7 @@ window.volver=()=>{
 document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
 };
 
-/* CREAR */
+/* TICKETS */
 window.crearTicket=async()=>{
 await addDoc(collection(db,"tickets"),{
 titulo:titulo.value,
@@ -279,7 +274,6 @@ usuario:user.email
 alert("Ticket creado");
 };
 
-/* CONSULTAR */
 function cargarTickets(){
 onSnapshot(collection(db,"tickets"), snap=>{
 listaTickets.innerHTML="";
@@ -295,7 +289,6 @@ Estado: ${t.estado}
 });
 }
 
-/* ADMIN */
 function cargarAdmin(){
 onSnapshot(collection(db,"tickets"), snap=>{
 listaAdmin.innerHTML="";
@@ -307,7 +300,6 @@ listaAdmin.innerHTML+=`
 <div class="ticket">
 <b>${t.titulo}</b><br>
 Estado: ${t.estado}<br>
-
 <button onclick="enProceso('${id}')">⏳</button>
 <button onclick="eliminar('${id}')">🗑</button>
 </div>`;
@@ -327,7 +319,6 @@ await deleteDoc(doc(db,"tickets",id));
 
 /* USUARIOS */
 window.guardarUsuario=async()=>{
-
 const data={
 correo:correoUser.value,
 rol:rolUser.value,
