@@ -1,240 +1,346 @@
-<!-- Contenedor principal -->
-<div id="lista" style="padding: 20px; max-width: 900px; margin: auto;"></div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tickets PRO - Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 0; padding: 0;
+    }
+    header {
+      background: #2e6da4;
+      color: white;
+      padding: 10px 20px;
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 18px;
+    }
+    header button {
+      background: #d9534f;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    #dashboard {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+    #dashboard h2 {
+      color: #008baf;
+      border-left: 5px solid #008baf;
+      padding-left: 10px;
+    }
+    .modulos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .modulo-btn {
+      flex: 1 1 200px;
+      background: white;
+      padding: 20px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: none;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.3s;
+      user-select: none;
+    }
+    .modulo-btn:hover {
+      background: #e6f2f9;
+    }
+    .modulo-btn .icon {
+      font-size: 48px;
+      color: #008baf;
+      margin-bottom: 8px;
+      display: block;
+    }
 
-<style>
-  /* Tarjeta de ticket */
-  .ticket-card {
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 15px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-    position: relative;
-    border-left: 8px solid transparent;
-  }
+    #modulo {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+      display: none;
+      min-height: 300px;
+    }
+    #modulo button.volver {
+      background: #008baf;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
 
-  /* Bordes de prioridad */
-  .ticket-card.baja { border-left-color: #4caf50; }
-  .ticket-card.media { border-left-color: #ff9800; }
-  .ticket-card.alta { border-left-color: #f44336; }
+    /* Ticket card */
+    .ticket-card {
+      margin-bottom: 15px;
+      padding: 20px;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+      position: relative;
+      border-left: 8px solid #4caf50;
+    }
+    .ticket-card.baja { border-left-color: #4caf50; }
+    .ticket-card.media { border-left-color: #ff9800; }
+    .ticket-card.alta { border-left-color: #f44336; }
 
-  /* Badge prioridad */
-  .priority-badge {
-    font-weight: 700;
-    padding: 6px 14px;
-    border-radius: 8px;
-    color: white;
-    text-transform: uppercase;
-    font-size: 14px;
-    position: absolute;
-    top: 20px;
-    right: 20px;
-  }
-  .priority-badge.baja { background: #4caf50; }
-  .priority-badge.media { background: #ff9800; }
-  .priority-badge.alta { background: #f44336; }
+    .ticket-prioridad {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-weight: bold;
+      font-size: 14px;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 8px;
+      color: white;
+    }
+    .prioridad-baja { background: #4caf50; }
+    .prioridad-media { background: #ff9800; }
+    .prioridad-alta { background: #f44336; }
 
-  /* Botones en línea */
-  .ticket-actions button {
-    margin-right: 10px;
-    padding: 8px 14px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.25s ease;
-  }
-  .ticket-actions button:hover {
-    opacity: 0.9;
-  }
-  .btn-proceso { background: #2196f3; color: white; }
-  .btn-abrir { background: #4caf50; color: white; }
-  .btn-cerrar { background: #ff9800; color: white; }
-  .btn-eliminar { background: #f44336; color: white; }
-  .btn-reasignar { background: #607d8b; color: white; }
-  .btn-asignar { background: #9c27b0; color: white; }
+    .ticket-titulo {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+    .ticket-descripcion {
+      color: #444;
+      font-size: 15px;
+      margin-bottom: 10px;
+    }
+    .ticket-detalle {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 12px;
+    }
+    .ticket-botones button {
+      margin-right: 10px;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      color: white;
+    }
+    .btn-proceso { background: #2196f3; }
+    .btn-cerrar { background: #ff9800; }
+    .btn-eliminar { background: #d9534f; }
+    .btn-reasignar { background: #6c757d; }
 
-  /* Texto ticket */
-  .ticket-title {
-    font-weight: 700;
-    font-size: 18px;
-    margin-bottom: 6px;
-  }
-  .ticket-desc {
-    margin-bottom: 10px;
-    font-size: 15px;
-    color: #444;
-  }
-  .ticket-info {
-    font-size: 14px;
-    margin-bottom: 12px;
-    color: #666;
-  }
-</style>
+    /* Reasignar ticket */
+    #reasignarForm {
+      max-width: 400px;
+      margin-top: 20px;
+    }
+    #reasignarForm label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+    }
+    #reasignarForm select, #reasignarForm button {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+    }
+    #reasignarForm button {
+      background: #008baf;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #reasignarForm button:hover {
+      background: #006a8e;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>🎟️ Tickets PRO</div>
+    <button onclick="cerrarSesion()">Cerrar sesión</button>
+  </header>
+
+  <div id="dashboard">
+    <h2>Panel de Control</h2>
+    <div class="modulos">
+      <button class="modulo-btn" onclick="mostrarModulo('tickets')">
+        <span class="icon">🔍</span>
+        Consultar Tickets
+        <br><small>Ver el estado de tus tickets.</small>
+      </button>
+      <button class="modulo-btn" onclick="alert('Módulo Equipos Administrativos - en construcción')">
+        <span class="icon">🛠</span>
+        Equipos Administrativos
+        <br><small>Gestionar inventario de equipos.</small>
+      </button>
+      <button class="modulo-btn" onclick="alert('Módulo Calendario - en construcción')">
+        <span class="icon">📅</span>
+        Calendario
+        <br><small>Programación de mantenimientos.</small>
+      </button>
+      <!-- Puedes agregar más módulos aquí -->
+    </div>
+  </div>
+
+  <div id="modulo">
+    <!-- Aquí se cargan los módulos -->
+  </div>
 
 <script>
-  // Ejemplo variable global con usuario y rol, reemplaza según tu autenticación
-  const currentUser = { email: "aux.sistemas@unicienciabga.edu.co" }; // ejemplo email
-  const currentRole = "gestor"; // admin, gestor o usuario
+  // Datos simulados
+  const gestores = [
+    { id: "g1", nombre: "Juan Pérez", email: "juan.perez@empresa.com" },
+    { id: "g2", nombre: "María Gómez", email: "maria.gomez@empresa.com" },
+    { id: "g3", nombre: "Luis Martínez", email: "luis.martinez@empresa.com" }
+  ];
 
-  // Simula acceso a Firestore
-  const db = {
-    collection: (name) => ({
-      where: (field, op, val) => ({
-        onSnapshot: (callback) => {
-          // Simular datos
-          const ticketsFake = [
-            {
-              id: "1",
-              data: () => ({
-                titulo: "Prueba",
-                descripcion: "Esto es una prueba",
-                estado: "abierto",
-                prioridad: "baja",
-                gestor: "aux.sistemas@unicienciabga.edu.co",
-                adjunto: "",
-              }),
-            },
-            {
-              id: "2",
-              data: () => ({
-                titulo: "Otro ticket",
-                descripcion: "Detalle del ticket",
-                estado: "proceso",
-                prioridad: "alta",
-                gestor: "otro@unicienciabga.edu.co",
-                adjunto: "https://example.com/archivo.pdf",
-              }),
-            },
-          ];
-          // Filtrar por gestor si es rol gestor
-          const filtered = currentRole === "gestor" ? ticketsFake.filter(t => t.data().gestor === currentUser.email) : ticketsFake;
-          callback({ docs: filtered });
-        },
-      }),
-      onSnapshot: (callback) => {
-        // Simular todos tickets
-        const ticketsFake = [
-          {
-            id: "1",
-            data: () => ({
-              titulo: "Prueba",
-              descripcion: "Esto es una prueba",
-              estado: "abierto",
-              prioridad: "baja",
-              gestor: "aux.sistemas@unicienciabga.edu.co",
-              adjunto: "",
-            }),
-          },
-          {
-            id: "2",
-            data: () => ({
-              titulo: "Otro ticket",
-              descripcion: "Detalle del ticket",
-              estado: "proceso",
-              prioridad: "alta",
-              gestor: "otro@unicienciabga.edu.co",
-              adjunto: "https://example.com/archivo.pdf",
-            }),
-          },
-        ];
-        callback({ docs: ticketsFake });
-      },
-    }),
-  };
+  let tickets = [
+    {
+      id: "1",
+      titulo: "Prueba",
+      descripcion: "Esto es una prueba",
+      estado: "abierto",
+      prioridad: "baja",
+      gestorId: "g1",
+    },
+    {
+      id: "2",
+      titulo: "Problema con impresora",
+      descripcion: "La impresora no imprime",
+      estado: "proceso",
+      prioridad: "media",
+      gestorId: "g2",
+    }
+  ];
 
-  // Función para cambiar estado de ticket (simulada)
-  function cambiarEstado(id, nuevoEstado) {
-    alert(`Cambiar estado ticket ${id} a ${nuevoEstado}`);
-    // Aquí la lógica para actualizar Firestore
+  // Mostrar dashboard, ocultar módulo
+  function volverDashboard() {
+    document.getElementById("dashboard").style.display = "block";
+    document.getElementById("modulo").style.display = "none";
+    document.getElementById("modulo").innerHTML = "";
   }
 
-  // Función para eliminar ticket (simulada)
-  function eliminarTicket(id) {
-    if(confirm("¿Eliminar este ticket?")) {
-      alert(`Ticket ${id} eliminado`);
-      // Aquí la lógica para eliminar en Firestore
+  // Mostrar módulo por nombre
+  function mostrarModulo(nombre) {
+    document.getElementById("dashboard").style.display = "none";
+    const cont = document.getElementById("modulo");
+    cont.style.display = "block";
+
+    if(nombre === "tickets") {
+      cargarModuloTickets(cont);
+    } else {
+      cont.innerHTML = `<h3>${nombre} no implementado aún.</h3>
+      <button class="volver" onclick="volverDashboard()">Volver</button>`;
     }
   }
 
-  // Función para UI reasignar ticket (simulada)
-  function reasignarTicketUI(id) {
-    alert(`Mostrar UI para reasignar ticket ${id}`);
-    // Aquí abrir modal o formulario para reasignar
+  // Obtener nombre del gestor por id
+  function getNombreGestor(id) {
+    const g = gestores.find(x => x.id === id);
+    return g ? g.nombre : "Sin asignar";
   }
 
-  // Función para cargar tickets y mostrar en pantalla
-  function cargarTickets() {
-    let query = db.collection("tickets");
-    if (currentRole === "usuario") query = query.where("usuario", "==", currentUser.email);
-    if (currentRole === "gestor") query = query.where("gestor", "==", currentUser.email);
+  // Cambiar estado ticket
+  function cambiarEstado(id, nuevoEstado) {
+    const ticket = tickets.find(t => t.id === id);
+    if(ticket) {
+      ticket.estado = nuevoEstado;
+      cargarModuloTickets(document.getElementById("modulo"));
+    }
+  }
 
-    query.onSnapshot(snapshot => {
-      const lista = document.getElementById("lista");
-      lista.innerHTML = "";
-      snapshot.docs.forEach(doc => {
-        const t = doc.data();
+  // Eliminar ticket
+  function eliminarTicket(id) {
+    if(confirm("¿Seguro que quieres eliminar este ticket?")) {
+      tickets = tickets.filter(t => t.id !== id);
+      cargarModuloTickets(document.getElementById("modulo"));
+    }
+  }
 
-        // Crear tarjeta con clase según prioridad
-        const div = document.createElement("div");
-        div.className = `ticket-card ${t.prioridad}`;
+  // Mostrar formulario reasignar ticket
+  function mostrarReasignar(id) {
+    const cont = document.getElementById("modulo");
+    cont.innerHTML = `
+      <button class="volver" onclick="mostrarModulo('tickets')">← Volver</button>
+      <h3>Reasignar Ticket</h3>
+      <form id="reasignarForm">
+        <label for="gestorSelect">Selecciona Gestor:</label>
+        <select id="gestorSelect" required>
+          <option value="" disabled selected>-- Seleccione --</option>
+          ${gestores.map(g => `<option value="${g.id}">${g.nombre}</option>`).join('')}
+        </select>
+        <button type="submit">Reasignar</button>
+      </form>
+    `;
 
-        // Contenido de ticket
-        div.innerHTML = `
-          <div class="ticket-title">${t.titulo}</div>
-          <div class="priority-badge ${t.prioridad}">${t.prioridad}</div>
-          <div class="ticket-desc">${t.descripcion}</div>
-          <div class="ticket-info"><b>Estado:</b> ${t.estado}</div>
-          <div class="ticket-info"><b>Gestor:</b> ${t.gestor || "Sin asignar"}</div>
-          ${t.adjunto ? `<div><a href="${t.adjunto}" target="_blank">Ver archivo adjunto</a></div>` : ""}
-          <div class="ticket-actions"></div>
-        `;
-
-        // Botones acciones según rol
-        const actionsDiv = div.querySelector(".ticket-actions");
-
-        if (currentRole === "gestor" && t.gestor === currentUser.email) {
-          if (t.estado !== "proceso") {
-            const btnProceso = document.createElement("button");
-            btnProceso.className = "btn-proceso";
-            btnProceso.textContent = "Proceso";
-            btnProceso.onclick = () => cambiarEstado(doc.id, "proceso");
-            actionsDiv.appendChild(btnProceso);
-          }
-          if (t.estado !== "cerrado") {
-            const btnCerrar = document.createElement("button");
-            btnCerrar.className = "btn-cerrar";
-            btnCerrar.textContent = "Cerrar";
-            btnCerrar.onclick = () => cambiarEstado(doc.id, "cerrado");
-            actionsDiv.appendChild(btnCerrar);
-          }
+    document.getElementById("reasignarForm").onsubmit = function(e) {
+      e.preventDefault();
+      const nuevoGestor = document.getElementById("gestorSelect").value;
+      if(nuevoGestor) {
+        const ticket = tickets.find(t => t.id === id);
+        if(ticket) {
+          ticket.gestorId = nuevoGestor;
+          alert("Ticket reasignado correctamente.");
+          mostrarModulo('tickets');
         }
+      }
+    };
+  }
 
-        if (currentRole === "admin") {
-          const btnAsignar = document.createElement("button");
-          btnAsignar.className = "btn-asignar";
-          btnAsignar.textContent = "Asignar";
-          btnAsignar.onclick = () => reasignarTicketUI(doc.id);
-          actionsDiv.appendChild(btnAsignar);
+  // Renderizar módulo tickets
+  function cargarModuloTickets(cont) {
+    cont.innerHTML = `<button class="volver" onclick="volverDashboard()">← Volver</button><h3>Lista de Tickets</h3>`;
 
-          const btnEliminar = document.createElement("button");
-          btnEliminar.className = "btn-eliminar";
-          btnEliminar.textContent = "Eliminar";
-          btnEliminar.onclick = () => eliminarTicket(doc.id);
-          actionsDiv.appendChild(btnEliminar);
+    tickets.forEach(t => {
+      const prioridadClass = t.prioridad === 'baja' ? 'prioridad-baja' : t.prioridad === 'media' ? 'prioridad-media' : 'prioridad-alta';
 
-          const btnReasignar = document.createElement("button");
-          btnReasignar.className = "btn-reasignar";
-          btnReasignar.textContent = "Reasignar";
-          btnReasignar.onclick = () => reasignarTicketUI(doc.id);
-          actionsDiv.appendChild(btnReasignar);
-        }
-
-        lista.appendChild(div);
-      });
+      const div = document.createElement("div");
+      div.className = "ticket-card " + t.prioridad;
+      div.innerHTML = `
+        <div class="ticket-titulo">${t.titulo}</div>
+        <div class="ticket-prioridad ${prioridadClass}">${t.prioridad}</div>
+        <div class="ticket-descripcion">${t.descripcion}</div>
+        <div class="ticket-detalle"><b>Estado:</b> ${t.estado}</div>
+        <div class="ticket-detalle"><b>Gestor:</b> ${getNombreGestor(t.gestorId)}</div>
+        <div class="ticket-botones">
+          ${t.estado === 'abierto' ? `<button class="btn-proceso" onclick="cambiarEstado('${t.id}','proceso')">Proceso</button>` : ''}
+          ${t.estado !== 'cerrado' ? `<button class="btn-cerrar" onclick="cambiarEstado('${t.id}','cerrado')">Cerrar</button>` : ''}
+          <button class="btn-eliminar" onclick="eliminarTicket('${t.id}')">Eliminar</button>
+          <button class="btn-reasignar" onclick="mostrarReasignar('${t.id}')">Reasignar</button>
+        </div>
+      `;
+      cont.appendChild(div);
     });
   }
 
-  // Ejecutar al cargar
-  cargarTickets();
+  // Función cerrar sesión (simulada)
+  function cerrarSesion() {
+    alert("Cerrar sesión...");
+    // Aquí va lógica real de cerrar sesión
+  }
+
+  // Al cargar la página, mostramos dashboard
+  window.onload = () => {
+    volverDashboard();
+  };
 </script>
+
+</body>
+</html>
