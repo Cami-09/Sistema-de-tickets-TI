@@ -1,291 +1,104 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Tickets PRO</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tickets PRO</title>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 
-<style>
-body{font-family:Arial;background:#f5f7fa;margin:0}
-header{background:#1e88a8;color:#fff;padding:15px;text-align:center;position:relative}
-#logoutBtn{position:absolute;right:15px;top:15px;background:red;color:#fff;border:none;padding:8px}
-
-.cardDash{background:#fff;padding:20px;border-radius:10px;width:220px;cursor:pointer;box-shadow:0 2px 5px rgba(0,0,0,.1)}
-.cardDash:hover{transform:scale(1.05)}
-.icon{font-size:35px}
-
-.modulo{display:none;padding:20px}
-.card{background:#fff;padding:10px;margin:10px 0;border-radius:10px}
-
-.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0008}
-.modal-content{background:#fff;padding:20px;margin:15% auto;width:300px;border-radius:10px}
-</style>
+  <style>
+    /* Agregar el CSS que ya tienes aquí */
+  </style>
 </head>
-
 <body>
 
 <header>🎫 Tickets PRO
-<button id="logoutBtn" onclick="cerrarSesion()">Salir</button>
+  <button id="logoutBtn" onclick="cerrarSesion()">Cerrar sesión</button>
 </header>
 
 <!-- LOGIN -->
 <div id="loginDiv" style="text-align:center;margin-top:50px;">
-<button id="loginBtn">Iniciar con Google</button>
+  <button id="loginBtn">Iniciar sesión con Google</button>
 </div>
 
 <!-- DASHBOARD -->
 <div id="dashboard" style="display:none;padding:20px;">
-
-<div style="display:flex;gap:20px;flex-wrap:wrap">
-
-<div class="cardDash" onclick="mostrar('crear')">📩 Crear Ticket</div>
-<div class="cardDash" onclick="mostrar('lista')">🔍 Ver Tickets</div>
-<div class="cardDash" onclick="mostrar('admin')">🛠️ Admin Tickets</div>
-<div class="cardDash" onclick="mostrar('usuarios')" id="btnUsuarios">👤 Usuarios</div>
-
-</div>
-
-<!-- MODULOS -->
-
-<div id="crear" class="modulo">
-<h3>Crear Ticket</h3>
-<input id="titulo" placeholder="Titulo"><br>
-<input id="desc" placeholder="Descripcion"><br>
-<select id="prioridad">
-<option>baja</option>
-<option>media</option>
-<option>alta</option>
-</select><br>
-<button onclick="crearTicket()">Crear</button>
-</div>
-
-<div id="lista" class="modulo">
-<h3>Lista Tickets</h3>
-<div id="listaTickets"></div>
-</div>
-
-<div id="admin" class="modulo">
-<h3>Administrar Tickets</h3>
-<div id="adminTickets"></div>
-</div>
-
-<div id="usuarios" class="modulo">
-<h3>Usuarios</h3>
-
-<input id="emailUser" placeholder="Email">
-<input id="nombreUser" placeholder="Nombre">
-<select id="rolUser">
-<option>Usuario</option>
-<option>Gestor</option>
-<option>Admin</option>
-</select>
-<button onclick="agregarUsuario()">Agregar</button>
-
-<table border="1" width="100%">
-<tbody id="tablaUsuarios"></tbody>
-</table>
-</div>
-
-</div>
-
-<!-- MODAL -->
-<div id="modal" class="modal">
-<div class="modal-content">
-<select id="selectGestor"></select>
-<button onclick="confirmar()">Aceptar</button>
-<button onclick="cerrarModal()">Cancelar</button>
-</div>
+  <!-- Aquí se muestran los módulos del Dashboard -->
 </div>
 
 <script>
+  // Firebase Initialization
+  const firebaseConfig = {
+    apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
+    authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com",
+    projectId: "sistema-de-tickets-ti-b12f5",
+    storageBucket: "sistema-de-tickets-ti-b12f5.appspot.com",
+    messagingSenderId: "356054718850",
+    appId: "1:356054718850:web:3a439d4ffbd4f017a7179b"
+  };
 
-const firebaseConfig = {
-apiKey:"AIzaSy...",
-authDomain:"sistema-de-tickets-ti-b12f5.firebaseapp.com",
-projectId:"sistema-de-tickets-ti-b12f5"
-};
+  // Inicializar Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
 
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+  let currentUser, currentRole;
 
-let currentUser, currentRole, ticketID;
+  // LOGIN
+  document.getElementById("loginBtn").addEventListener("click", async () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+      const result = await auth.signInWithPopup(provider);
+      const user = result.user;
+      console.log("Logged in as", user.displayName);
 
-// LOGIN
-loginBtn.onclick = async ()=>{
-const provider = new firebase.auth.GoogleAuthProvider();
-await auth.signInWithPopup(provider);
-};
+      // Guardar el usuario y navegar al dashboard
+      document.getElementById("loginDiv").style.display = "none";
+      document.getElementById("dashboard").style.display = "block";
 
-auth.onAuthStateChanged(async user=>{
-if(!user)return;
+      // Guardar el rol del usuario
+      const roleRef = db.collection("roles").doc(user.email);
+      let doc = await roleRef.get();
+      if (!doc.exists) {
+        await roleRef.set({ rol: "Usuario", nombre: user.displayName });
+        doc = await roleRef.get();
+      }
+      currentRole = doc.data().rol;
+      
+    } catch (error) {
+      console.error("Error during login:", error.message);
+      alert("Hubo un error al iniciar sesión. Intenta nuevamente.");
+    }
+  });
 
-currentUser=user;
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      currentUser = user;
+      console.log("User is logged in", user);
+    }
+  });
 
-loginDiv.style.display="none";
-dashboard.style.display="block";
+  // Function to handle displaying modules
+  function mostrar(id) {
+    document.querySelectorAll(".modulo").forEach(m => m.style.display = "none");
+    document.getElementById(id).style.display = "block";
+  }
 
-// ADMIN AUTOMATICO
-const ref=db.collection("roles").doc(user.email);
-let doc=await ref.get();
-
-if(user.email==="camicarmona1212@gmail.com"){
-await ref.set({rol:"Admin",nombre:"Admin"});
-doc=await ref.get();
-}
-
-if(!doc.exists){
-await ref.set({rol:"Usuario",nombre:user.displayName});
-doc=await ref.get();
-}
-
-currentRole=doc.data().rol;
-
-// permisos
-if(currentRole!=="Admin") btnUsuarios.style.display="none";
-
-cargarTickets();
-cargarUsuarios();
-});
-
-// MOSTRAR MODULO
-function mostrar(id){
-document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
-document.getElementById(id).style.display="block";
-}
-
-// CREAR TICKET
-async function crearTicket(){
-await db.collection("tickets").add({
-titulo:titulo.value,
-descripcion:desc.value,
-prioridad:prioridad.value,
-estado:"abierto",
-usuario:currentUser.email,
-gestor:""
-});
-alert("Creado");
-cargarTickets();
-}
-
-// CARGAR TICKETS
-async function cargarTickets(){
-
-const cont1=document.getElementById("listaTickets");
-const cont2=document.getElementById("adminTickets");
-
-cont1.innerHTML="";
-cont2.innerHTML="";
-
-const snap=await db.collection("tickets").get();
-
-snap.forEach(doc=>{
-const t=doc.data();
-
-if(currentRole==="Usuario" && t.usuario!==currentUser.email) return;
-if(currentRole==="Gestor" && t.gestor!==currentUser.email) return;
-
-const html=`
-<div class="card">
-<b>${t.titulo}</b><br>
-${t.descripcion}<br>
-Estado: ${t.estado}<br>
-Gestor: ${t.gestor||"Libre"}<br>
-
-<button onclick="asignar('${doc.id}')">Asignar</button>
-<button onclick="estado('${doc.id}','proceso')">Proceso</button>
-<button onclick="estado('${doc.id}','cerrado')">Cerrar</button>
-
-${currentRole==="Admin"?`
-<button onclick="eliminar('${doc.id}')">Eliminar</button>
-<button onclick="abrirModal('${doc.id}')">Reasignar</button>
-`:""}
-
-</div>`;
-
-cont1.innerHTML+=html;
-if(currentRole==="Admin") cont2.innerHTML+=html;
-});
-}
-
-// ACCIONES
-function asignar(id){
-db.collection("tickets").doc(id).update({gestor:currentUser.email});
-cargarTickets();
-}
-
-function estado(id,e){
-db.collection("tickets").doc(id).update({estado:e});
-cargarTickets();
-}
-
-function eliminar(id){
-if(confirm("Eliminar?")){
-db.collection("tickets").doc(id).delete();
-cargarTickets();
-}
-}
-
-// USUARIOS
-async function agregarUsuario(){
-await db.collection("roles").doc(emailUser.value).set({
-nombre:nombreUser.value,
-rol:rolUser.value
-});
-cargarUsuarios();
-}
-
-async function cargarUsuarios(){
-if(currentRole!=="Admin") return;
-
-tablaUsuarios.innerHTML="";
-const snap=await db.collection("roles").get();
-
-snap.forEach(doc=>{
-tablaUsuarios.innerHTML+=`
-<tr>
-<td>${doc.data().nombre}</td>
-<td>${doc.id}</td>
-<td>${doc.data().rol}</td>
-</tr>`;
-});
-}
-
-// REASIGNAR
-async function abrirModal(id){
-ticketID=id;
-modal.style.display="block";
-
-selectGestor.innerHTML="";
-
-const snap=await db.collection("roles").where("rol","==","Gestor").get();
-
-snap.forEach(doc=>{
-selectGestor.innerHTML+=`<option value="${doc.id}">${doc.data().nombre}</option>`;
-});
-}
-
-function cerrarModal(){
-modal.style.display="none";
-}
-
-function confirmar(){
-const gestor=selectGestor.value;
-db.collection("tickets").doc(ticketID).update({gestor});
-cerrarModal();
-cargarTickets();
-}
-
-// LOGOUT
-function cerrarSesion(){
-auth.signOut();
-location.reload();
-}
+  // Logout
+  function cerrarSesion() {
+    auth.signOut().then(() => {
+      currentUser = null;
+      currentRole = null;
+      document.getElementById("dashboard").style.display = "none";
+      document.getElementById("loginDiv").style.display = "block";
+    });
+  }
 
 </script>
+
 </body>
 </html>
