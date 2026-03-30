@@ -12,35 +12,36 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        :root { --primary: #2563eb; --dark: #0f172a; --bg: #f1f5f9; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --info: #06b6d4; }
+        :root { --primary: #2563eb; --dark: #0f172a; --bg: #f1f5f9; --success: #22c55e; --danger: #ef4444; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #334155; }
 
         header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
 
         /* DASHBOARD */
         #dashboard { display: none; padding: 25px; }
-        .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
         
         .card { background: white; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); border-color: var(--primary); }
         .card i { font-size: 35px; color: var(--primary); margin-bottom: 12px; }
+        .card h3 { margin: 10px 0; font-size: 1rem; }
 
         .modulo { display: none; background: white; padding: 20px; border-radius: 12px; }
 
         /* FILTROS E INFO */
         .filtros-box { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
         .grid-filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
-        .resumen-celeste { background: #e0f2fe; padding: 12px; border-radius: 8px; color: #0369a1; margin-bottom: 15px; text-align: center; font-size: 0.9rem; font-weight: 500; }
+        .resumen-celeste { background: #e0f2fe; padding: 12px; border-radius: 8px; color: #0369a1; margin-bottom: 15px; text-align: center; font-weight: 500; }
 
-        input, select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 5px; width: 100%; box-sizing: border-box; font-size: 0.85rem; }
+        input, select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 5px; width: 100%; box-sizing: border-box; }
 
-        /* TABLAS */
+        /* TABLA */
         table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
         th { background: #f8fafc; padding: 10px; text-align: left; border-bottom: 2px solid #e2e8f0; }
         td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 
-        /* ICONOS DE ACCIONES (IGUAL A LA IMAGEN) */
-        .btn-acc { width: 28px; height: 28px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; font-size: 12px; }
+        /* ACCIONES */
+        .btn-acc { width: 28px; height: 28px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; }
         .bg-edit { background: #f59e0b; }
         .bg-tools { background: #2563eb; }
         .bg-copy { background: #06b6d4; }
@@ -49,10 +50,10 @@
 
         /* MODAL */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 3% auto; padding: 25px; width: 85%; max-width: 850px; border-radius: 12px; position: relative; }
+        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 85%; max-width: 850px; border-radius: 12px; position: relative; }
         .grid-modal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 
-        .btn { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+        .btn { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-gray { background: #64748b; color: white; }
     </style>
@@ -70,21 +71,27 @@
 
 <div id="dashboard">
     <div id="panel-principal" class="grid-main">
-        <div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Tickets</h3></div>
+        <div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Consultar Tickets</h3></div>
+        <div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Enviar un Ticket</h3></div>
+        <div class="card" onclick="abrir('admin_tickets')"><i class="fas fa-clipboard-list"></i><h3>Administrar Tickets</h3></div>
+        
         <div class="card" onclick="abrir('inv_admin')"><i class="fas fa-desktop"></i><h3>Equipos Administrativos</h3></div>
         <div class="card" onclick="abrir('inv_salas')"><i class="fas fa-laptop"></i><h3>Equipos de Salas</h3></div>
+        
         <div class="card"><i class="fas fa-calendar"></i><h3>Calendario</h3></div>
+        <div class="card"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
+        <div class="card"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
         <div class="card"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
     </div>
 
-    <div id="modulo_inventario" class="modulo">
+    <div id="modulo_inv" class="modulo">
         <div style="display:flex; justify-content:space-between; align-items:center;">
             <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-            <h2 id="titulo_inv" style="color:var(--primary);"></h2>
+            <h2 id="titulo_inv" style="color:var(--primary); margin:0;"></h2>
             <button class="btn btn-blue" onclick="abrirModal()">+ Registrar nuevo equipo</button>
         </div>
 
-        <div id="banner_conteo" class="resumen-celeste"></div>
+        <div id="resumen_conteo" class="resumen-celeste"></div>
 
         <div class="filtros-box">
             <div class="grid-filtros">
@@ -92,7 +99,7 @@
                 <input type="text" id="f_mod" placeholder="Modelo" onkeyup="filtrar()">
                 <input type="text" id="f_inv" placeholder="Inventario" onkeyup="filtrar()">
                 <input type="text" id="f_res" placeholder="Responsable" onkeyup="filtrar()">
-                <select id="f_dep" onchange="filtrar()"><option value="">-- Dependencia --</option><option>Sistemas</option><option>Auditorio</option><option>Salar de Sistemas IV</option></select>
+                <select id="f_dep" onchange="filtrar()"><option value="">-- Dependencia --</option><option>Sistemas</option><option>Auditorio</option></select>
                 <input type="text" id="f_ip" placeholder="IP" onkeyup="filtrar()">
             </div>
             <div style="margin-top:10px; display:flex; gap:10px;">
@@ -111,6 +118,12 @@
             </table>
         </div>
     </div>
+
+    <div id="consultar" class="modulo">
+        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
+        <h2>Mis Tickets</h2>
+        <div id="lista-tickets"></div>
+    </div>
 </div>
 
 <div id="modalEquipo" class="modal">
@@ -122,17 +135,17 @@
             <select id="n_tipo"><option value="">Seleccione Tipo</option><option>Portátil</option><option>AIO</option><option>Torre</option></select>
             <input type="text" id="n_mod" placeholder="Modelo">
             <input type="text" id="n_inv" placeholder="Inventario">
-            <select id="n_so"><option value="">Seleccione SO</option><option>Windows 10</option><option>Windows 11</option></select>
+            <select id="n_so"><option value="">Seleccione So</option><option>Windows 10</option><option>Windows 11</option></select>
             <input type="text" id="n_proc" placeholder="Procesador">
-            <select id="n_ram"><option value="">Seleccione RAM</option><option>8GB</option><option>16GB</option></select>
+            <select id="n_ram"><option value="">Seleccione Ram</option><option>8GB</option><option>16GB</option></select>
             <input type="text" id="n_disco" placeholder="Disco">
             <input type="text" id="n_ip" placeholder="Ip">
             <input type="text" id="n_term" placeholder="Terminal">
             <input type="text" id="n_res" placeholder="Responsable">
             <select id="n_dep"><option value="">Seleccione Dependencia</option><option>Sistemas</option><option>Auditorio menor</option></select>
             <input type="text" id="n_correo" placeholder="Correo">
-            <select id="n_campus"><option>Bucaramanga</option></select>
-            <select id="n_sede"><option>Sede A</option><option>Sede D</option></select>
+            <select id="n_campus"><option>Seleccione Campus</option><option>Bucaramanga</option></select>
+            <select id="n_sede"><option>Seleccione Sede</option><option>Sede A</option><option>Sede D</option></select>
             <input type="text" id="n_ext" placeholder="Extensión">
             <input type="date" id="n_fecha">
         </div>
@@ -150,7 +163,7 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    let currentColl = ""; // Colección actual (inventario o inventario_salas)
+    let currentColl = ""; 
     let localData = [];
 
     // AUTH
@@ -158,24 +171,30 @@
     function logout() { auth.signOut().then(() => location.reload()); }
     auth.onAuthStateChanged(u => { if(u){ document.getElementById('login').style.display='none'; document.getElementById('dashboard').style.display='block'; } });
 
-    // NAVEGACION
+    // NAVEGACIÓN
     function abrir(id) {
         document.getElementById('panel-principal').style.display='none';
-        document.getElementById('modulo_inventario').style.display='block';
-        if(id === 'inv_admin') {
-            currentColl = "inventario";
-            document.getElementById('titulo_inv').innerText = "Inventario de equipos TIC";
+        document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
+        
+        if(id === 'inv_admin' || id === 'inv_salas') {
+            document.getElementById('modulo_inv').style.display='block';
+            currentColl = (id === 'inv_admin') ? "inventario" : "inventario_salas";
+            document.getElementById('titulo_inv').innerText = (id === 'inv_admin') ? "Inventario de equipos TIC" : "Inventario de equipos TIC (Salas)";
+            cargarDatos();
         } else {
-            currentColl = "inventario_salas";
-            document.getElementById('titulo_inv').innerText = "Inventario de equipos TIC (Salas)";
+            document.getElementById(id).style.display='block';
         }
-        cargarDatos();
     }
-    function volver() { document.getElementById('panel-principal').style.display='grid'; document.getElementById('modulo_inventario').style.display='none'; }
+
+    function volver() { 
+        document.getElementById('panel-principal').style.display='grid'; 
+        document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); 
+    }
+
     function abrirModal() { document.getElementById('modalEquipo').style.display='block'; }
     function cerrarModal() { document.getElementById('modalEquipo').style.display='none'; }
 
-    // LOGICA
+    // LÓGICA DATOS
     function cargarDatos() {
         db.collection(currentColl).onSnapshot(snap => {
             localData = [];
@@ -188,9 +207,9 @@
         const ft = f_tipo.value.toLowerCase();
         const fm = f_mod.value.toLowerCase();
         const fi = f_inv.value.toLowerCase();
-        const res = localData.filter(e => e.tipo?.toLowerCase().includes(ft) && e.modelo?.toLowerCase().includes(fm) && e.inv?.toLowerCase().includes(fi));
+        const res = localData.filter(e => (e.tipo||"").toLowerCase().includes(ft) && (e.modelo||"").toLowerCase().includes(fm) && (e.inv||"").toLowerCase().includes(fi));
         
-        document.getElementById('banner_conteo').innerText = `Equipos encontrados con los filtros aplicados: **${res.length}**`;
+        document.getElementById('resumen_conteo').innerText = `Equipos encontrados con los filtros aplicados: **${res.length}**`;
         const tbody = document.getElementById('tablaData');
         tbody.innerHTML = "";
         res.forEach(e => {
@@ -209,7 +228,7 @@
 
     async function guardar() {
         await db.collection(currentColl).add({
-            pc: n_pc.value, tipo: n_tipo.value, modelo: n_mod.value, inv: n_inv.value, res: n_res.value, dep: n_dep.value
+            pc: n_pc.value, tipo: n_tipo.value, modelo: n_mod.value, inv: n_inv.value, res: n_res.value, dep: n_dep.value, fecha: n_fecha.value
         });
         cerrarModal();
         alert("Equipo Registrado");
