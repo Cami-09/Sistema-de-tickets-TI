@@ -1,449 +1,246 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Sistema Tickets e Inventario TI</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema TI - Inventario Profesional</title>
 
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<style>
-/* GENERAL */
-body{
-margin:0;
-font-family:Arial;
-background:#f1f5f9;
-}
+    <style>
+        :root { --primary: #2563eb; --dark: #0f172a; --bg: #f1f5f9; --success: #22c55e; --danger: #ef4444; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #334155; }
 
-header{
-background:#0f172a;
-color:white;
-padding:15px;
-display:flex;
-justify-content:space-between;
-}
+        header { background: var(--dark); color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
 
-/* LOGIN */
-#login{
-height:90vh;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-}
+        #dashboard { padding: 2rem; }
+        .grid-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; }
+        .card { background: white; padding: 1.5rem; border-radius: 12px; text-align: center; cursor: pointer; border: 1px solid #e2e8f0; transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        .card i { font-size: 2.5rem; color: var(--primary); }
 
-#login button{
-padding:12px;
-background:#3b82f6;
-color:white;
-border:none;
-border-radius:8px;
-}
+        .modulo { display: none; background: white; padding: 2rem; border-radius: 12px; }
 
-/* DASHBOARD */
-#dashboard{display:none;padding:30px;}
+        /* ESTILOS DE FILTROS (COMO EN LA IMAGEN) */
+        .filtros-container { background: #fff; padding: 20px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
+        .grid-filtros { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .resumen-filtros { background: #dcfce7; padding: 15px; border-radius: 8px; color: #166534; margin-bottom: 15px; font-weight: bold; }
 
-.grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-gap:20px;
-}
+        input, select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 5px; width: 100%; box-sizing: border-box; }
 
-/* CARDS */
-.card{
-background:white;
-padding:25px;
-border-radius:15px;
-text-align:center;
-cursor:pointer;
-transition:.3s;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
-}
+        /* TABLA */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem; }
+        th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
 
-.card:hover{
-transform:translateY(-5px);
-}
+        /* MODAL (REGISTRAR NUEVO) */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 5% auto; padding: 25px; width: 70%; border-radius: 15px; position: relative; }
+        .close-modal { position: absolute; right: 20px; top: 15px; font-size: 25px; cursor: pointer; }
 
-.card i{
-font-size:40px;
-color:#2563eb;
-}
-
-/* MODULOS */
-.modulo{
-display:none;
-background:white;
-padding:20px;
-border-radius:12px;
-margin-top:20px;
-}
-
-/* FORM */
-textarea, select, input[type="text"]{
-width:100%;
-padding:10px;
-margin:10px 0;
-border-radius:8px;
-border:1px solid #ccc;
-box-sizing: border-box;
-}
-
-.btn{
-background:#2563eb;
-color:white;
-padding:10px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-}
-
-/* ADMIN & TABLES */
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:20px;
-}
-
-th, td{
-padding:12px;
-border-bottom:1px solid #eee;
-text-align:center;
-}
-
-.badge{
-padding:5px 10px;
-border-radius:20px;
-color:white;
-font-size:12px;
-}
-
-.abierto{background:#22c55e;}
-.enproceso{background:#eab308;}
-.cerrado{background:#ef4444;}
-
-button{
-cursor:pointer;
-border:none;
-padding:6px 10px;
-margin:2px;
-border-radius:6px;
-}
-
-/* Estilos específicos Inventario */
-#formEquipo {
-    border: 2px dashed #cbd5e1;
-    margin-bottom: 25px;
-}
-</style>
+        /* BOTONES */
+        .btn { padding: 10px 20px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+        .btn-blue { background: var(--primary); color: white; }
+        .btn-green { background: var(--success); color: white; }
+        .btn-gray { background: #64748b; color: white; }
+        .btn-action { padding: 5px 8px; border-radius: 4px; font-size: 12px; color: white; }
+    </style>
 </head>
-
 <body>
 
 <header>
-<span>🎫 Sistema Integral TI</span>
-<button onclick="logout()">Salir</button>
+    <strong>SISTEMA TIC - UNICIENCIA</strong>
+    <button onclick="logout()" class="btn" style="background:#334155; color:white;">Salir</button>
 </header>
 
-<div id="login">
-<h2>Iniciar sesión</h2>
-<button onclick="login()">Ingresar con Google</button>
+<div id="login" style="display: flex; height: 80vh; justify-content: center; align-items: center;">
+    <button class="btn btn-blue" onclick="login()">Ingresar con Google</button>
 </div>
 
-<div id="dashboard">
-
-    <div id="panel" class="grid">
-        <div class="card" onclick="abrir('consultar')">
-            <i class="fas fa-search"></i>
-            <h3>Consultar Tickets</h3>
-            <p>Ver el estado de tus tickets</p>
-        </div>
-
-        <div class="card" onclick="abrir('crear')">
-            <i class="fas fa-paper-plane"></i>
-            <h3>Enviar un Ticket</h3>
-            <p>Reportar un problema</p>
-        </div>
-
-        <div class="card" onclick="abrir('admin')">
-            <i class="fas fa-clipboard-list"></i>
-            <h3>Administrar Tickets</h3>
-            <p>Gestionar los tickets</p>
-        </div>
-
+<div id="dashboard" style="display:none;">
+    <div id="panel" class="grid-cards">
         <div class="card" onclick="abrir('inventario')">
             <i class="fas fa-desktop"></i>
-            <h3>Equipos Administrativos</h3>
-            <p>Inventario General</p>
+            <h3>Inventario de equipos TIC</h3>
+        </div>
         </div>
 
-        <div class="card">
-            <i class="fas fa-laptop"></i>
-            <h3>Equipos de Salas</h3>
+    <div id="inventario" class="modulo">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <button onclick="volver()" class="btn btn-gray"><i class="fas fa-chevron-left"></i> Volver</button>
+            <h2 style="color:var(--primary);">Inventario de equipos TIC</h2>
+            <button class="btn btn-blue" onclick="abrirModal()">+ Registrar nuevo equipo</button>
         </div>
 
-        <div class="card">
-            <i class="fas fa-calendar"></i>
-            <h3>Calendario</h3>
+        <div id="info-conteo" class="resumen-filtros">Equipos encontrados: <span id="totalEquipos">0</span></div>
+
+        <div class="filtros-container">
+            <div class="grid-filtros">
+                <select id="f_tipo" onchange="aplicarFiltros()"><option value="">-- Tipo --</option><option>AIO</option><option>Portátil</option><option>Torre</option></select>
+                <input type="text" id="f_modelo" placeholder="Modelo" onkeyup="aplicarFiltros()">
+                <input type="text" id="f_inventario" placeholder="Inventario" onkeyup="aplicarFiltros()">
+                <input type="text" id="f_responsable" placeholder="Responsable" onkeyup="aplicarFiltros()">
+                
+                <select id="f_dependencia" onchange="aplicarFiltros()"><option value="">-- Dependencia --</option><option>Sistemas</option><option>Tesorería</option></select>
+                <input type="text" id="f_campus" placeholder="Campus" onkeyup="aplicarFiltros()">
+                <select id="f_sede" onchange="aplicarFiltros()"><option value="">-- Sede --</option><option>Sede A</option><option>Sede D</option></select>
+                <select id="f_so" onchange="aplicarFiltros()"><option value="">-- SO --</option><option>Windows 10</option><option>Windows 11</option></select>
+                
+                <input type="text" id="f_procesador" placeholder="Procesador" onkeyup="aplicarFiltros()">
+                <input type="text" id="f_ram" placeholder="RAM" onkeyup="aplicarFiltros()">
+                <input type="text" id="f_disco" placeholder="Disco" onkeyup="aplicarFiltros()">
+                <input type="text" id="f_ip" placeholder="IP" onkeyup="aplicarFiltros()">
+            </div>
+            <div style="margin-top:15px; display:flex; gap:10px;">
+                <button class="btn btn-blue" onclick="aplicarFiltros()"><i class="fas fa-filter"></i> Aplicar Filtros</button>
+                <button class="btn btn-gray" onclick="limpiarFiltros()"><i class="fas fa-eraser"></i> Limpiar Filtros</button>
+            </div>
         </div>
 
-        <div class="card">
-            <i class="fas fa-school"></i>
-            <h3>Aulas DTI</h3>
-        </div>
-
-        <div class="card">
-            <i class="fas fa-server"></i>
-            <h3>Salas Sistemas</h3>
-        </div>
-
-        <div class="card">
-            <i class="fas fa-print"></i>
-            <h3>Impresoras</h3>
-        </div>
-    </div>
-
-    <div id="crear" class="modulo">
-        <button onclick="volver()">⬅ Volver</button>
-        <h2>Crear Ticket</h2>
-        <select id="dependencia">
-            <option>Sistemas</option>
-            <option>Administración</option>
-            <option>Académico</option>
-        </select>
-        <select id="tipo">
-            <option>Soporte</option>
-            <option>Mantenimiento</option>
-            <option>Instalación</option>
-        </select>
-        <textarea id="descripcion" placeholder="Describe el problema"></textarea>
-        <select id="prioridad">
-            <option>Baja</option>
-            <option>Media</option>
-            <option>Alta</option>
-        </select>
-        <button class="btn" onclick="crearTicket()">Crear Ticket</button>
-    </div>
-
-    <div id="consultar" class="modulo">
-        <button onclick="volver()">⬅ Volver</button>
-        <h2>Mis Tickets</h2>
-        <div id="lista"></div>
-    </div>
-
-    <div id="admin" class="modulo">
-        <button onclick="volver()">⬅ Volver</button>
-        <h2>Administrar Tickets</h2>
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Tipo</th>
-                    <th>Estado</th>
-                    <th>Usuario</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="tablaAdmin"></tbody>
-        </table>
-    </div>
-
-    <div id="inventario" class="modulo">
-        <button onclick="volver()">⬅ Volver</button>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
-            <h2>Inventario de Equipos TIC</h2>
-            <button class="btn" style="background:#22c55e;" onclick="mostrarFormEquipo()">+ Registrar nuevo equipo</button>
-        </div>
-
-        <div id="formEquipo" style="display:none; background:#f8fafc; padding:20px; border-radius:10px;">
-            <h3>Registrar Nuevo Equipo</h3>
-            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
-                <input type="text" id="inv_pc" placeholder="Nombre PC (Ej: AuxTesorería)">
-                <select id="inv_tipo">
-                    <option value="AIO">AIO</option>
-                    <option value="Portátil">Portátil</option>
-                    <option value="Torre">Torre</option>
-                </select>
-                <input type="text" id="inv_modelo" placeholder="Modelo (Ej: HP ProOne)">
-                <input type="text" id="inv_placa" placeholder="Placa Inventario">
-                <input type="text" id="inv_responsable" placeholder="Responsable">
-                <input type="text" id="inv_dependencia" placeholder="Dependencia">
-                <input type="text" id="inv_campus" placeholder="Campus">
-                <input type="text" id="inv_sede" placeholder="Sede">
-            </div>
-            <div style="margin-top:15px;">
-                <button class="btn" onclick="guardarEquipo()">Guardar Equipo</button>
-                <button class="btn" style="background:#64748b;" onclick="document.getElementById('formEquipo').style.display='none'">Cancelar</button>
-            </div>
-        </div>
-
-        <table>
-            <thead>
-                <tr style="background:#f8fafc;">
-                    <th>PC</th>
-                    <th>Tipo</th>
-                    <th>Modelo</th>
-                    <th>Inventario</th>
-                    <th>Responsable</th>
-                    <th>Dependencia</th>
-                    <th>Campus</th>
-                    <th>Sede</th>
-                    <th>Acciones</th>
+                    <th>PC</th><th>Tipo</th><th>Modelo</th><th>Inventario</th><th>Responsable</th><th>Dependencia</th><th>Campus</th><th>Sede</th><th>Acciones</th>
                 </tr>
             </thead>
             <tbody id="tablaInventario"></tbody>
         </table>
     </div>
+</div>
 
+<div id="modalNuevo" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="cerrarModal()">&times;</span>
+        <h2 style="margin-top:0;">Registrar nuevo equipo</h2>
+        <hr>
+        <div class="grid-filtros" style="grid-template-columns: repeat(3, 1fr); margin-top:20px;">
+            <input type="text" id="n_pc" placeholder="Nombre PC">
+            <select id="n_tipo"><option value="">Seleccione Tipo</option><option>AIO</option><option>Portátil</option><option>Torre</option></select>
+            <input type="text" id="n_modelo" placeholder="Modelo">
+            
+            <input type="text" id="n_inventario" placeholder="Inventario">
+            <select id="n_so"><option value="">Seleccione SO</option><option>Windows 10</option><option>Windows 11</option></select>
+            <input type="text" id="n_procesador" placeholder="Procesador">
+            
+            <select id="n_ram"><option value="">Seleccione RAM</option><option>4GB</option><option>8GB</option><option>16GB</option></select>
+            <input type="text" id="n_disco" placeholder="Disco">
+            <input type="text" id="n_ip" placeholder="IP">
+            
+            <input type="text" id="n_terminal" placeholder="Terminal">
+            <input type="text" id="n_responsable" placeholder="Responsable">
+            <select id="n_dep"><option value="">Seleccione Dependencia</option><option>Sistemas</option><option>Tesorería</option></select>
+            
+            <input type="text" id="n_correo" placeholder="Correo">
+            <select id="n_campus"><option value="">Seleccione Campus</option><option>Bucaramanga</option></select>
+            <select id="n_sede"><option value="">Seleccione Sede</option><option>Sede A</option><option>Sede D</option></select>
+            
+            <input type="text" id="n_ext" placeholder="Extensión">
+            <input type="date" id="n_fecha">
+        </div>
+        <div style="text-align:right; margin-top:20px;">
+            <button class="btn btn-blue" onclick="guardarEquipo()"><i class="fas fa-save"></i> Guardar</button>
+            <button class="btn btn-gray" onclick="cerrarModal()">Cancelar</button>
+        </div>
+    </div>
 </div>
 
 <script>
-// FIREBASE CONFIG
-firebase.initializeApp({
-    apiKey:"AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
-    authDomain:"sistema-de-tickets-ti-b12f5.firebaseapp.com",
-    projectId:"sistema-de-tickets-ti-b12f5"
-});
+    // FIREBASE CONFIG
+    const firebaseConfig = {
+        apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
+        authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com",
+        projectId: "sistema-de-tickets-ti-b12f5"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
 
-const auth = firebase.auth();
-const db = firebase.firestore();
-let user;
+    let todosLosEquipos = [];
 
-// LOGIN
-function login(){
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider)
-    .then(res=>mostrar(res.user))
-    .catch(e=>alert(e.message));
-}
-
-auth.onAuthStateChanged(u=>{
-    if(u) mostrar(u);
-});
-
-function mostrar(u){
-    user=u;
-    document.getElementById("login").style.display="none";
-    document.getElementById("dashboard").style.display="block";
-}
-
-// NAVEGACIÓN
-function abrir(id){
-    document.getElementById("panel").style.display="none";
-    document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
-    document.getElementById(id).style.display="block";
-
-    if(id==="consultar") cargarTickets();
-    if(id==="admin") cargarAdmin();
-    if(id==="inventario") cargarInventario();
-}
-
-function volver(){
-    document.getElementById("panel").style.display="grid";
-    document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
-}
-
-// --- LOGICA TICKETS ---
-async function crearTicket(){
-    await db.collection("tickets").add({
-        tipo: tipo.value,
-        descripcion: descripcion.value,
-        dependencia: dependencia.value,
-        prioridad: prioridad.value,
-        usuario: user.email,
-        estado:"abierto"
+    // LOGIN / LOGOUT
+    function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+    function logout() { auth.signOut().then(() => location.reload()); }
+    auth.onAuthStateChanged(user => {
+        if(user) { 
+            document.getElementById('login').style.display='none'; 
+            document.getElementById('dashboard').style.display='block'; 
+        }
     });
-    alert("Ticket creado");
-    volver();
-}
 
-function cargarTickets(){
-    db.collection("tickets")
-    .where("usuario","==",user.email)
-    .onSnapshot(snap=>{
-        lista.innerHTML="";
-        snap.forEach(doc=>{
-            const t=doc.data();
-            lista.innerHTML+=`<div style="padding:10px; border-bottom:1px solid #ddd;">${t.tipo} - <b>${t.estado}</b></div>`;
+    // NAVEGACIÓN
+    function abrir(id) {
+        document.getElementById('panel').style.display='none';
+        document.getElementById(id).style.display='block';
+        if(id === 'inventario') cargarInventario();
+    }
+    function volver() {
+        document.getElementById('panel').style.display='grid';
+        document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
+    }
+
+    // MODAL
+    function abrirModal() { document.getElementById('modalNuevo').style.display='block'; }
+    function cerrarModal() { document.getElementById('modalNuevo').style.display='none'; }
+
+    // CRUD INVENTARIO
+    async function guardarEquipo() {
+        const data = {
+            pc: document.getElementById('n_pc').value,
+            tipo: document.getElementById('n_tipo').value,
+            modelo: document.getElementById('n_modelo').value,
+            inventario: document.getElementById('n_inventario').value,
+            so: document.getElementById('n_so').value,
+            procesador: document.getElementById('n_procesador').value,
+            ram: document.getElementById('n_ram').value,
+            disco: document.getElementById('n_disco').value,
+            ip: document.getElementById('n_ip').value,
+            responsable: document.getElementById('n_responsable').value,
+            dependencia: document.getElementById('n_dep').value,
+            campus: document.getElementById('n_campus').value,
+            sede: document.getElementById('n_sede').value
+        };
+        await db.collection("inventario").add(data);
+        alert("Equipo Registrado");
+        cerrarModal();
+    }
+
+    function cargarInventario() {
+        db.collection("inventario").onSnapshot(snap => {
+            todosLosEquipos = [];
+            snap.forEach(doc => todosLosEquipos.push({id: doc.id, ...doc.data()}));
+            aplicarFiltros();
         });
-    });
-}
+    }
 
-function cargarAdmin(){
-    db.collection("tickets").onSnapshot(snap=>{
-        tablaAdmin.innerHTML="";
-        snap.forEach(doc=>{
-            const t=doc.data();
-            const id=doc.id;
-            let clase = t.estado=="abierto"?"abierto":t.estado=="en proceso"?"enproceso":"cerrado";
-            tablaAdmin.innerHTML+=`
-            <tr>
-                <td>${id.substring(0,5)}</td>
-                <td>${t.tipo}</td>
-                <td><span class="badge ${clase}">${t.estado}</span></td>
-                <td>${t.usuario}</td>
-                <td>
-                    <button onclick="verTicket('${id}')">👁</button>
-                    <button onclick="enProceso('${id}')">⏳</button>
-                    <button onclick="cerrarTicket('${id}')">✅</button>
-                    <button onclick="reasignar('${id}')">🔄</button>
-                    <button onclick="eliminar('${id}')">🗑</button>
-                </td>
-            </tr>`;
+    // LÓGICA DE FILTRADO (FILTRAR EN TIEMPO REAL)
+    function aplicarFiltros() {
+        const f_tipo = document.getElementById('f_tipo').value.toLowerCase();
+        const f_mod = document.getElementById('f_modelo').value.toLowerCase();
+        const f_inv = document.getElementById('f_inventario').value.toLowerCase();
+        const f_res = document.getElementById('f_responsable').value.toLowerCase();
+
+        const filtrados = todosLosEquipos.filter(e => {
+            return (e.tipo.toLowerCase().includes(f_tipo)) &&
+                   (e.modelo.toLowerCase().includes(f_mod)) &&
+                   (e.inventario.toLowerCase().includes(f_inv)) &&
+                   (e.responsable.toLowerCase().includes(f_res));
         });
-    });
-}
 
-// ACCIONES TICKETS
-function verTicket(id){ db.collection("tickets").doc(id).get().then(doc=>alert(doc.data().descripcion)); }
-function enProceso(id){ db.collection("tickets").doc(id).update({estado:"en proceso"}); }
-function cerrarTicket(id){ db.collection("tickets").doc(id).update({estado:"cerrado"}); }
-function eliminar(id){ if(confirm("¿Eliminar ticket?")) db.collection("tickets").doc(id).delete(); }
-function reasignar(id){
-    const nuevo = prompt("Nuevo correo:");
-    if(nuevo) db.collection("tickets").doc(id).update({usuario:nuevo});
-}
+        renderizarTabla(filtrados);
+    }
 
-// --- LOGICA INVENTARIO ---
-function mostrarFormEquipo() {
-    document.getElementById("formEquipo").style.display = "block";
-}
-
-async function guardarEquipo() {
-    const pc = document.getElementById("inv_pc").value;
-    const placa = document.getElementById("inv_placa").value;
-
-    if(!pc || !placa) return alert("Por favor completa los campos principales (PC y Placa)");
-
-    await db.collection("inventario").add({
-        pc: pc,
-        tipo: document.getElementById("inv_tipo").value,
-        modelo: document.getElementById("inv_modelo").value,
-        inventario: placa,
-        responsable: document.getElementById("inv_responsable").value,
-        dependencia: document.getElementById("inv_dependencia").value,
-        campus: document.getElementById("inv_campus").value,
-        sede: document.getElementById("inv_sede").value
-    });
-
-    alert("Equipo registrado");
-    document.getElementById("formEquipo").style.display = "none";
-    // Limpiar campos
-    document.querySelectorAll("#formEquipo input").forEach(input => input.value = "");
-}
-
-function cargarInventario() {
-    db.collection("inventario").onSnapshot(snap => {
-        const tabla = document.getElementById("tablaInventario");
-        tabla.innerHTML = "";
-        snap.forEach(doc => {
-            const e = doc.data();
-            const id = doc.id;
-            tabla.innerHTML += `
+    function renderizarTabla(lista) {
+        const tbody = document.getElementById('tablaInventario');
+        document.getElementById('totalEquipos').innerText = lista.length;
+        tbody.innerHTML = "";
+        lista.forEach(e => {
+            tbody.innerHTML += `
                 <tr>
-                    <td><b>${e.pc}</b></td>
+                    <td>${e.pc}</td>
                     <td>${e.tipo}</td>
                     <td>${e.modelo}</td>
                     <td>${e.inventario}</td>
@@ -452,27 +249,21 @@ function cargarInventario() {
                     <td>${e.campus}</td>
                     <td>${e.sede}</td>
                     <td>
-                        <button onclick="eliminarEquipo('${id}')" style="background:#fee2e2; color:#ef4444;">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        <button class="btn-action" style="background:#fbbf24" onclick="editar('${e.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="btn-action" style="background:var(--danger)" onclick="eliminar('${e.id}')"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`;
         });
-    });
-}
-
-async function eliminarEquipo(id) {
-    if (confirm("¿Seguro que deseas eliminar este equipo del inventario?")) {
-        await db.collection("inventario").doc(id).delete();
     }
-}
 
-// LOGOUT
-function logout(){
-    auth.signOut();
-    location.reload();
-}
+    function limpiarFiltros() {
+        document.querySelectorAll('.grid-filtros input, .grid-filtros select').forEach(i => i.value = "");
+        aplicarFiltros();
+    }
+
+    async function eliminar(id) {
+        if(confirm("¿Eliminar equipo?")) await db.collection("inventario").doc(id).delete();
+    }
 </script>
-
 </body>
 </html>
