@@ -48,6 +48,7 @@ font-size:30px;
 margin-bottom:10px;
 }
 
+/* MODULOS */
 .modulo{display:none;padding:20px;}
 
 .form-card{
@@ -138,13 +139,13 @@ Usuarios
 
 <div id="consultar" class="modulo">
 <button onclick="volver()">⬅</button>
-<h2>Consultar</h2>
+<h2>Consultar Tickets</h2>
 <div id="listaTickets"></div>
 </div>
 
 <div id="admin" class="modulo">
 <button onclick="volver()">⬅</button>
-<h2>Admin</h2>
+<h2>Administrar</h2>
 <div id="listaAdmin"></div>
 </div>
 
@@ -174,8 +175,17 @@ Usuarios
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signInWithRedirect, 
+  getRedirectResult,
+  onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { 
+  getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, getDocs, query, where 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* CONFIG */
 const firebaseConfig = {
@@ -195,15 +205,19 @@ let user=null;
 let permisosUsuario={};
 let editId=null;
 
-/* LOGIN ESTABLE */
-window.login=async()=>{
-const provider = new GoogleAuthProvider();
-try{
-await signInWithPopup(auth, provider);
-}catch(e){
-alert(e.message);
-}
+/* LOGIN */
+window.login = async () => {
+  const provider = new GoogleAuthProvider();
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    console.log("Popup bloqueado, usando redirect...");
+    await signInWithRedirect(auth, provider);
+  }
 };
+
+/* RECUPERAR REDIRECT */
+getRedirectResult(auth).catch(console.error);
 
 /* SESION */
 onAuthStateChanged(auth, (u)=>{
