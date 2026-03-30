@@ -13,39 +13,32 @@
 
 <style>
 
-/* FONDO */
+/* GENERAL */
 body{
 margin:0;
 font-family:Arial;
-background:url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f') no-repeat center center/cover;
+background:#f1f5f9;
 }
 
-/* CAPA OSCURA */
-.overlay{
-background:rgba(0,0,0,0.6);
-min-height:100vh;
-padding:20px;
-}
-
-/* HEADER */
 header{
+background:#0f172a;
 color:white;
+padding:15px;
 display:flex;
 justify-content:space-between;
 }
 
 /* LOGIN */
 #login{
+height:90vh;
 display:flex;
 flex-direction:column;
-align-items:center;
 justify-content:center;
-height:80vh;
-color:white;
+align-items:center;
 }
 
 #login button{
-padding:12px 20px;
+padding:12px;
 background:#3b82f6;
 color:white;
 border:none;
@@ -53,31 +46,31 @@ border-radius:8px;
 }
 
 /* DASHBOARD */
-#dashboard{display:none;}
+#dashboard{display:none;padding:30px;}
 
 .grid{
-display:flex;
-justify-content:center;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
 gap:20px;
-flex-wrap:wrap;
-margin-top:60px;
 }
 
+/* CARDS */
 .card{
 background:white;
-padding:20px;
-width:220px;
-border-radius:12px;
+padding:25px;
+border-radius:15px;
 text-align:center;
 cursor:pointer;
-box-shadow:0 5px 15px rgba(0,0,0,0.3);
 transition:.3s;
+box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
-.card:hover{transform:scale(1.05);}
+.card:hover{
+transform:translateY(-5px);
+}
 
 .card i{
-font-size:30px;
+font-size:40px;
 color:#2563eb;
 }
 
@@ -116,8 +109,8 @@ margin-top:20px;
 }
 
 th, td{
-padding:10px;
-border-bottom:1px solid #ddd;
+padding:12px;
+border-bottom:1px solid #eee;
 text-align:center;
 }
 
@@ -128,9 +121,9 @@ color:white;
 font-size:12px;
 }
 
-.abierto{background:green;}
-.enproceso{background:orange;}
-.cerrado{background:red;}
+.abierto{background:#22c55e;}
+.enproceso{background:#eab308;}
+.cerrado{background:#ef4444;}
 
 button{
 cursor:pointer;
@@ -145,10 +138,8 @@ border-radius:6px;
 
 <body>
 
-<div class="overlay">
-
 <header>
-<h2>🎫 Sistema Tickets TI</h2>
+<span>🎫 Sistema Tickets TI</span>
 <button onclick="logout()">Salir</button>
 </header>
 
@@ -165,20 +156,50 @@ border-radius:6px;
 
 <div class="card" onclick="abrir('consultar')">
 <i class="fas fa-search"></i>
-<h3>Ver Tickets</h3>
+<h3>Consultar Tickets</h3>
 <p>Ver el estado de tus tickets</p>
 </div>
 
 <div class="card" onclick="abrir('crear')">
 <i class="fas fa-paper-plane"></i>
-<h3>Enviar Ticket</h3>
-<p>Reportar problema</p>
+<h3>Enviar un Ticket</h3>
+<p>Reportar un problema</p>
 </div>
 
 <div class="card" onclick="abrir('admin')">
 <i class="fas fa-clipboard-list"></i>
 <h3>Administrar Tickets</h3>
-<p>Gestionar tickets</p>
+<p>Gestionar los tickets</p>
+</div>
+
+<div class="card">
+<i class="fas fa-desktop"></i>
+<h3>Equipos Administrativos</h3>
+</div>
+
+<div class="card">
+<i class="fas fa-laptop"></i>
+<h3>Equipos de Salas</h3>
+</div>
+
+<div class="card">
+<i class="fas fa-calendar"></i>
+<h3>Calendario</h3>
+</div>
+
+<div class="card">
+<i class="fas fa-school"></i>
+<h3>Aulas DTI</h3>
+</div>
+
+<div class="card">
+<i class="fas fa-server"></i>
+<h3>Salas Sistemas</h3>
+</div>
+
+<div class="card">
+<i class="fas fa-print"></i>
+<h3>Impresoras</h3>
 </div>
 
 </div>
@@ -191,11 +212,13 @@ border-radius:6px;
 <select id="dependencia">
 <option>Sistemas</option>
 <option>Administración</option>
+<option>Académico</option>
 </select>
 
 <select id="tipo">
 <option>Soporte</option>
 <option>Mantenimiento</option>
+<option>Instalación</option>
 </select>
 
 <textarea id="descripcion" placeholder="Describe el problema"></textarea>
@@ -206,7 +229,7 @@ border-radius:6px;
 <option>Alta</option>
 </select>
 
-<button class="btn" onclick="crearTicket()">Crear</button>
+<button class="btn" onclick="crearTicket()">Crear Ticket</button>
 </div>
 
 <!-- CONSULTAR -->
@@ -238,7 +261,6 @@ border-radius:6px;
 </div>
 
 </div>
-</div>
 
 <script>
 
@@ -256,6 +278,7 @@ let user;
 // LOGIN
 function login(){
 const provider = new firebase.auth.GoogleAuthProvider();
+
 auth.signInWithPopup(provider)
 .then(res=>mostrar(res.user))
 .catch(e=>alert(e.message));
@@ -282,7 +305,7 @@ if(id==="admin") cargarAdmin();
 }
 
 function volver(){
-document.getElementById("panel").style.display="flex";
+document.getElementById("panel").style.display="grid";
 document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
 }
 
@@ -345,8 +368,7 @@ tablaAdmin.innerHTML+=`
 // ACCIONES
 function verTicket(id){
 db.collection("tickets").doc(id).get().then(doc=>{
-const t=doc.data();
-alert(t.descripcion);
+alert(doc.data().descripcion);
 });
 }
 
@@ -359,7 +381,7 @@ db.collection("tickets").doc(id).update({estado:"cerrado"});
 }
 
 function eliminar(id){
-if(confirm("Eliminar?")){
+if(confirm("¿Eliminar ticket?")){
 db.collection("tickets").doc(id).delete();
 }
 }
