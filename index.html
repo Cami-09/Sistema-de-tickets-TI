@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema TI Uniciencia - Gestión Integral</title>
+    <title>Sistema TIC Uniciencia - Gestión Integral</title>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        :root { --primary: #2563eb; --purple: #8b5cf6; --dark: #0f172a; --bg: #f1f5f9; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; }
+        :root { --primary: #2563eb; --purple: #8b5cf6; --dark: #0f172a; --bg: #f1f5f9; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --info: #06b6d4; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #334155; }
         header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
 
@@ -28,40 +28,29 @@
 
         .modulo { display: none; background: white; padding: 25px; border-radius: 12px; min-height: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-        /* ESTILOS INVENTARIO Y FILTROS */
+        /* FILTROS Y CONTENEDORES */
         .filtros-box { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
-        .grid-filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px; }
-        .resumen-celeste { background: #e0f2fe; padding: 12px; border-radius: 8px; color: #0369a1; margin-bottom: 15px; text-align: center; font-weight: 500; border: 1px solid #bae6fd; }
+        .grid-filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+        .resumen-celeste { background: #e0f2fe; padding: 12px; border-radius: 8px; color: #0369a1; margin-bottom: 15px; text-align: center; font-weight: 500; }
+        .header-blue { background: var(--primary); color: white; padding: 10px 15px; border-radius: 5px 5px 0 0; font-weight: bold; }
 
-        input, select, textarea { padding: 9px; border: 1px solid #cbd5e1; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 0.9rem; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 15px; }
+        input, select, textarea { padding: 9px; border: 1px solid #cbd5e1; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 0.9rem; margin-top: 5px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0px; }
         th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
         td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
 
         /* ACCIONES ICONOS */
-        .btn-acc { width: 30px; height: 30px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; font-size: 12px; }
-        .bg-edit { background: var(--warning); }
-        .bg-tools { background: var(--primary); }
-        .bg-copy { background: #06b6d4; }
-        .bg-view { background: #00bcd4; }
-        .bg-delete { background: var(--danger); }
-
-        /* CALENDARIO */
-        .fc-toolbar-title { font-size: 1.2rem !important; font-weight: bold; }
-        .fc-button-primary { background-color: var(--purple) !important; border-color: var(--purple) !important; }
-        .event-bga { background: #475569; color: white; padding: 3px; border-radius: 4px; font-size: 0.7rem; }
-        .badge-bga { background: #f59e0b; color: black; padding: 1px 3px; border-radius: 3px; font-weight: bold; margin-right: 3px; }
+        .btn-acc { padding: 6px 12px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; font-size: 12px; display: inline-flex; align-items: center; gap: 5px; }
+        .bg-chequeo { background: #00bcd4; } .bg-historial { background: #607d8b; } .bg-modificar { background: #f59e0b; } .bg-delete { background: #ef4444; }
 
         /* MODALES */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
-        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 85%; max-width: 850px; border-radius: 12px; position: relative; max-height: 90vh; overflow-y: auto; }
-        .grid-modal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .modal-content { background: white; margin: 5% auto; padding: 25px; width: 90%; max-width: 500px; border-radius: 12px; position: relative; }
         .close-modal { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; }
 
         .btn { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-gray { background: #64748b; color: white; }
-        .badge { padding: 4px 8px; border-radius: 10px; font-size: 0.75rem; color: white; }
     </style>
 </head>
 <body>
@@ -72,125 +61,81 @@
 </header>
 
 <div id="login" style="display:flex; height:80vh; justify-content:center; align-items:center;">
-    <button class="btn btn-blue" onclick="login()"><i class="fab fa-google"></i> Ingresar con Google</button>
+    <button class="btn btn-blue" onclick="login()">Ingresar con Google</button>
 </div>
 
 <div id="dashboard">
     <div id="panel-principal" class="grid-main">
-        <div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Consultar Tickets</h3></div>
-        <div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Enviar un Ticket</h3></div>
-        <div class="card" onclick="abrir('admin_tickets')"><i class="fas fa-clipboard-list"></i><h3>Administrar Tickets</h3></div>
+        <div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Tickets</h3></div>
         <div class="card" onclick="abrir('inv_admin')"><i class="fas fa-desktop"></i><h3>Equipos Administrativos</h3></div>
         <div class="card" onclick="abrir('inv_salas')"><i class="fas fa-laptop"></i><h3>Equipos de Salas</h3></div>
         <div class="card" onclick="abrir('mod_calendario')"><i class="fas fa-calendar-alt"></i><h3>Calendario</h3></div>
-        <div class="card"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
-        <div class="card"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
-        <div class="card"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
+        <div class="card" onclick="abrir('mod_aulas')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
     </div>
 
-    <div id="crear" class="modulo">
-        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-        <h2>Crear Nuevo Ticket</h2>
-        <div style="max-width: 500px; margin-top:20px;">
-            <select id="t_dep"><option>Sistemas</option><option>Administración</option></select>
-            <select id="t_tipo"><option>Soporte</option><option>Mantenimiento</option></select>
-            <textarea id="t_desc" placeholder="Descripción del problema..." rows="5" style="margin-top:10px;"></textarea>
-            <button class="btn btn-blue" onclick="crearTicket()">Enviar Ticket</button>
-        </div>
-    </div>
-
-    <div id="consultar" class="modulo">
-        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-        <h2>Mis Tickets</h2>
-        <div id="lista-tickets" style="margin-top:20px;"></div>
-    </div>
-
-    <div id="admin_tickets" class="modulo">
-        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-        <h2>Administración de Tickets</h2>
-        <table>
-            <thead><tr><th>ID</th><th>Tipo</th><th>Estado</th><th>Usuario</th><th>Acciones</th></tr></thead>
-            <tbody id="tablaAdminTickets"></tbody>
-        </table>
-    </div>
-
-    <div id="mod_calendario" class="modulo">
-        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-        <h2 style="text-align:center;">📅 Calendario de Mantenimientos</h2>
-        <div id="calendar"></div>
-    </div>
-
-    <div id="modulo_inv" class="modulo">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div id="mod_aulas" class="modulo">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px;">
             <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-            <h2 id="titulo_inv" style="color:var(--primary); margin:0;"></h2>
-            <button class="btn btn-blue" onclick="abrirModalRegistro()">+ Registrar nuevo equipo</button>
+            <h2 style="color:var(--primary); margin:0;">Aulas DTI</h2>
+            <h2 style="color:red; margin:0;" id="totalAulas">0</h2>
         </div>
-        <div id="resumen_conteo" class="resumen-celeste" style="margin-top:15px;"></div>
+
         <div class="filtros-box">
+            <h3 style="margin-top:0;">Filtros de Búsqueda</h3>
             <div class="grid-filtros">
-                <input type="text" id="f_pc" placeholder="PC" onkeyup="filtrar()">
-                <input type="text" id="f_inv" placeholder="Inventario" onkeyup="filtrar()">
-                <select id="f_dep" onchange="filtrar()"><option value="">-- Dependencia --</option><option>Sistemas</option><option>Tesorería</option></select>
-                <select id="f_sed" onchange="filtrar()"><option value="">-- Sede --</option><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select>
+                <div><label>Nombre Aula</label><input type="text" id="fa_nombre" onkeyup="filtrarAulas()"></div>
+                <div><label>Campus</label><select id="fa_campus" onchange="filtrarAulas()"><option value="">Todos</option><option>Bucaramanga</option><option>Bogotá</option></select></div>
+                <div><label>Sede</label><select id="fa_sede" onchange="filtrarAulas()"><option value="">Todas</option><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select></div>
+                <div><label>Ubicación</label><input type="text" id="fa_ubicacion" onkeyup="filtrarAulas()"></div>
+            </div>
+            <div style="margin-top:15px; text-align:right; display:flex; justify-content:flex-end; gap:10px;">
+                <button class="btn btn-blue" onclick="filtrarAulas()"><i class="fas fa-filter"></i> Filtrar</button>
+                <button class="btn btn-gray" onclick="limpiarFiltrosAulas()"><i class="fas fa-sync"></i> Limpiar</button>
+                <button class="btn btn-blue" onclick="abrirModalAula()">+ Agregar Aula</button>
             </div>
         </div>
-        <div style="overflow-x:auto;">
+
+        <div class="header-blue">Listado de Aulas DTI</div>
+        <div style="overflow-x:auto; border: 1px solid #e2e8f0; border-radius: 0 0 8px 8px;">
             <table>
-                <thead><tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Inventario</th><th>Responsable</th><th>Dependencia</th><th>Acciones</th></tr></thead>
-                <tbody id="tablaData"></tbody>
+                <thead>
+                    <tr><th>Nombre</th><th>Campus</th><th>Sede</th><th>Ubicación</th><th>Acciones</th></tr>
+                </thead>
+                <tbody id="tablaAulas"></tbody>
             </table>
         </div>
     </div>
+
+    <div id="mod_calendario" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><div id="calendar"></div></div>
+    <div id="modulo_inv" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><tbody id="tablaData"></tbody></div>
 </div>
 
-<div id="modalEquipo" class="modal">
+<div id="modalAula" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="cerrarModales()">&times;</span>
-        <h2 id="modalTitle">Registrar equipo</h2>
-        <div class="grid-modal" id="formEquipo">
-            <input type="text" id="n_pc" placeholder="PC">
-            <select id="n_tipo"><option>Portátil</option><option>AIO</option><option>Torre</option></select>
-            <input type="text" id="n_mod" placeholder="Modelo">
-            <input type="text" id="n_inv" placeholder="Inventario">
-            <select id="n_so"><option>Windows 10</option><option>Windows 11</option></select>
-            <input type="text" id="n_proc" placeholder="Procesador">
-            <select id="n_ram"><option>8 GB</option><option>16 GB</option><option>32 GB</option></select>
-            <input type="text" id="n_disco" placeholder="Disco">
-            <input type="text" id="n_ip" placeholder="IP">
-            <input type="text" id="n_res" placeholder="Responsable">
-            <select id="n_dep"><option>Sistemas</option><option>Tesorería</option><option>Auditorio</option></select>
-            <select id="n_cam"><option>Bucaramanga</option><option>Bogotá</option></select>
-            <select id="n_sed"><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select>
-            <input type="text" id="n_correo" placeholder="Correo">
-            <input type="text" id="n_ext" placeholder="Extensión">
-            <input type="date" id="n_fecha">
+        <h2 style="margin-top:0;">Agregar Nueva Aula DTI</h2>
+        <div style="margin-top:15px;">
+            <label>Nombre del Aula</label>
+            <input type="text" id="na_nombre" placeholder="Ej: AT1101">
+            
+            <label>Campus</label>
+            <select id="na_campus"><option>Bucaramanga</option><option>Bogotá</option></select>
+            
+            <label>Sede</label>
+            <select id="na_sede"><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select>
+            
+            <label>Ubicación Detallada (ej. Piso, Oficina)</label>
+            <input type="text" id="na_ubicacion" placeholder="Ej: Torre 1 - Aula 101">
+            
+            <div style="background:#f8fafc; padding:10px; border-radius:8px; margin-top:15px; font-size:0.85rem; color:#64748b;">
+                <strong>Equipos del Aula</strong><br>
+                Los equipos se agregarán por defecto: Computador Portátil, Televisor, Conexión LAN, Conexión HDMI, Cámara.
+            </div>
         </div>
-        <div style="margin-top:20px; text-align:right;">
-            <button class="btn btn-blue" onclick="ejecutarGuardado()"><i class="fas fa-save"></i> Guardar</button>
+        <div style="margin-top:20px; text-align:right; display:flex; justify-content:flex-end; gap:10px;">
+            <button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button>
+            <button class="btn btn-blue" onclick="guardarAula()">Guardar Aula</button>
         </div>
-    </div>
-</div>
-
-<div id="modalMante" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
-        <span class="close-modal" onclick="cerrarModales()">&times;</span>
-        <h2>Registrar Mantenimiento</h2>
-        <input type="date" id="m_fecha" style="margin-bottom:10px;">
-        <select id="m_tipo" style="margin-bottom:10px;"><option>Preventivo</option><option>Correctivo</option></select>
-        <textarea id="m_desc" placeholder="Detalles técnicos..." rows="5"></textarea>
-        <button class="btn btn-blue" style="width:100%; margin-top:15px;" onclick="guardarMantenimiento()">Registrar en Calendario</button>
-    </div>
-</div>
-
-<div id="modalHistorial" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="cerrarModales()">&times;</span>
-        <h2>Historial de Mantenimientos</h2>
-        <table>
-            <thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th></tr></thead>
-            <tbody id="bodyHistorial"></tbody>
-        </table>
     </div>
 </div>
 
@@ -200,8 +145,8 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
-    
-    let user, currentColl = "", localData = [], selectedId = "", modoModal = "registro", calendar;
+
+    let user, dataAulas = [];
 
     // AUTH
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
@@ -212,120 +157,91 @@
     function abrir(id) {
         document.getElementById('panel-principal').style.display='none';
         document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
-        
-        if(id === 'inv_admin' || id === 'inv_salas') {
-            document.getElementById('modulo_inv').style.display='block';
-            currentColl = (id === 'inv_admin') ? "inventario" : "inventario_salas";
-            document.getElementById('titulo_inv').innerText = (id === 'inv_admin') ? "Inventario Administrativo" : "Inventario de Salas";
-            cargarInventario();
-        } else {
-            document.getElementById(id).style.display='block';
-            if(id === 'consultar') cargarMisTickets();
-            if(id === 'admin_tickets') cargarAdminTickets();
-            if(id === 'mod_calendario') initCalendar();
-        }
+        document.getElementById(id).style.display='block';
+        if(id === 'mod_aulas') cargarAulas();
     }
-
     function volver() { document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
 
-    // --- TICKETS ---
-    async function crearTicket() {
-        await db.collection("tickets").add({ usuario: user.email, tipo: t_tipo.value, desc: t_desc.value, estado: "Abierto", fecha: new Date().toLocaleString() });
-        alert("Enviado"); volver();
-    }
+    // --- LÓGICA AULAS DTI ---
+    function abrirModalAula() { document.getElementById('modalAula').style.display='block'; }
 
-    function cargarMisTickets() {
-        db.collection("tickets").where("usuario", "==", user.email).onSnapshot(snap => {
-            const d = document.getElementById('lista-tickets'); d.innerHTML = "";
-            snap.forEach(doc => { const t = doc.data(); d.innerHTML += `<div style="padding:10px; background:#fff; border:1px solid #ddd; margin-bottom:5px; border-radius:8px;">${t.tipo} - <b>${t.estado}</b></div>`; });
+    async function guardarAula() {
+        const nombre = document.getElementById('na_nombre').value;
+        if(!nombre) return alert("El nombre es obligatorio");
+        
+        await db.collection("aulas_dti").add({
+            nombre: nombre,
+            campus: document.getElementById('na_campus').value,
+            sede: document.getElementById('na_sede').value,
+            ubicacion: document.getElementById('na_ubicacion').value,
+            fechaRegistro: new Date().toISOString()
         });
-    }
-
-    function cargarAdminTickets() {
-        db.collection("tickets").onSnapshot(snap => {
-            const t = document.getElementById('tablaAdminTickets'); t.innerHTML = "";
-            snap.forEach(doc => {
-                const d = doc.data(); const id = doc.id;
-                t.innerHTML += `<tr><td>${id.substring(0,5)}</td><td>${d.tipo}</td><td>${d.estado}</td><td>${d.usuario}</td>
-                <td><button onclick="cambiarEst('${id}','Cerrado')">✅</button></td></tr>`;
-            });
-        });
-    }
-    async function cambiarEst(id, e) { await db.collection("tickets").doc(id).update({estado: e}); }
-
-    // --- CALENDARIO ---
-    function initCalendar() {
-        if(calendar) calendar.destroy();
-        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-            locale: 'es', initialView: 'dayGridMonth',
-            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' },
-            events: async function(info, successCallback) {
-                let evs = [];
-                const snap = await db.collectionGroup("mantenimientos").get();
-                snap.forEach(doc => {
-                    const m = doc.data();
-                    evs.push({ title: m.responsable || 'Mante', start: m.fecha, extendedProps: { campus: m.campus || 'BGA' } });
-                });
-                successCallback(evs);
-            },
-            eventContent: function(arg) {
-                return { html: `<div class="event-bga"><span class="badge-bga">${arg.event.extendedProps.campus}</span><b>${arg.event.title}</b></div>` };
-            }
-        });
-        calendar.render();
-    }
-
-    // --- INVENTARIO ACCIONES ---
-    function cargarInventario() { db.collection(currentColl).onSnapshot(snap => { localData = []; snap.forEach(doc => localData.push({id: doc.id, ...doc.data()})); filtrar(); }); }
-
-    function filtrar() {
-        const res = localData.filter(e => (e.pc||"").toLowerCase().includes(f_pc.value.toLowerCase()) && (e.inv||"").toLowerCase().includes(f_inv.value.toLowerCase()));
-        document.getElementById('resumen_conteo').innerText = `Encontrados: ${res.length}`;
-        const b = document.getElementById('tablaData'); b.innerHTML = "";
-        res.forEach(e => {
-            b.innerHTML += `<tr><td><b>${e.pc}</b></td><td>${e.tipo}</td><td>${e.modelo}</td><td>${e.inv}</td><td>${e.res}</td><td>${e.dep}</td>
-            <td>
-                <button class="btn-acc bg-edit" onclick="abrirEdit('${e.id}')"><i class="fas fa-edit"></i></button>
-                <button class="btn-acc bg-tools" onclick="abrirMante('${e.id}')"><i class="fas fa-tools"></i></button>
-                <button class="btn-acc bg-copy" onclick="abrirCopy('${e.id}')"><i class="fas fa-copy"></i></button>
-                <button class="btn-acc bg-view" onclick="abrirHistorial('${e.id}')"><i class="fas fa-eye"></i></button>
-                <button class="btn-acc bg-delete" onclick="eliminarEq('${e.id}')"><i class="fas fa-trash"></i></button>
-            </td></tr>`;
-        });
-    }
-
-    function abrirModalRegistro() { modoModal="registro"; document.getElementById('modalTitle').innerText="Registrar"; document.querySelectorAll('#formEquipo input, #formEquipo select').forEach(i=>i.value=""); document.getElementById('modalEquipo').style.display='block'; }
-    function abrirEdit(id) { modoModal="editar"; selectedId=id; rellenar(localData.find(e=>e.id===id)); document.getElementById('modalTitle').innerText="Editar"; document.getElementById('modalEquipo').style.display='block'; }
-    function abrirCopy(id) { modoModal="copia"; rellenar(localData.find(e=>e.id===id)); document.getElementById('modalTitle').innerText="Copiar"; document.getElementById('modalEquipo').style.display='block'; }
-
-    function rellenar(d) {
-        n_pc.value=d.pc; n_tipo.value=d.tipo; n_mod.value=d.modelo; n_inv.value=d.inv; n_res.value=d.res; n_dep.value=d.dep; n_cam.value=d.cam; n_sed.value=d.sed; n_fecha.value=d.fecha;
-    }
-
-    async function ejecutarGuardado() {
-        const obj = { pc: n_pc.value, tipo: n_tipo.value, modelo: n_mod.value, inv: n_inv.value, res: n_res.value, dep: n_dep.value, cam: n_cam.value, sed: n_sed.value, fecha: n_fecha.value };
-        if(modoModal === "editar") await db.collection(currentColl).doc(selectedId).update(obj);
-        else await db.collection(currentColl).add(obj);
+        
+        alert("Aula agregada con éxito");
         cerrarModales();
+        document.getElementById('na_nombre').value = "";
     }
 
-    function abrirMante(id) { selectedId=id; document.getElementById('modalMante').style.display='block'; }
-    async function guardarMantenimiento() {
-        const eq = localData.find(e=>e.id===selectedId);
-        await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ fecha: m_fecha.value, tipo: m_tipo.value, desc: m_desc.value, responsable: eq.res, campus: eq.cam });
-        cerrarModales(); alert("Mantenimiento Registrado");
-    }
-
-    function abrirHistorial(id) {
-        db.collection(currentColl).doc(id).collection("mantenimientos").get().then(snap => {
-            const h = document.getElementById('bodyHistorial'); h.innerHTML = "";
-            snap.forEach(doc => { const m = doc.data(); h.innerHTML += `<tr><td>${m.fecha}</td><td>${m.tipo}</td><td>${m.desc}</td></tr>`; });
-            document.getElementById('modalHistorial').style.display='block';
+    function cargarAulas() {
+        db.collection("aulas_dti").orderBy("nombre").onSnapshot(snap => {
+            dataAulas = [];
+            snap.forEach(doc => dataAulas.push({id: doc.id, ...doc.data()}));
+            filtrarAulas();
         });
     }
 
-    async function eliminarEq(id) { if(confirm("¿Eliminar?")) await db.collection(currentColl).doc(id).delete(); }
+    function filtrarAulas() {
+        const nom = document.getElementById('fa_nombre').value.toLowerCase();
+        const cam = document.getElementById('fa_campus').value;
+        const sed = document.getElementById('fa_sede').value;
+        const ubi = document.getElementById('fa_ubicacion').value.toLowerCase();
+
+        const filtrados = dataAulas.filter(a => 
+            (a.nombre.toLowerCase().includes(nom)) &&
+            (cam === "" || a.campus === cam) &&
+            (sed === "" || a.sede === sed) &&
+            (a.ubicacion.toLowerCase().includes(ubi))
+        );
+
+        renderAulas(filtrados);
+    }
+
+    function renderAulas(lista) {
+        document.getElementById('totalAulas').innerText = lista.length;
+        const tbody = document.getElementById('tablaAulas');
+        tbody.innerHTML = "";
+        lista.forEach(a => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><b>${a.nombre}</b></td>
+                    <td>${a.campus}</td>
+                    <td>${a.sede}</td>
+                    <td>${a.ubicacion}</td>
+                    <td>
+                        <button class="btn-acc bg-chequeo"><i class="fas fa-check-square"></i> Chequeo</button>
+                        <button class="btn-acc bg-historial"><i class="fas fa-history"></i> Historial</button>
+                        <button class="btn-acc bg-modificar"><i class="fas fa-edit"></i> Modificar</button>
+                        <button class="btn-acc bg-delete" onclick="eliminarAula('${a.id}')"><i class="fas fa-trash"></i> Eliminar</button>
+                    </td>
+                </tr>`;
+        });
+    }
+
+    async function eliminarAula(id) {
+        if(confirm("¿Estás seguro de que deseas eliminar esta aula? Esta acción no se puede deshacer.")) {
+            await db.collection("aulas_dti").doc(id).delete();
+            alert("Aula eliminada");
+        }
+    }
+
+    function limpiarFiltrosAulas() {
+        document.getElementById('fa_nombre').value = "";
+        document.getElementById('fa_campus').value = "";
+        document.getElementById('fa_sede').value = "";
+        document.getElementById('fa_ubicacion').value = "";
+        filtrarAulas();
+    }
 </script>
 </body>
 </html>
