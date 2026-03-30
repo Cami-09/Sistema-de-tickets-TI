@@ -12,78 +12,89 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-body{margin:0;font-family:Arial;background:#f1f5f9;}
 
+/* FONDO */
+body{
+margin:0;
+font-family:Arial;
+background:url('https://images.unsplash.com/photo-1524995997946-a1c2e315a42f') no-repeat center center/cover;
+}
+
+/* CAPA OSCURA */
+.overlay{
+background:rgba(0,0,0,0.6);
+min-height:100vh;
+padding:20px;
+}
+
+/* HEADER */
 header{
-background:#0f172a;
 color:white;
-padding:15px;
 display:flex;
 justify-content:space-between;
 }
 
+/* LOGIN */
 #login{
-height:100vh;
 display:flex;
 flex-direction:column;
-justify-content:center;
 align-items:center;
+justify-content:center;
+height:80vh;
+color:white;
 }
 
 #login button{
-padding:12px;
+padding:12px 20px;
 background:#3b82f6;
 color:white;
 border:none;
 border-radius:8px;
 }
 
-#dashboard{display:none;padding:30px;}
+/* DASHBOARD */
+#dashboard{display:none;}
 
 .grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+display:flex;
+justify-content:center;
 gap:20px;
+flex-wrap:wrap;
+margin-top:60px;
 }
 
 .card{
 background:white;
-padding:25px;
-border-radius:15px;
+padding:20px;
+width:220px;
+border-radius:12px;
 text-align:center;
 cursor:pointer;
+box-shadow:0 5px 15px rgba(0,0,0,0.3);
 transition:.3s;
-box-shadow:0 4px 10px rgba(0,0,0,0.1);
 }
 
-.card:hover{transform:translateY(-5px);}
+.card:hover{transform:scale(1.05);}
 
 .card i{
-font-size:40px;
+font-size:30px;
 color:#2563eb;
 }
 
-.modulo{display:none;}
-
-.form-card{
+/* MODULOS */
+.modulo{
+display:none;
 background:white;
-padding:25px;
+padding:20px;
 border-radius:12px;
-box-shadow:0 4px 12px rgba(0,0,0,0.1);
-max-width:800px;
+margin-top:20px;
 }
 
-.row{
-display:flex;
-gap:20px;
-margin-bottom:15px;
-}
-
-.row div{flex:1;}
-
+/* FORM */
 textarea, select{
 width:100%;
 padding:10px;
+margin:10px 0;
 border-radius:8px;
 border:1px solid #ccc;
 }
@@ -98,31 +109,15 @@ cursor:pointer;
 }
 
 /* ADMIN */
-.stats{display:flex;gap:20px;margin:20px 0;}
-
-.box{
-padding:15px 25px;
-border-radius:12px;
-background:white;
-font-weight:bold;
-box-shadow:0 3px 8px rgba(0,0,0,0.1);
-}
-
-.abiertos{border-left:6px solid #22c55e;}
-.proceso{border-left:6px solid #eab308;}
-.cerrados{border-left:6px solid #ef4444;}
-
 table{
 width:100%;
 border-collapse:collapse;
-background:white;
-border-radius:12px;
-overflow:hidden;
+margin-top:20px;
 }
 
 th, td{
-padding:12px;
-border-bottom:1px solid #eee;
+padding:10px;
+border-bottom:1px solid #ddd;
 text-align:center;
 }
 
@@ -133,64 +128,77 @@ color:white;
 font-size:12px;
 }
 
-.abierto{background:#22c55e;}
-.enproceso{background:#eab308;}
-.cerrado{background:#ef4444;}
+.abierto{background:green;}
+.enproceso{background:orange;}
+.cerrado{background:red;}
 
-.btn-icon{
-border:none;
-padding:8px;
-margin:2px;
-border-radius:8px;
+button{
 cursor:pointer;
-color:white;
+border:none;
+padding:6px 10px;
+margin:2px;
+border-radius:6px;
 }
 
-.ver{background:#06b6d4;}
-.procesoBtn{background:#eab308;}
-.cerrar{background:#22c55e;}
-.eliminar{background:#ef4444;}
 </style>
 </head>
 
 <body>
 
+<div class="overlay">
+
 <header>
-<span>🎫 Sistema Tickets TI</span>
+<h2>🎫 Sistema Tickets TI</h2>
 <button onclick="logout()">Salir</button>
 </header>
 
+<!-- LOGIN -->
 <div id="login">
 <h2>Iniciar sesión</h2>
 <button onclick="login()">Ingresar con Google</button>
 </div>
 
+<!-- DASHBOARD -->
 <div id="dashboard">
 
 <div id="panel" class="grid">
-<div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Consultar Tickets</h3></div>
-<div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Crear Ticket</h3></div>
-<div class="card" onclick="abrir('admin')"><i class="fas fa-clipboard-list"></i><h3>Administrar Tickets</h3></div>
+
+<div class="card" onclick="abrir('consultar')">
+<i class="fas fa-search"></i>
+<h3>Ver Tickets</h3>
+<p>Ver el estado de tus tickets</p>
 </div>
 
+<div class="card" onclick="abrir('crear')">
+<i class="fas fa-paper-plane"></i>
+<h3>Enviar Ticket</h3>
+<p>Reportar problema</p>
+</div>
+
+<div class="card" onclick="abrir('admin')">
+<i class="fas fa-clipboard-list"></i>
+<h3>Administrar Tickets</h3>
+<p>Gestionar tickets</p>
+</div>
+
+</div>
+
+<!-- CREAR -->
 <div id="crear" class="modulo">
 <button onclick="volver()">⬅ Volver</button>
-<h2>Crear ticket</h2>
+<h2>Crear Ticket</h2>
 
-<div class="form-card">
 <select id="dependencia">
 <option>Sistemas</option>
 <option>Administración</option>
-<option>Académico</option>
 </select>
 
 <select id="tipo">
 <option>Soporte</option>
 <option>Mantenimiento</option>
-<option>Instalación</option>
 </select>
 
-<textarea id="descripcion"></textarea>
+<textarea id="descripcion" placeholder="Describe el problema"></textarea>
 
 <select id="prioridad">
 <option>Baja</option>
@@ -198,41 +206,27 @@ color:white;
 <option>Alta</option>
 </select>
 
-<select id="campus">
-<option>Principal</option>
-<option>Norte</option>
-<option>Sur</option>
-</select>
-
-<button class="btn" onclick="crearTicket()">Crear Ticket</button>
-</div>
+<button class="btn" onclick="crearTicket()">Crear</button>
 </div>
 
+<!-- CONSULTAR -->
 <div id="consultar" class="modulo">
 <button onclick="volver()">⬅ Volver</button>
 <h2>Mis Tickets</h2>
 <div id="lista"></div>
 </div>
 
+<!-- ADMIN -->
 <div id="admin" class="modulo">
 <button onclick="volver()">⬅ Volver</button>
-
-<h2>Administrar tickets</h2>
-
-<div class="stats">
-<div class="box abiertos">Abiertos <span id="abiertosEl">0</span></div>
-<div class="box proceso">Proceso <span id="procesoEl">0</span></div>
-<div class="box cerrados">Cerrados <span id="cerradosEl">0</span></div>
-</div>
+<h2>Administrar Tickets</h2>
 
 <table>
 <thead>
 <tr>
 <th>ID</th>
 <th>Tipo</th>
-<th>Dependencia</th>
 <th>Estado</th>
-<th>Prioridad</th>
 <th>Usuario</th>
 <th>Acciones</th>
 </tr>
@@ -244,8 +238,10 @@ color:white;
 </div>
 
 </div>
+</div>
 
 <script>
+
 // FIREBASE
 firebase.initializeApp({
 apiKey:"AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
@@ -260,25 +256,19 @@ let user;
 // LOGIN
 function login(){
 const provider = new firebase.auth.GoogleAuthProvider();
-
 auth.signInWithPopup(provider)
-.then(result=>{
-mostrar(result.user);
-})
-.catch(error=>{
-alert(error.message);
-});
+.then(res=>mostrar(res.user))
+.catch(e=>alert(e.message));
 }
 
 auth.onAuthStateChanged(u=>{
 if(u) mostrar(u);
 });
 
-// ✅ CORREGIDO
 function mostrar(u){
-user = u;
-document.getElementById("login").style.display = "none";
-document.getElementById("dashboard").style.display = "block";
+user=u;
+document.getElementById("login").style.display="none";
+document.getElementById("dashboard").style.display="block";
 }
 
 // NAV
@@ -292,32 +282,21 @@ if(id==="admin") cargarAdmin();
 }
 
 function volver(){
-document.getElementById("panel").style.display="grid";
+document.getElementById("panel").style.display="flex";
 document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
 }
 
 // CREAR
 async function crearTicket(){
-
-const data = {
-dependencia: dependencia.value,
+await db.collection("tickets").add({
 tipo: tipo.value,
 descripcion: descripcion.value,
+dependencia: dependencia.value,
 prioridad: prioridad.value,
-campus: campus.value,
 usuario: user.email,
-estado: "abierto",
-fecha: new Date()
-};
-
-if(data.descripcion===""){
-alert("Completa la descripción");
-return;
-}
-
-await db.collection("tickets").add(data);
+estado:"abierto"
+});
 alert("Ticket creado");
-descripcion.value="";
 }
 
 // CONSULTAR
@@ -325,19 +304,10 @@ function cargarTickets(){
 db.collection("tickets")
 .where("usuario","==",user.email)
 .onSnapshot(snap=>{
-
-document.getElementById("lista").innerHTML="";
-
+lista.innerHTML="";
 snap.forEach(doc=>{
 const t=doc.data();
-
-document.getElementById("lista").innerHTML+=`
-<div class="ticket">
-<b>${t.tipo}</b><br>
-${t.descripcion}<br>
-Estado: ${t.estado}
-</div>
-`;
+lista.innerHTML+=`<div>${t.tipo} - ${t.estado}</div>`;
 });
 });
 }
@@ -345,46 +315,30 @@ Estado: ${t.estado}
 // ADMIN
 function cargarAdmin(){
 db.collection("tickets").onSnapshot(snap=>{
-
-document.getElementById("tablaAdmin").innerHTML="";
-
-let abiertos=0, proceso=0, cerrados=0;
+tablaAdmin.innerHTML="";
 
 snap.forEach(doc=>{
 const t=doc.data();
 const id=doc.id;
 
-if(t.estado==="abierto") abiertos++;
-if(t.estado==="en proceso") proceso++;
-if(t.estado==="cerrado") cerrados++;
+let clase = t.estado=="abierto"?"abierto":t.estado=="en proceso"?"enproceso":"cerrado";
 
-let estadoClass="";
-if(t.estado==="abierto") estadoClass="abierto";
-if(t.estado==="en proceso") estadoClass="enproceso";
-if(t.estado==="cerrado") estadoClass="cerrado";
-
-document.getElementById("tablaAdmin").innerHTML+=`
+tablaAdmin.innerHTML+=`
 <tr>
 <td>${id.substring(0,5)}</td>
 <td>${t.tipo}</td>
-<td>${t.dependencia}</td>
-<td><span class="badge ${estadoClass}">${t.estado}</span></td>
-<td>${t.prioridad}</td>
+<td><span class="badge ${clase}">${t.estado}</span></td>
 <td>${t.usuario}</td>
 <td>
 <button onclick="verTicket('${id}')">👁</button>
 <button onclick="enProceso('${id}')">⏳</button>
 <button onclick="cerrarTicket('${id}')">✅</button>
+<button onclick="reasignar('${id}')">🔄</button>
 <button onclick="eliminar('${id}')">🗑</button>
 </td>
 </tr>
 `;
 });
-
-document.getElementById("abiertosEl").innerText = abiertos;
-document.getElementById("procesoEl").innerText = proceso;
-document.getElementById("cerradosEl").innerText = cerrados;
-
 });
 }
 
@@ -392,7 +346,7 @@ document.getElementById("cerradosEl").innerText = cerrados;
 function verTicket(id){
 db.collection("tickets").doc(id).get().then(doc=>{
 const t=doc.data();
-alert("Tipo: "+t.tipo+"\nDescripción: "+t.descripcion);
+alert(t.descripcion);
 });
 }
 
@@ -405,9 +359,15 @@ db.collection("tickets").doc(id).update({estado:"cerrado"});
 }
 
 function eliminar(id){
-if(confirm("¿Eliminar ticket?")){
+if(confirm("Eliminar?")){
 db.collection("tickets").doc(id).delete();
 }
+}
+
+function reasignar(id){
+const nuevo = prompt("Nuevo correo:");
+if(!nuevo) return;
+db.collection("tickets").doc(id).update({usuario:nuevo});
 }
 
 // LOGOUT
@@ -415,6 +375,7 @@ function logout(){
 auth.signOut();
 location.reload();
 }
+
 </script>
 
 </body>
