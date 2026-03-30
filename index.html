@@ -137,7 +137,11 @@ box-shadow:0 2px 6px rgba(0,0,0,0.1);
 
 <div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Consultar Tickets</h3></div>
 <div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Crear Ticket</h3></div>
-<div class="card"><i class="fas fa-user-shield"></i><h3>Administración</h3></div>
+
+<div class="card" onclick="abrir('admin')">
+<i class="fas fa-clipboard-list"></i>
+<h3>Administrar Tickets</h3>
+</div>
 
 <div class="card"><i class="fas fa-desktop"></i><h3>Equipos Administrativos</h3></div>
 <div class="card"><i class="fas fa-laptop"></i><h3>Equipos de Salas</h3></div>
@@ -213,6 +217,13 @@ box-shadow:0 2px 6px rgba(0,0,0,0.1);
 <div id="lista"></div>
 </div>
 
+<!-- ADMIN -->
+<div id="admin" class="modulo">
+<button onclick="volver()">⬅ Volver</button>
+<h2>Administrar Tickets</h2>
+<div id="listaAdmin"></div>
+</div>
+
 </div>
 
 <script>
@@ -257,6 +268,9 @@ function abrir(id){
 document.getElementById("panel").style.display="none";
 document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
 document.getElementById(id).style.display="block";
+
+if(id==="consultar") cargarTickets();
+if(id==="admin") cargarAdmin();
 }
 
 function volver(){
@@ -264,7 +278,7 @@ document.getElementById("panel").style.display="grid";
 document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
 }
 
-// CREAR TICKET
+// CREAR
 async function crearTicket(){
 
 const data = {
@@ -310,8 +324,74 @@ Estado: ${t.estado}
 </div>
 `;
 });
-
 });
+}
+
+// ADMIN
+function cargarAdmin(){
+db.collection("tickets").onSnapshot(snap=>{
+listaAdmin.innerHTML="";
+
+snap.forEach(doc=>{
+const t=doc.data();
+const id=doc.id;
+
+listaAdmin.innerHTML += `
+<div class="ticket">
+<b>${t.tipo}</b><br>
+${t.descripcion}<br>
+📍 ${t.dependencia} | ${t.campus}<br>
+⚡ ${t.prioridad}<br>
+Estado: ${t.estado}<br><br>
+
+<button onclick="verTicket('${id}')">👁</button>
+<button onclick="enProceso('${id}')">⏳</button>
+<button onclick="cerrarTicket('${id}')">✅</button>
+<button onclick="reasignar('${id}')">🔄</button>
+<button onclick="eliminar('${id}')">🗑</button>
+
+</div>
+`;
+});
+});
+}
+
+function verTicket(id){
+db.collection("tickets").doc(id).get().then(doc=>{
+const t=doc.data();
+alert(
+"📄 DETALLE\n\n"+
+"Tipo: "+t.tipo+"\n"+
+"Descripción: "+t.descripcion+"\n"+
+"Estado: "+t.estado+"\n"+
+"Usuario: "+t.usuario
+);
+});
+}
+
+function enProceso(id){
+db.collection("tickets").doc(id).update({estado:"en proceso"});
+}
+
+function cerrarTicket(id){
+db.collection("tickets").doc(id).update({estado:"cerrado"});
+}
+
+function eliminar(id){
+if(confirm("¿Eliminar ticket?")){
+db.collection("tickets").doc(id).delete();
+}
+}
+
+function reasignar(id){
+const nuevo = prompt("Correo del nuevo gestor:");
+if(!nuevo) return;
+
+db.collection("tickets").doc(id).update({
+usuario:nuevo
+});
+
+alert("✅ Ticket reasignado");
 }
 
 // LOGOUT
