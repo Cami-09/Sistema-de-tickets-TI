@@ -11,7 +11,7 @@
   <style>
     body { font-family: Arial, sans-serif; background: #f5f7fa; margin: 0; padding: 0; }
     header { background: #1e88a8; color: white; padding: 15px; font-size: 24px; text-align: center; position: relative; }
-    .tabs { display: flex; background: #e0e0e0; justify-content: center; }
+    .tabs { display: flex; background: #e0e0e0; justify-content: center; margin-top: 20px; }
     .tabs button { padding: 12px 25px; border: none; background: none; cursor: pointer; font-size: 16px; transition: 0.3s; }
     .tabs button.active { background: #1e88a8; color: white; border-radius: 6px 6px 0 0; }
     .cardDash { width: 250px; background: white; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: 0.3s; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); margin: 10px; }
@@ -24,6 +24,10 @@
     @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
     @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
     .modulo { display: none; padding: 20px; }
+    .modulo .card { margin: 10px 0; }
+    .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.5); }
+    .modal-content { background: white; margin: 15% auto; padding: 20px; border-radius: 8px; width: 300px; text-align: center; }
+    .modal-content select, .modal-content button { width: 90%; margin: 5px 0; }
   </style>
 </head>
 <body>
@@ -33,18 +37,18 @@
 </header>
 
 <!-- LOGIN -->
-<div id="loginDiv" style="padding:20px; text-align:center;">
-  <button id="loginBtn" style="padding:12px 25px; background:#1e88a8; color:white; border:none; border-radius:6px; font-size:16px;">Iniciar sesión con Google</button>
+<div id="loginDiv" style="padding: 20px; text-align: center;">
+  <button id="loginBtn" style="padding: 12px 25px; background: #1e88a8; color: white; border: none; border-radius: 6px; font-size: 16px;">Iniciar sesión con Google</button>
 </div>
 
 <!-- DASHBOARD -->
-<div id="dashboard" style="display:none; padding:20px;">
+<div id="dashboard" style="display:none; padding: 20px;">
 
   <h1 style="color:#1e88a8; border-left:6px solid #1e88a8; padding-left:10px;">
     Panel de Control
   </h1>
 
-  <div style="display:flex; flex-wrap:wrap; gap:20px; margin-top:20px;">
+  <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px;">
 
     <!-- CONSULTAR TICKETS -->
     <div class="cardDash" onclick="mostrarModulo('listaTickets')">
@@ -61,7 +65,7 @@
     </div>
 
     <!-- ADMIN TICKETS -->
-    <div class="cardDash" onclick="mostrarModulo('listaTickets')">
+    <div class="cardDash" onclick="mostrarModulo('adminTickets')">
       <div class="icon">🛠️</div>
       <h3>Administrar Tickets</h3>
       <p>Gestionar los tickets del sistema.</p>
@@ -79,6 +83,7 @@
   <!-- CONTENIDO MODULOS -->
   <div id="crearTicket" class="modulo"></div>
   <div id="listaTickets" class="modulo"></div>
+  <div id="adminTickets" class="modulo"></div>
   <div id="usuariosSection" class="modulo"></div>
 
 </div>
@@ -109,7 +114,7 @@
   const auth = firebase.auth();
   const db = firebase.firestore();
   const storage = firebase.storage();
-  let currentUser, currentRole, ticketAReasignar=null;
+  let currentUser, currentRole, ticketAReasignar = null;
 
   const showToast = (msg) => { 
     const toast = document.getElementById("toast");
@@ -344,15 +349,4 @@
 
   // ================== CERRAR SESION =================
   function cerrarSesion() {
-    auth.signOut().then(() => {
-      currentUser = null;
-      currentRole = null;
-      document.getElementById("dashboard").style.display = "none";
-      document.getElementById("loginDiv").style.display = "block";
-    });
-  }
-
-</script>
-
-</body>
-</html>
+   
