@@ -1,31 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Tickets PRO - Dashboard</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
-  <style>
-    body { font-family: Arial; background:#f5f7fa; margin:0; padding:0; }
-    header { background:#4285F4; color:white; padding:15px; font-size:24px; text-align:center; position:relative; }
-    #logoutBtn { position:absolute; top:15px; right:15px; background:#F44336; color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; }
-    #loginDiv { padding:50px; text-align:center; }
-    #loginDiv button { padding:12px 25px; background:#4285F4; color:white; border:none; border-radius:6px; font-size:18px; cursor:pointer; }
-    #panelControl { display:flex; flex-wrap:wrap; justify-content:center; padding:20px; }
-    .modulo-btn { width:180px; height:180px; background:white; margin:15px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.1); transition:0.3s; text-align:center; }
-    .modulo-btn:hover { box-shadow:0 5px 15px rgba(0,0,0,0.2); transform:translateY(-5px); }
-    .modulo-btn i { font-size:36px; margin-bottom:10px; color:#4285F4; }
-    .modulo { display:none; padding:20px; }
-    .card { background:white; border-radius:12px; padding:15px; margin:15px 0; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-    input, select { padding:8px; margin:5px 0; width:100%; box-sizing:border-box; }
-    button { cursor:pointer; margin:5px 0; padding:8px 12px; border:none; border-radius:6px; }
-    table { width:100%; border-collapse:collapse; margin-top:10px; }
-    table, th, td { border:1px solid #ccc; border-radius:6px; }
-    th { background:#4285F4; color:white; }
-  </style>
+<meta charset="UTF-8">
+<title>Tickets PRO - Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
+<style>
+body { font-family: Arial; background:#f5f7fa; margin:0; padding:0; }
+header { background:#4285F4; color:white; padding:15px; font-size:24px; text-align:center; position:relative; }
+#logoutBtn { position:absolute; top:15px; right:15px; background:#F44336; color:white; border:none; padding:8px 12px; border-radius:6px; cursor:pointer; }
+#loginDiv { padding:50px; text-align:center; }
+#loginDiv button { padding:12px 25px; background:#4285F4; color:white; border:none; border-radius:6px; font-size:18px; cursor:pointer; }
+#panelControl { display:flex; flex-wrap:wrap; justify-content:center; padding:20px; }
+.modulo-btn { width:180px; height:180px; background:white; margin:15px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 5px rgba(0,0,0,0.1); transition:0.3s; text-align:center; }
+.modulo-btn:hover { box-shadow:0 5px 15px rgba(0,0,0,0.2); transform:translateY(-5px); }
+.modulo-btn i { font-size:36px; margin-bottom:10px; color:#4285F4; }
+.modulo { display:none; padding:20px; }
+.card { background:white; border-radius:12px; padding:15px; margin:15px 0; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+input, select { padding:8px; margin:5px 0; width:100%; box-sizing:border-box; }
+button { cursor:pointer; margin:5px 0; padding:8px 12px; border:none; border-radius:6px; }
+table { width:100%; border-collapse:collapse; margin-top:10px; }
+table, th, td { border:1px solid #ccc; border-radius:6px; }
+th { background:#4285F4; color:white; }
+td button { padding:4px 8px; margin:2px; font-size:12px; }
+</style>
 </head>
 <body>
 
@@ -39,140 +40,142 @@
 
 <div id="dashboard" style="display:none;">
 
-  <!-- Panel de módulos -->
   <div id="panelControl">
-    <div class="modulo-btn" onclick="mostrarModulo('crearTicket')"><i class="fas fa-paper-plane"></i><h4>Crear Ticket</h4></div>
-    <div class="modulo-btn" onclick="mostrarModulo('listaTickets')"><i class="fas fa-list"></i><h4>Lista de Tickets</h4></div>
-    <div class="modulo-btn" onclick="mostrarModulo('gestionUsuarios')"><i class="fas fa-users-cog"></i><h4>Gestión de Usuarios</h4></div>
-    <div class="modulo-btn" onclick="mostrarModulo('reasignarTickets')"><i class="fas fa-exchange-alt"></i><h4>Reasignar Tickets</h4></div>
-    <div class="modulo-btn" onclick="mostrarModulo('reportes')"><i class="fas fa-chart-line"></i><h4>Reportes</h4></div>
-    <div class="modulo-btn" onclick="mostrarModulo('notificaciones')"><i class="fas fa-bell"></i><h4>Notificaciones</h4></div>
-    <div class="modulo-btn" onclick="mostrarModulo('configuracion')"><i class="fas fa-cogs"></i><h4>Configuración</h4></div>
-    <div class="modulo-btn" onclick="mostrarModulo('ayuda')"><i class="fas fa-question-circle"></i><h4>Ayuda / Soporte</h4></div>
-    <div class="modulo-btn" onclick="mostrarModulo('historial')"><i class="fas fa-history"></i><h4>Historial Tickets</h4></div>
+    <div class="modulo-btn" onclick="mostrarModulo('consultarTickets')"><i class="fas fa-search"></i><h4>Consultar Tickets</h4></div>
+    <div class="modulo-btn" onclick="mostrarModulo('enviarTickets')"><i class="fas fa-paper-plane"></i><h4>Enviar Tickets</h4></div>
+    <div class="modulo-btn" onclick="mostrarModulo('administrarTickets')"><i class="fas fa-tasks"></i><h4>Administrar Tickets</h4></div>
+    <div class="modulo-btn" onclick="mostrarModulo('equiposAdministrativos')"><i class="fas fa-desktop"></i><h4>Equipos Administrativos</h4></div>
+    <div class="modulo-btn" onclick="mostrarModulo('equiposSalas')"><i class="fas fa-laptop"></i><h4>Equipos de Salas</h4></div>
+    <div class="modulo-btn" onclick="mostrarModulo('calendario')"><i class="fas fa-calendar-alt"></i><h4>Calendario</h4></div>
+    <div class="modulo-btn" onclick="mostrarModulo('aulasDTI')"><i class="fas fa-chalkboard"></i><h4>Aulas DTI</h4></div>
+    <div class="modulo-btn" onclick="mostrarModulo('salasSistemas')"><i class="fas fa-server"></i><h4>Salas de Sistemas</h4></div>
+    <div class="modulo-btn" onclick="mostrarModulo('impresoras')"><i class="fas fa-print"></i><h4>Impresoras</h4></div>
   </div>
 
-  <!-- Contenido de módulos -->
-  <div id="crearTicket" class="modulo">
+  <!-- Módulos -->
+  <div id="consultarTickets" class="modulo"><div id="listaTickets"></div></div>
+  <div id="enviarTickets" class="modulo">
     <div class="card">
-      <h3>Crear Ticket</h3>
+      <h3>Enviar Ticket</h3>
       <input id="titulo" placeholder="Título">
       <input id="desc" placeholder="Descripción">
       <select id="prioridad"><option>baja</option><option>media</option><option>alta</option></select>
       <input type="file" id="file">
-      <button onclick="crear()">Enviar Ticket</button>
+      <button onclick="crearTicket()">Enviar Ticket</button>
     </div>
   </div>
-
-  <div id="listaTickets" class="modulo"><div id="lista"></div></div>
-
-  <div id="gestionUsuarios" class="modulo">
-    <div class="card">
-      <h3>Gestión de Usuarios</h3>
-      <input id="emailUser" placeholder="Email usuario">
-      <input id="nameUser" placeholder="Nombre completo">
-      <select id="rolUser"><option>Usuario</option><option>Gestor</option><option>Admin</option></select>
-      <button onclick="guardarRol()">Agregar / Guardar Usuario</button>
-      <h4>Usuarios Registrados:</h4>
-      <table><thead><tr><th>Email</th><th>Nombre</th><th>Rol</th><th>Acciones</th></tr></thead>
-        <tbody id="tablaUsuarios"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div id="reasignarTickets" class="modulo"><div id="listaReasignar"></div></div>
-
-  <div id="reportes" class="modulo"><p>Reportes de tickets</p></div>
-  <div id="notificaciones" class="modulo"><p>Notificaciones</p></div>
-  <div id="configuracion" class="modulo"><p>Configuraciones</p></div>
-  <div id="ayuda" class="modulo"><p>Ayuda y soporte</p></div>
-  <div id="historial" class="modulo"><p>Historial completo de tickets</p></div>
+  <div id="administrarTickets" class="modulo"><div id="adminTickets"></div></div>
+  <div id="equiposAdministrativos" class="modulo"><p>Equipos Administrativos</p></div>
+  <div id="equiposSalas" class="modulo"><p>Equipos de Salas</p></div>
+  <div id="calendario" class="modulo"><p>Calendario</p></div>
+  <div id="aulasDTI" class="modulo"><p>Aulas DTI</p></div>
+  <div id="salasSistemas" class="modulo"><p>Salas de Sistemas</p></div>
+  <div id="impresoras" class="modulo"><p>Impresoras</p></div>
 
 </div>
 
 <script>
-  // ==================== FIREBASE ====================
-  const firebaseConfig = {
-    apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
-    authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com",
-    projectId: "sistema-de-tickets-ti-b12f5",
-    storageBucket: "sistema-de-tickets-ti-b12f5.appspot.com",
-    messagingSenderId: "356054718850",
-    appId: "1:356054718850:web:3a439d4ffbd4f017a7179b"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-  const storage = firebase.storage();
-  let currentUser, currentRole;
+const firebaseConfig = {
+  apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
+  authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com",
+  projectId: "sistema-de-tickets-ti-b12f5",
+  storageBucket: "sistema-de-tickets-ti-b12f5.appspot.com",
+  messagingSenderId: "356054718850",
+  appId: "1:356054718850:web:3a439d4ffbd4f017a7179b"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+let currentUser, currentRole;
 
-  // ==================== LOGIN ====================
-  document.getElementById("loginBtn").addEventListener("click", () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    auth.signInWithPopup(provider);
+// ================= LOGIN =================
+document.getElementById("loginBtn").addEventListener("click",()=>{
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider);
+});
+
+auth.onAuthStateChanged(async user=>{
+  if(!user) return;
+  currentUser=user;
+  document.getElementById("loginDiv").style.display="none";
+  document.getElementById("dashboard").style.display="block";
+
+  const roleRef = db.collection("roles").doc(user.email);
+  let doc = await roleRef.get();
+
+  if(user.email==="camicarmona1212@gmail.com"){
+    await roleRef.set({rol:"admin"});
+    doc = await roleRef.get();
+  }
+
+  if(!doc.exists){
+    await roleRef.set({rol:"usuario"});
+    doc = await roleRef.get();
+  }
+
+  currentRole = doc.data().rol;
+
+  cargarTickets();
+});
+
+// ================= MÓDULOS =================
+function mostrarModulo(id){
+  document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
+  document.getElementById(id).style.display="block";
+}
+
+// ================= TICKETS =================
+async function crearTicket(){
+  let url="";
+  const f=file.files[0];
+  if(f){const ref=storage.ref("tickets/"+Date.now()); await ref.put(f); url=await ref.getDownloadURL();}
+  await db.collection("tickets").add({
+    titulo:titulo.value,
+    descripcion:desc.value,
+    estado:"abierto",
+    prioridad:prioridad.value,
+    usuario:currentUser.email,
+    tecnico:"",
+    historial:[]
   });
+  alert("Ticket creado");
+  titulo.value=""; desc.value=""; prioridad.value="baja"; file.value="";
+  cargarTickets();
+}
 
-  auth.onAuthStateChanged(async user => {
-    if(!user) return;
-    currentUser = user;
-    document.getElementById("loginDiv").style.display="none";
-    document.getElementById("dashboard").style.display="block";
-
-    const roleRef = db.collection("roles").doc(user.email);
-    let doc = await roleRef.get();
-
-    // Forzar admin para tu correo
-    if(user.email==="camicarmona1212@gmail.com"){ await roleRef.set({rol:"admin"}); doc=await roleRef.get(); }
-    if(!doc.exists){ await roleRef.set({rol:"usuario"}); doc=await roleRef.get(); }
-
-    currentRole = doc.data().rol;
-    mostrarModulo('crearTicket');
-    cargarUsuarios();
-    cargarTickets();
+async function cargarTickets(){
+  let query=db.collection("tickets");
+  if(currentRole==="usuario") query=query.where("usuario","==",currentUser.email);
+  if(currentRole==="gestor") query=query.where("tecnico","==",currentUser.email);
+  const snapshot = await query.get();
+  const listaTickets = document.getElementById("listaTickets");
+  listaTickets.innerHTML="";
+  snapshot.forEach(doc=>{
+    const t=doc.data();
+    const div=document.createElement("div");
+    div.className="card";
+    div.innerHTML=`
+      <b>${t.titulo}</b><br>
+      ${t.descripcion}<br>
+      Estado: <b>${t.estado}</b><br>
+      Prioridad: <b>${t.prioridad}</b><br>
+      Usuario: ${t.usuario}<br>
+      Gestor: ${t.tecnico || "Sin asignar"}
+    `;
+    listaTickets.prepend(div);
   });
+}
 
-  function mostrarModulo(id){
-    document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
-    document.getElementById(id).style.display="block";
-  }
-
-  function cerrarSesion(){
-    auth.signOut().then(()=>{currentUser=null; currentRole=null; document.getElementById("dashboard").style.display="none"; document.getElementById("loginDiv").style.display="block";});
-  }
-
-  // ==================== FUNCIONES USUARIOS ====================
-  async function guardarRol(){
-    const email = document.getElementById("emailUser").value.trim();
-    const nombre = document.getElementById("nameUser").value.trim();
-    const rol = document.getElementById("rolUser").value;
-    if(!email || !nombre){ alert("Ingrese email y nombre"); return; }
-    await db.collection("roles").doc(email).set({rol,nombre});
-    document.getElementById("emailUser").value=""; document.getElementById("nameUser").value="";
-    cargarUsuarios();
-  }
-
-  async function cargarUsuarios(){
-    const tabla = document.getElementById("tablaUsuarios");
-    tabla.innerHTML="";
-    const snap = await db.collection("roles").get();
-    snap.forEach(doc=>{
-      const email=doc.id; const data=doc.data();
-      const tr = document.createElement("tr");
-      tr.innerHTML=`<td>${email}</td><td>${data.nombre||""}</td><td>${data.rol}</td>
-      <td>
-        <button onclick="editarUsuario('${email}')">✏️</button>
-        <button onclick="eliminarUsuario('${email}')">🗑️</button>
-      </td>`;
-      tabla.appendChild(tr);
-    });
-  }
-
-  function editarUsuario(email){ alert("Editar usuario "+email+" (implementar formulario modal)"); }
-  function eliminarUsuario(email){ if(confirm("Eliminar usuario "+email+"?")) db.collection("roles").doc(email).delete().then(()=>cargarUsuarios()); }
-
-  // ==================== FUNCIONES TICKETS ====================
-  async function crear(){ alert("Crear ticket (implementar subida)"); }
-  async function cargarTickets(){ alert("Cargar tickets (implementar consulta según rol)"); }
+// ================= SESIÓN =================
+function cerrarSesion(){
+  auth.signOut().then(()=>{
+    currentUser=null;
+    currentRole=null;
+    document.getElementById("dashboard").style.display="none";
+    document.getElementById("loginDiv").style.display="block";
+  });
+}
 </script>
 
 </body>
