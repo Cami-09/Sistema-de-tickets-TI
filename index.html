@@ -26,51 +26,61 @@
         .card i { font-size: 35px; color: var(--primary); margin-bottom: 12px; }
         .card h3 { margin: 10px 0; font-size: 1rem; }
 
-        .modulo { display: none; background: white; padding: 25px; border-radius: 12px; min-height: 400px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .modulo { display: none; background: white; padding: 25px; border-radius: 12px; min-height: 450px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-        /* FILTROS E INFO */
+        /* FILTROS E INFO INVENTARIO */
         .filtros-box { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
         .grid-filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
-        .resumen-celeste { background: #e0f2fe; padding: 12px; border-radius: 8px; color: #0369a1; margin-bottom: 15px; text-align: center; font-weight: 500; }
+        .resumen-celeste { background: #e0f2fe; padding: 12px; border-radius: 8px; color: #0369a1; margin-bottom: 15px; text-align: center; font-weight: 500; border: 1px solid #bae6fd; }
 
         input, select, textarea { padding: 9px; border: 1px solid #cbd5e1; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 0.9rem; }
 
-        /* TABLA */
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
-        th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
+        /* TABLAS */
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 15px; }
+        th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; color: #475569; }
         td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
 
-        /* ACCIONES */
-        .btn-acc { width: 30px; height: 30px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; }
+        /* ACCIONES ICONOS */
+        .btn-acc { width: 30px; height: 30px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; font-size: 12px; }
         .bg-edit { background: #f59e0b; }
         .bg-tools { background: #2563eb; }
+        .bg-copy { background: #06b6d4; }
         .bg-view { background: #00bcd4; }
         .bg-delete { background: #ef4444; }
 
         /* MODAL */
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
         .modal-content { background: white; margin: 2% auto; padding: 25px; width: 85%; max-width: 850px; border-radius: 12px; position: relative; max-height: 90vh; overflow-y: auto; }
         .grid-modal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 
-        .btn { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+        .btn { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-gray { background: #64748b; color: white; }
         
-        .badge { padding: 4px 8px; border-radius: 12px; color: white; font-size: 0.75rem; font-weight: bold; }
+        .badge { padding: 4px 10px; border-radius: 12px; color: white; font-size: 0.7rem; font-weight: bold; text-transform: uppercase; }
         .abierto { background: #22c55e; }
-        .proceso { background: #eab308; }
+        .enproceso { background: #eab308; }
         .cerrado { background: #ef4444; }
+
+        .ticket-item { padding: 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
 <header>
-    <strong>SISTEMA TIC - UNICIENCIA</strong>
+    <div style="display:flex; align-items:center; gap:10px;">
+        <i class="fas fa-microchip"></i>
+        <strong>SISTEMA TIC - UNICIENCIA</strong>
+    </div>
     <button onclick="logout()" class="btn" style="background:#334155; color:white; padding:5px 12px;">Salir</button>
 </header>
 
 <div id="login" style="display:flex; height:80vh; justify-content:center; align-items:center;">
-    <button class="btn btn-blue" onclick="login()">Ingresar con Google</button>
+    <div style="text-align:center; background:white; padding:40px; border-radius:15px; box-shadow:0 10px 25px rgba(0,0,0,0.05);">
+        <i class="fas fa-shield-alt" style="font-size:3rem; color:var(--primary); margin-bottom:15px;"></i>
+        <h2>Bienvenido al Portal TI</h2>
+        <button class="btn btn-blue" onclick="login()"><i class="fab fa-google"></i> Ingresar con Google</button>
+    </div>
 </div>
 
 <div id="dashboard">
@@ -87,25 +97,28 @@
     </div>
 
     <div id="crear" class="modulo">
-        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-        <h2>Crear Nuevo Ticket</h2>
-        <div style="max-width: 500px; margin-top: 20px;">
+        <button onclick="volver()" class="btn btn-gray"><i class="fas fa-arrow-left"></i> Volver</button>
+        <h2 style="margin-top:20px;">Crear Nuevo Ticket de Soporte</h2>
+        <div style="max-width: 550px; background:#f8fafc; padding:20px; border-radius:12px;">
+            <label>Dependencia:</label>
             <select id="t_dep"><option>Sistemas</option><option>Administración</option><option>Académico</option></select>
-            <select id="t_tipo"><option>Soporte</option><option>Mantenimiento</option><option>Instalación</option></select>
-            <textarea id="t_desc" placeholder="Describa el problema detalladamente..." rows="5" style="margin-top:10px;"></textarea>
-            <button class="btn btn-blue" style="margin-top:15px;" onclick="crearTicket()">Enviar Reporte</button>
+            <label>Tipo de Requerimiento:</label>
+            <select id="t_tipo"><option>Soporte Técnico</option><option>Mantenimiento</option><option>Instalación</option></select>
+            <label>Descripción del Problema:</label>
+            <textarea id="t_desc" placeholder="Escriba aquí los detalles..." rows="5"></textarea>
+            <button class="btn btn-blue" style="margin-top:15px; width:100%; justify-content:center;" onclick="crearTicket()">Enviar Ticket</button>
         </div>
     </div>
 
     <div id="consultar" class="modulo">
-        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-        <h2>Mis Tickets Enviados</h2>
-        <div id="lista-tickets" style="margin-top:20px;"></div>
+        <button onclick="volver()" class="btn btn-gray"><i class="fas fa-arrow-left"></i> Volver</button>
+        <h2 style="margin-top:20px;">Mis Solicitudes</h2>
+        <div id="lista-tickets"></div>
     </div>
 
     <div id="admin_tickets" class="modulo">
-        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-        <h2>Panel de Gestión de Tickets</h2>
+        <button onclick="volver()" class="btn btn-gray"><i class="fas fa-arrow-left"></i> Volver</button>
+        <h2 style="margin-top:20px;">Administración Global de Tickets</h2>
         <table>
             <thead>
                 <tr><th>ID</th><th>Tipo</th><th>Estado</th><th>Usuario</th><th>Acciones</th></tr>
@@ -116,7 +129,7 @@
 
     <div id="modulo_inv" class="modulo">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
+            <button onclick="volver()" class="btn btn-gray"><i class="fas fa-arrow-left"></i> Volver</button>
             <h2 id="titulo_inv" style="color:var(--primary); margin:0;"></h2>
             <button class="btn btn-blue" onclick="abrirModal()">+ Registrar nuevo equipo</button>
         </div>
@@ -129,12 +142,13 @@
                 <input type="text" id="f_mod" placeholder="Modelo" onkeyup="filtrar()">
                 <input type="text" id="f_inv" placeholder="Inventario" onkeyup="filtrar()">
                 <input type="text" id="f_res" placeholder="Responsable" onkeyup="filtrar()">
-                <select id="f_dep" onchange="filtrar()"><option value="">-- Dependencia --</option><option>Sistemas</option><option>Auditorio</option></select>
+                <select id="f_dep" onchange="filtrar()"><option value="">-- Dependencia --</option><option>Sistemas</option><option>Auditorio</option><option>Tesorería</option></select>
                 <input type="text" id="f_ip" placeholder="IP" onkeyup="filtrar()">
             </div>
-            <div style="margin-top:10px; display:flex; gap:10px;">
-                <button class="btn btn-blue" onclick="filtrar()"><i class="fas fa-filter"></i> Aplicar Filtros</button>
+            <div style="margin-top:12px; display:flex; gap:10px;">
+                <button class="btn btn-blue" onclick="filtrar()"><i class="fas fa-filter"></i> Filtrar</button>
                 <button class="btn btn-gray" onclick="limpiarFiltros()">Limpiar</button>
+                <button class="btn" style="background:#10b981; color:white;"><i class="fas fa-file-excel"></i> Exportar</button>
             </div>
         </div>
 
@@ -151,35 +165,41 @@
 
 <div id="modalEquipo" class="modal">
     <div class="modal-content">
-        <h2 style="margin-top:0;">Registrar equipo</h2>
+        <h2 style="margin-top:0;">Registrar Nuevo Equipo</h2>
         <div class="grid-modal">
             <input type="text" id="n_pc" placeholder="Nombre PC">
             <select id="n_tipo"><option>Portátil</option><option>AIO</option><option>Torre</option></select>
             <input type="text" id="n_mod" placeholder="Modelo">
-            <input type="text" id="n_inv" placeholder="Inventario">
-            <select id="n_so"><option>Windows 10</option><option>Windows 11</option></select>
+            <input type="text" id="n_inv" placeholder="Placa Inventario">
+            <select id="n_so"><option>Windows 10</option><option>Windows 11</option><option>Linux</option></select>
             <input type="text" id="n_proc" placeholder="Procesador">
-            <select id="n_ram"><option>8GB</option><option>16GB</option></select>
-            <input type="text" id="n_disco" placeholder="Disco">
-            <input type="text" id="n_ip" placeholder="IP">
+            <select id="n_ram"><option>4GB</option><option>8GB</option><option>16GB</option><option>32GB</option></select>
+            <input type="text" id="n_disco" placeholder="Disco Duro">
+            <input type="text" id="n_ip" placeholder="Dirección IP">
+            <input type="text" id="n_term" placeholder="Terminal">
             <input type="text" id="n_res" placeholder="Responsable">
-            <select id="n_dep"><option>Sistemas</option><option>Auditorio</option></select>
-            <input type="text" id="n_cam" placeholder="Campus">
-            <input type="text" id="n_sed" placeholder="Sede">
-            <input type="text" id="n_correo" placeholder="Correo">
+            <select id="n_dep"><option>Sistemas</option><option>Tesorería</option><option>Auditorio</option><option>Rectoría</option></select>
+            <input type="text" id="n_mail" placeholder="Correo">
+            <input type="text" id="n_cam" placeholder="Campus (Bucaramanga)">
+            <input type="text" id="n_sed" placeholder="Sede (A o D)">
             <input type="text" id="n_ext" placeholder="Extensión">
             <input type="date" id="n_fecha">
+            <input type="text" id="n_obs" placeholder="Observaciones">
         </div>
-        <div style="margin-top:20px; text-align:right;">
-            <button class="btn btn-blue" onclick="guardarEquipo()"><i class="fas fa-save"></i> Guardar</button>
+        <div style="margin-top:20px; text-align:right; border-top:1px solid #eee; padding-top:15px;">
+            <button class="btn btn-blue" onclick="guardarEquipo()"><i class="fas fa-save"></i> Guardar Equipo</button>
             <button class="btn btn-gray" onclick="cerrarModal()">Cancelar</button>
         </div>
     </div>
 </div>
 
 <script>
-    // FIREBASE
-    const firebaseConfig = { apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw", authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com", projectId: "sistema-de-tickets-ti-b12f5" };
+    // FIREBASE CONFIG
+    const firebaseConfig = { 
+        apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw", 
+        authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com", 
+        projectId: "sistema-de-tickets-ti-b12f5" 
+    };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
@@ -195,6 +215,9 @@
             user = u;
             document.getElementById('login').style.display='none';
             document.getElementById('dashboard').style.display='block';
+        } else {
+            document.getElementById('login').style.display='flex';
+            document.getElementById('dashboard').style.display='none';
         }
     });
 
@@ -202,17 +225,17 @@
     function abrir(id) {
         document.getElementById('panel-principal').style.display='none';
         document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
-        document.getElementById(id).style.display='block';
 
         if(id === 'inv_admin' || id === 'inv_salas') {
-            document.getElementById(id).style.display='none';
             document.getElementById('modulo_inv').style.display='block';
             currentColl = (id === 'inv_admin') ? "inventario" : "inventario_salas";
             document.getElementById('titulo_inv').innerText = (id === 'inv_admin') ? "Inventario Administrativo" : "Inventario Equipos de Salas";
             cargarInventario();
+        } else {
+            document.getElementById(id).style.display='block';
+            if(id === 'consultar') cargarMisTickets();
+            if(id === 'admin_tickets') cargarAdminTickets();
         }
-        if(id === 'consultar') cargarMisTickets();
-        if(id === 'admin_tickets') cargarAdminTickets();
     }
 
     function volver() {
@@ -223,30 +246,37 @@
     function abrirModal() { document.getElementById('modalEquipo').style.display='block'; }
     function cerrarModal() { document.getElementById('modalEquipo').style.display='none'; }
 
-    // LÓGICA TICKETS
+    // --- LÓGICA TICKETS ---
     async function crearTicket() {
+        const d = document.getElementById('t_desc').value;
+        if(!d) return alert("Por favor describa el problema");
         await db.collection("tickets").add({
-            usuario: user.email, tipo: t_tipo.value, dep: t_dep.value, desc: t_desc.value, estado: "Abierto", fecha: new Date().toLocaleString()
+            usuario: user.email, tipo: t_tipo.value, dep: t_dep.value, desc: d, estado: "Abierto", fecha: new Date().toLocaleString()
         });
-        alert("Ticket Enviado"); volver();
+        alert("Ticket Enviado con éxito");
+        document.getElementById('t_desc').value = "";
+        volver();
     }
 
     function cargarMisTickets() {
         db.collection("tickets").where("usuario", "==", user.email).onSnapshot(snap => {
             const div = document.getElementById('lista-tickets');
             div.innerHTML = "";
+            if(snap.empty) div.innerHTML = "<p>No tienes tickets registrados.</p>";
             snap.forEach(doc => {
                 const t = doc.data();
-                div.innerHTML += `<div style="padding:15px; background:white; border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
+                div.innerHTML += `
+                <div class="ticket-item">
                     <strong>${t.tipo}</strong> - <span class="badge ${t.estado.toLowerCase().replace(' ','')}">${t.estado}</span><br>
-                    <small>${t.fecha}</small>
+                    <small>${t.fecha} | Dependencia: ${t.dep}</small><br>
+                    <p style="margin:5px 0 0 0; color:#666;">${t.desc}</p>
                 </div>`;
             });
         });
     }
 
     function cargarAdminTickets() {
-        db.collection("tickets").onSnapshot(snap => {
+        db.collection("tickets").orderBy("fecha", "desc").onSnapshot(snap => {
             const tbody = document.getElementById('tablaAdminTickets');
             tbody.innerHTML = "";
             snap.forEach(doc => {
@@ -257,8 +287,8 @@
                     <td><span class="badge ${t.estado.toLowerCase().replace(' ','')}">${t.estado}</span></td>
                     <td>${t.usuario}</td>
                     <td>
-                        <button class="btn-acc bg-edit" onclick="cambiarEstado('${id}', 'En Proceso')">⏳</button>
-                        <button class="btn-acc bg-view" onclick="cambiarEstado('${id}', 'Cerrado')">✅</button>
+                        <button class="btn-acc bg-edit" onclick="cambiarEstado('${id}', 'En Proceso')" title="En Proceso"><i class="fas fa-clock"></i></button>
+                        <button class="btn-acc bg-view" onclick="cambiarEstado('${id}', 'Cerrado')" title="Cerrar"><i class="fas fa-check"></i></button>
                         <button class="btn-acc bg-delete" onclick="eliminarTicket('${id}')"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`;
@@ -266,7 +296,7 @@
         });
     }
 
-    // LÓGICA INVENTARIO
+    // --- LÓGICA INVENTARIO ---
     function cargarInventario() {
         db.collection(currentColl).onSnapshot(snap => {
             localData = [];
@@ -279,16 +309,19 @@
         const ft = f_tipo.value.toLowerCase();
         const fm = f_mod.value.toLowerCase();
         const fi = f_inv.value.toLowerCase();
-        const filtrados = localData.filter(e => (e.tipo||"").toLowerCase().includes(ft) && (e.modelo||"").toLowerCase().includes(fm) && (e.inv||"").toLowerCase().includes(fi));
+        const res = localData.filter(e => (e.tipo||"").toLowerCase().includes(ft) && (e.modelo||"").toLowerCase().includes(fm) && (e.inv||"").toLowerCase().includes(fi));
         
-        document.getElementById('resumen_conteo').innerText = `Equipos encontrados: ${filtrados.length}`;
+        document.getElementById('resumen_conteo').innerText = `Equipos encontrados: ${res.length}`;
         const tbody = document.getElementById('tablaData');
         tbody.innerHTML = "";
-        filtrados.forEach(e => {
+        res.forEach(e => {
             tbody.innerHTML += `<tr>
                 <td><b>${e.pc}</b></td><td>${e.tipo}</td><td>${e.modelo}</td><td>${e.inv}</td><td>${e.res}</td><td>${e.dep}</td>
                 <td>
                     <button class="btn-acc bg-edit"><i class="fas fa-edit"></i></button>
+                    <button class="btn-acc bg-tools"><i class="fas fa-tools"></i></button>
+                    <button class="btn-acc bg-copy"><i class="fas fa-copy"></i></button>
+                    <button class="btn-acc bg-view"><i class="fas fa-eye"></i></button>
                     <button class="btn-acc bg-delete" onclick="eliminarEquipo('${e.id}')"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>`;
@@ -296,16 +329,21 @@
     }
 
     async function guardarEquipo() {
+        if(!n_pc.value || !n_inv.value) return alert("Nombre y Placa de inventario son obligatorios");
         await db.collection(currentColl).add({
             pc: n_pc.value, tipo: n_tipo.value, modelo: n_mod.value, inv: n_inv.value,
-            res: n_res.value, dep: n_dep.value, ip: n_ip.value, fecha: n_fecha.value
+            so: n_so.value, proc: n_proc.value, ram: n_ram.value, disco: n_disco.value,
+            ip: n_ip.value, res: n_res.value, dep: n_dep.value, correo: n_mail.value,
+            campus: n_cam.value, sede: n_sed.value, fecha: n_fecha.value
         });
-        cerrarModal(); alert("Registrado con éxito");
+        cerrarModal(); 
+        alert("Equipo Registrado con éxito");
+        document.querySelectorAll('.grid-modal input').forEach(i => i.value = "");
     }
 
-    // ACCIONES GENERALES
-    async function eliminarEquipo(id) { if(confirm("¿Eliminar equipo?")) await db.collection(currentColl).doc(id).delete(); }
-    async function eliminarTicket(id) { if(confirm("¿Eliminar ticket?")) await db.collection("tickets").doc(id).delete(); }
+    // --- ACCIONES GENERALES ---
+    async function eliminarEquipo(id) { if(confirm("¿Seguro que desea eliminar este equipo del inventario?")) await db.collection(currentColl).doc(id).delete(); }
+    async function eliminarTicket(id) { if(confirm("¿Eliminar este registro de ticket?")) await db.collection("tickets").doc(id).delete(); }
     async function cambiarEstado(id, nuevo) { await db.collection("tickets").doc(id).update({estado: nuevo}); }
     function limpiarFiltros() { document.querySelectorAll('.grid-filtros input, .grid-filtros select').forEach(i => i.value = ""); filtrar(); }
 
