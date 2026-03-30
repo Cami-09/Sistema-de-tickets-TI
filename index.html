@@ -4,10 +4,12 @@
 <meta charset="UTF-8">
 <title>Sistema Tickets TI</title>
 
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
+<!-- Iconos -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
@@ -21,6 +23,7 @@ display:flex;
 justify-content:space-between;
 }
 
+/* LOGIN */
 #login{
 height:100vh;
 display:flex;
@@ -37,6 +40,7 @@ border:none;
 border-radius:8px;
 }
 
+/* DASHBOARD */
 #dashboard{display:none;padding:30px;}
 
 .grid{
@@ -58,6 +62,7 @@ box-shadow:0 4px 10px rgba(0,0,0,0.1);
 
 .modulo{display:none;}
 
+/* FORM */
 .form-card{
 background:white;
 padding:25px;
@@ -158,11 +163,9 @@ cursor:pointer;
 <div id="dashboard">
 
 <div id="panel" class="grid">
-
 <div class="card" onclick="abrir('consultar')"><h3>Consultar Tickets</h3></div>
 <div class="card" onclick="abrir('crear')"><h3>Crear Ticket</h3></div>
 <div class="card" onclick="abrir('admin')"><h3>Administrar Tickets</h3></div>
-
 </div>
 
 <!-- CREAR -->
@@ -226,7 +229,6 @@ cursor:pointer;
 
 <!-- ADMIN -->
 <div id="admin" class="modulo">
-
 <button onclick="volver()">⬅ Volver</button>
 <h2>Administrar tickets</h2>
 
@@ -249,16 +251,14 @@ cursor:pointer;
 <th>Acciones</th>
 </tr>
 </thead>
-
 <tbody id="tablaTickets"></tbody>
 </table>
-
 </div>
 
 </div>
 
 <script>
-// 🔥 CONFIG
+// 🔥 CONFIG FIREBASE
 firebase.initializeApp({
 apiKey:"AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
 authDomain:"sistema-de-tickets-ti-b12f5.firebaseapp.com",
@@ -273,24 +273,29 @@ let user;
 // 🔐 ADMIN
 const admins = ["camicarmona1212@gmail.com"];
 
-// LOGIN
+// ✅ LOGIN CORREGIDO (POPUP)
 function login(){
 const provider = new firebase.auth.GoogleAuthProvider();
-auth.signInWithRedirect(provider);
+
+auth.signInWithPopup(provider)
+.then(result=>{
+mostrar(result.user);
+})
+.catch(error=>{
+console.error(error);
+alert("Error: " + error.message);
+});
 }
 
-auth.getRedirectResult().then(r=>{
-if(r.user) mostrar(r.user);
-});
-
+// ESTADO SESIÓN
 auth.onAuthStateChanged(u=>{
 if(u) mostrar(u);
 });
 
 function mostrar(u){
 user=u;
-loginDiv.style.display="none";
-dashboard.style.display="block";
+document.getElementById("login").style.display="none";
+document.getElementById("dashboard").style.display="block";
 cargarTickets();
 }
 
