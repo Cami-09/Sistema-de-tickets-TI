@@ -17,6 +17,10 @@ align-items:center;
 flex-direction:column;
 }
 
+#dashboard{
+display:none;
+}
+
 button{
 padding:10px 15px;
 border:none;
@@ -92,8 +96,7 @@ justify-content:space-between;
 </div>
 
 <!-- DASHBOARD -->
-<div id="dashboard" style="display:none">
-
+<div id="dashboard">
 <div class="dashboard">
 
 <div class="card" onclick="abrir('crear')">
@@ -117,7 +120,6 @@ Usuarios
 </div>
 
 </div>
-
 </div>
 
 <!-- CREAR -->
@@ -198,26 +200,22 @@ alert(error.message);
 });
 };
 
-/* 🔥 DETECTAR USUARIO SIEMPRE */
+/* 🔥 DETECTAR USUARIO */
 onAuthStateChanged(auth, (u)=>{
 if(u){
 mostrar(u);
 }
 });
 
-/* MOSTRAR DASHBOARD */
+/* MOSTRAR DASHBOARD SIN PARPADEO */
 async function mostrar(u){
 user=u;
 
 document.getElementById("login").style.display="none";
-
-// ⛔ ocultar dashboard hasta cargar permisos
 document.getElementById("dashboard").style.display="none";
 
-// esperar permisos
 await obtenerRol(user.email);
 
-// ✅ ahora sí mostrar
 document.getElementById("dashboard").style.display="block";
 }
 
@@ -231,18 +229,12 @@ if(!snap.empty){
 const data = snap.docs[0].data();
 permisosUsuario = data.permisos || {};
 }else{
-
-// 🔥 permisos por defecto (MUY IMPORTANTE)
 permisosUsuario = {
 crear:true,
 consultar:true,
 admin:false,
 usuarios:false
 };
-
-}
-
-controlAcceso();
 }
 
 controlAcceso();
@@ -250,6 +242,7 @@ controlAcceso();
 
 /* CONTROL ACCESO */
 function controlAcceso(){
+
 document.querySelectorAll(".card").forEach(c=>c.style.display="none");
 
 if(permisosUsuario.crear)
