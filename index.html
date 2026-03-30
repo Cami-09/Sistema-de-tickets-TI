@@ -15,7 +15,7 @@
         :root { --primary: #2563eb; --dark: #0f172a; --bg: #f1f5f9; --success: #22c55e; --danger: #ef4444; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #334155; }
 
-        header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
+        header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
 
         /* DASHBOARD */
         #dashboard { display: none; padding: 25px; }
@@ -26,36 +26,40 @@
         .card i { font-size: 35px; color: var(--primary); margin-bottom: 12px; }
         .card h3 { margin: 10px 0; font-size: 1rem; }
 
-        .modulo { display: none; background: white; padding: 20px; border-radius: 12px; }
+        .modulo { display: none; background: white; padding: 25px; border-radius: 12px; min-height: 400px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
         /* FILTROS E INFO */
         .filtros-box { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
         .grid-filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
         .resumen-celeste { background: #e0f2fe; padding: 12px; border-radius: 8px; color: #0369a1; margin-bottom: 15px; text-align: center; font-weight: 500; }
 
-        input, select { padding: 8px; border: 1px solid #cbd5e1; border-radius: 5px; width: 100%; box-sizing: border-box; }
+        input, select, textarea { padding: 9px; border: 1px solid #cbd5e1; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 0.9rem; }
 
         /* TABLA */
-        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        th { background: #f8fafc; padding: 10px; text-align: left; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
+        th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
+        td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
 
         /* ACCIONES */
-        .btn-acc { width: 28px; height: 28px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; }
+        .btn-acc { width: 30px; height: 30px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; }
         .bg-edit { background: #f59e0b; }
         .bg-tools { background: #2563eb; }
-        .bg-copy { background: #06b6d4; }
         .bg-view { background: #00bcd4; }
         .bg-delete { background: #ef4444; }
 
         /* MODAL */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 85%; max-width: 850px; border-radius: 12px; position: relative; }
+        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 85%; max-width: 850px; border-radius: 12px; position: relative; max-height: 90vh; overflow-y: auto; }
         .grid-modal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 
-        .btn { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; }
+        .btn { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-gray { background: #64748b; color: white; }
+        
+        .badge { padding: 4px 8px; border-radius: 12px; color: white; font-size: 0.75rem; font-weight: bold; }
+        .abierto { background: #22c55e; }
+        .proceso { background: #eab308; }
+        .cerrado { background: #ef4444; }
     </style>
 </head>
 <body>
@@ -74,14 +78,40 @@
         <div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Consultar Tickets</h3></div>
         <div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Enviar un Ticket</h3></div>
         <div class="card" onclick="abrir('admin_tickets')"><i class="fas fa-clipboard-list"></i><h3>Administrar Tickets</h3></div>
-        
         <div class="card" onclick="abrir('inv_admin')"><i class="fas fa-desktop"></i><h3>Equipos Administrativos</h3></div>
         <div class="card" onclick="abrir('inv_salas')"><i class="fas fa-laptop"></i><h3>Equipos de Salas</h3></div>
-        
         <div class="card"><i class="fas fa-calendar"></i><h3>Calendario</h3></div>
         <div class="card"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
         <div class="card"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
         <div class="card"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
+    </div>
+
+    <div id="crear" class="modulo">
+        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
+        <h2>Crear Nuevo Ticket</h2>
+        <div style="max-width: 500px; margin-top: 20px;">
+            <select id="t_dep"><option>Sistemas</option><option>Administración</option><option>Académico</option></select>
+            <select id="t_tipo"><option>Soporte</option><option>Mantenimiento</option><option>Instalación</option></select>
+            <textarea id="t_desc" placeholder="Describa el problema detalladamente..." rows="5" style="margin-top:10px;"></textarea>
+            <button class="btn btn-blue" style="margin-top:15px;" onclick="crearTicket()">Enviar Reporte</button>
+        </div>
+    </div>
+
+    <div id="consultar" class="modulo">
+        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
+        <h2>Mis Tickets Enviados</h2>
+        <div id="lista-tickets" style="margin-top:20px;"></div>
+    </div>
+
+    <div id="admin_tickets" class="modulo">
+        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
+        <h2>Panel de Gestión de Tickets</h2>
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Tipo</th><th>Estado</th><th>Usuario</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tablaAdminTickets"></tbody>
+        </table>
     </div>
 
     <div id="modulo_inv" class="modulo">
@@ -91,7 +121,7 @@
             <button class="btn btn-blue" onclick="abrirModal()">+ Registrar nuevo equipo</button>
         </div>
 
-        <div id="resumen_conteo" class="resumen-celeste"></div>
+        <div id="resumen_conteo" class="resumen-celeste" style="margin-top:15px;"></div>
 
         <div class="filtros-box">
             <div class="grid-filtros">
@@ -104,53 +134,44 @@
             </div>
             <div style="margin-top:10px; display:flex; gap:10px;">
                 <button class="btn btn-blue" onclick="filtrar()"><i class="fas fa-filter"></i> Aplicar Filtros</button>
-                <button class="btn btn-gray" onclick="limpiarFiltros()">Limpiar Filtros</button>
-                <button class="btn" style="background:#10b981; color:white;"><i class="fas fa-file-csv"></i> Exportar CSV</button>
+                <button class="btn btn-gray" onclick="limpiarFiltros()">Limpiar</button>
             </div>
         </div>
 
         <div style="overflow-x:auto;">
             <table>
                 <thead>
-                    <tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Inventario</th><th>Responsable</th><th>Dependencia</th><th>Campus</th><th>Sede</th><th>Acciones</th></tr>
+                    <tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Inventario</th><th>Responsable</th><th>Dependencia</th><th>Acciones</th></tr>
                 </thead>
                 <tbody id="tablaData"></tbody>
             </table>
         </div>
     </div>
-
-    <div id="consultar" class="modulo">
-        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-        <h2>Mis Tickets</h2>
-        <div id="lista-tickets"></div>
-    </div>
 </div>
 
 <div id="modalEquipo" class="modal">
     <div class="modal-content">
-        <h2 style="margin-top:0;">Registrar nuevo equipo</h2>
-        <hr>
+        <h2 style="margin-top:0;">Registrar equipo</h2>
         <div class="grid-modal">
-            <input type="text" id="n_pc" placeholder="PC">
-            <select id="n_tipo"><option value="">Seleccione Tipo</option><option>Portátil</option><option>AIO</option><option>Torre</option></select>
+            <input type="text" id="n_pc" placeholder="Nombre PC">
+            <select id="n_tipo"><option>Portátil</option><option>AIO</option><option>Torre</option></select>
             <input type="text" id="n_mod" placeholder="Modelo">
             <input type="text" id="n_inv" placeholder="Inventario">
-            <select id="n_so"><option value="">Seleccione So</option><option>Windows 10</option><option>Windows 11</option></select>
+            <select id="n_so"><option>Windows 10</option><option>Windows 11</option></select>
             <input type="text" id="n_proc" placeholder="Procesador">
-            <select id="n_ram"><option value="">Seleccione Ram</option><option>8GB</option><option>16GB</option></select>
+            <select id="n_ram"><option>8GB</option><option>16GB</option></select>
             <input type="text" id="n_disco" placeholder="Disco">
-            <input type="text" id="n_ip" placeholder="Ip">
-            <input type="text" id="n_term" placeholder="Terminal">
+            <input type="text" id="n_ip" placeholder="IP">
             <input type="text" id="n_res" placeholder="Responsable">
-            <select id="n_dep"><option value="">Seleccione Dependencia</option><option>Sistemas</option><option>Auditorio menor</option></select>
+            <select id="n_dep"><option>Sistemas</option><option>Auditorio</option></select>
+            <input type="text" id="n_cam" placeholder="Campus">
+            <input type="text" id="n_sed" placeholder="Sede">
             <input type="text" id="n_correo" placeholder="Correo">
-            <select id="n_campus"><option>Seleccione Campus</option><option>Bucaramanga</option></select>
-            <select id="n_sede"><option>Seleccione Sede</option><option>Sede A</option><option>Sede D</option></select>
             <input type="text" id="n_ext" placeholder="Extensión">
             <input type="date" id="n_fecha">
         </div>
         <div style="margin-top:20px; text-align:right;">
-            <button class="btn btn-blue" onclick="guardar()"><i class="fas fa-save"></i> Guardar</button>
+            <button class="btn btn-blue" onclick="guardarEquipo()"><i class="fas fa-save"></i> Guardar</button>
             <button class="btn btn-gray" onclick="cerrarModal()">Cancelar</button>
         </div>
     </div>
@@ -162,40 +183,91 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
-
-    let currentColl = ""; 
+    let user;
+    let currentColl = "";
     let localData = [];
 
     // AUTH
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { auth.signOut().then(() => location.reload()); }
-    auth.onAuthStateChanged(u => { if(u){ document.getElementById('login').style.display='none'; document.getElementById('dashboard').style.display='block'; } });
+    auth.onAuthStateChanged(u => {
+        if(u) {
+            user = u;
+            document.getElementById('login').style.display='none';
+            document.getElementById('dashboard').style.display='block';
+        }
+    });
 
     // NAVEGACIÓN
     function abrir(id) {
         document.getElementById('panel-principal').style.display='none';
         document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
-        
+        document.getElementById(id).style.display='block';
+
         if(id === 'inv_admin' || id === 'inv_salas') {
+            document.getElementById(id).style.display='none';
             document.getElementById('modulo_inv').style.display='block';
             currentColl = (id === 'inv_admin') ? "inventario" : "inventario_salas";
-            document.getElementById('titulo_inv').innerText = (id === 'inv_admin') ? "Inventario de equipos TIC" : "Inventario de equipos TIC (Salas)";
-            cargarDatos();
-        } else {
-            document.getElementById(id).style.display='block';
+            document.getElementById('titulo_inv').innerText = (id === 'inv_admin') ? "Inventario Administrativo" : "Inventario Equipos de Salas";
+            cargarInventario();
         }
+        if(id === 'consultar') cargarMisTickets();
+        if(id === 'admin_tickets') cargarAdminTickets();
     }
 
-    function volver() { 
-        document.getElementById('panel-principal').style.display='grid'; 
-        document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); 
+    function volver() {
+        document.getElementById('panel-principal').style.display='grid';
+        document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
     }
 
     function abrirModal() { document.getElementById('modalEquipo').style.display='block'; }
     function cerrarModal() { document.getElementById('modalEquipo').style.display='none'; }
 
-    // LÓGICA DATOS
-    function cargarDatos() {
+    // LÓGICA TICKETS
+    async function crearTicket() {
+        await db.collection("tickets").add({
+            usuario: user.email, tipo: t_tipo.value, dep: t_dep.value, desc: t_desc.value, estado: "Abierto", fecha: new Date().toLocaleString()
+        });
+        alert("Ticket Enviado"); volver();
+    }
+
+    function cargarMisTickets() {
+        db.collection("tickets").where("usuario", "==", user.email).onSnapshot(snap => {
+            const div = document.getElementById('lista-tickets');
+            div.innerHTML = "";
+            snap.forEach(doc => {
+                const t = doc.data();
+                div.innerHTML += `<div style="padding:15px; background:white; border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
+                    <strong>${t.tipo}</strong> - <span class="badge ${t.estado.toLowerCase().replace(' ','')}">${t.estado}</span><br>
+                    <small>${t.fecha}</small>
+                </div>`;
+            });
+        });
+    }
+
+    function cargarAdminTickets() {
+        db.collection("tickets").onSnapshot(snap => {
+            const tbody = document.getElementById('tablaAdminTickets');
+            tbody.innerHTML = "";
+            snap.forEach(doc => {
+                const t = doc.data();
+                const id = doc.id;
+                tbody.innerHTML += `<tr>
+                    <td>${id.substring(0,5)}</td><td>${t.tipo}</td>
+                    <td><span class="badge ${t.estado.toLowerCase().replace(' ','')}">${t.estado}</span></td>
+                    <td>${t.usuario}</td>
+                    <td>
+                        <button class="btn-acc bg-edit" onclick="cambiarEstado('${id}', 'En Proceso')">⏳</button>
+                        <button class="btn-acc bg-view" onclick="cambiarEstado('${id}', 'Cerrado')">✅</button>
+                        <button class="btn-acc bg-delete" onclick="eliminarTicket('${id}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+        });
+    }
+
+    // LÓGICA INVENTARIO
+    function cargarInventario() {
         db.collection(currentColl).onSnapshot(snap => {
             localData = [];
             snap.forEach(doc => localData.push({id: doc.id, ...doc.data()}));
@@ -207,41 +279,36 @@
         const ft = f_tipo.value.toLowerCase();
         const fm = f_mod.value.toLowerCase();
         const fi = f_inv.value.toLowerCase();
-        const res = localData.filter(e => (e.tipo||"").toLowerCase().includes(ft) && (e.modelo||"").toLowerCase().includes(fm) && (e.inv||"").toLowerCase().includes(fi));
+        const filtrados = localData.filter(e => (e.tipo||"").toLowerCase().includes(ft) && (e.modelo||"").toLowerCase().includes(fm) && (e.inv||"").toLowerCase().includes(fi));
         
-        document.getElementById('resumen_conteo').innerText = `Equipos encontrados con los filtros aplicados: **${res.length}**`;
+        document.getElementById('resumen_conteo').innerText = `Equipos encontrados: ${filtrados.length}`;
         const tbody = document.getElementById('tablaData');
         tbody.innerHTML = "";
-        res.forEach(e => {
+        filtrados.forEach(e => {
             tbody.innerHTML += `<tr>
-                <td>${e.pc}</td><td>${e.tipo}</td><td>${e.modelo}</td><td>${e.inv}</td><td>${e.res}</td><td>${e.dep}</td><td>Bucaramanga</td><td>Sede A</td>
+                <td><b>${e.pc}</b></td><td>${e.tipo}</td><td>${e.modelo}</td><td>${e.inv}</td><td>${e.res}</td><td>${e.dep}</td>
                 <td>
                     <button class="btn-acc bg-edit"><i class="fas fa-edit"></i></button>
-                    <button class="btn-acc bg-tools"><i class="fas fa-tools"></i></button>
-                    <button class="btn-acc bg-copy"><i class="fas fa-copy"></i></button>
-                    <button class="btn-acc bg-view"><i class="fas fa-eye"></i></button>
-                    <button class="btn-acc bg-delete" onclick="eliminar('${e.id}')"><i class="fas fa-trash"></i></button>
+                    <button class="btn-acc bg-delete" onclick="eliminarEquipo('${e.id}')"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>`;
         });
     }
 
-    async function guardar() {
+    async function guardarEquipo() {
         await db.collection(currentColl).add({
-            pc: n_pc.value, tipo: n_tipo.value, modelo: n_mod.value, inv: n_inv.value, res: n_res.value, dep: n_dep.value, fecha: n_fecha.value
+            pc: n_pc.value, tipo: n_tipo.value, modelo: n_mod.value, inv: n_inv.value,
+            res: n_res.value, dep: n_dep.value, ip: n_ip.value, fecha: n_fecha.value
         });
-        cerrarModal();
-        alert("Equipo Registrado");
+        cerrarModal(); alert("Registrado con éxito");
     }
 
-    async function eliminar(id) {
-        if(confirm("¿Seguro que desea eliminar este equipo?")) await db.collection(currentColl).doc(id).delete();
-    }
+    // ACCIONES GENERALES
+    async function eliminarEquipo(id) { if(confirm("¿Eliminar equipo?")) await db.collection(currentColl).doc(id).delete(); }
+    async function eliminarTicket(id) { if(confirm("¿Eliminar ticket?")) await db.collection("tickets").doc(id).delete(); }
+    async function cambiarEstado(id, nuevo) { await db.collection("tickets").doc(id).update({estado: nuevo}); }
+    function limpiarFiltros() { document.querySelectorAll('.grid-filtros input, .grid-filtros select').forEach(i => i.value = ""); filtrar(); }
 
-    function limpiarFiltros() {
-        document.querySelectorAll('.grid-filtros input, .grid-filtros select').forEach(i => i.value = "");
-        filtrar();
-    }
 </script>
 </body>
 </html>
