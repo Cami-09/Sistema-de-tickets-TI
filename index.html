@@ -6,7 +6,6 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
-
   <style>
     body { font-family: Arial; background:#f5f7fa; margin:0; padding:0; }
     header { background:#4285F4; color:white; padding:15px; font-size:24px; text-align:center; position:relative; }
@@ -17,7 +16,7 @@
     .card { background:white; border-radius:12px; width:220px; height:150px; margin:15px; display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; transition:0.3s; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
     .card:hover { box-shadow:0 5px 15px rgba(0,0,0,0.2); }
     .card span { font-size:36px; margin-bottom:10px; }
-    .modulo { display:none; padding:20px; }
+    .modulo { display:none; padding:20px; max-width:800px; margin:20px auto; background:white; border-radius:12px; box-shadow:0 2px 10px rgba(0,0,0,0.1); }
     input, select { width:100%; padding:8px; margin:5px 0; box-sizing:border-box; }
     button { cursor:pointer; padding:8px 12px; margin:5px 0; border:none; border-radius:6px; }
     .badge { padding:4px 10px; border-radius:6px; color:white; font-weight:bold; }
@@ -30,6 +29,7 @@
     td { padding:5px; text-align:center; }
     td button { padding:4px 8px; margin:2px; font-size:12px; }
     #mensaje { color:red; }
+    #backBtn { background:#4285F4; color:white; margin-bottom:15px; }
   </style>
 </head>
 <body>
@@ -43,9 +43,8 @@
   <button id="loginBtn">Iniciar sesión con Google</button>
 </div>
 
-<!-- DASHBOARD -->
 <div id="dashboard" style="display:none;">
-  <div class="dashboard">
+  <div class="dashboard" id="dashboardCards">
     <div class="card" onclick="abrirModulo('crearTicket')"><span>📩</span>Crear Ticket</div>
     <div class="card" onclick="abrirModulo('listaTickets')"><span>🔍</span>Lista de Tickets</div>
     <div class="card" onclick="abrirModulo('usuariosSection')" id="adminCard" style="display:none;"><span>👤</span>Gestión de Usuarios</div>
@@ -53,6 +52,7 @@
 
   <!-- Módulos -->
   <div id="crearTicket" class="modulo">
+    <button id="backBtn" onclick="volverDashboard()">⬅ Volver</button>
     <h3>Crear Ticket</h3>
     <input id="titulo" placeholder="Título">
     <input id="desc" placeholder="Descripción">
@@ -66,11 +66,13 @@
   </div>
 
   <div id="listaTickets" class="modulo">
+    <button id="backBtn" onclick="volverDashboard()">⬅ Volver</button>
     <h3>Lista de Tickets</h3>
     <div id="lista"></div>
   </div>
 
   <div id="usuariosSection" class="modulo">
+    <button id="backBtn" onclick="volverDashboard()">⬅ Volver</button>
     <h3>Gestión de Usuarios (Solo Admin)</h3>
     <input id="nombreNuevo" placeholder="Nombre completo">
     <input id="emailNuevo" placeholder="Email">
@@ -154,8 +156,14 @@
   }
 
   function abrirModulo(id){
+    document.getElementById("dashboardCards").style.display="none";
     document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
     document.getElementById(id).style.display="block";
+  }
+
+  function volverDashboard(){
+    document.getElementById("dashboardCards").style.display="flex";
+    document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
   }
 
   // ===== TICKETS =====
@@ -241,15 +249,15 @@
   async function reasignarTicket(id){
     const snap=await db.collection("roles").where("rol","==","gestor").get();
     const gestores = snap.docs.map(d=>({email:d.id,nombre:d.data().nombre}));
-    let opciones = "";
-    gestores.forEach(g=>opciones+=`<option value="${g.email}">${g.nombre}</option>`);
-    const nuevo = prompt(`Seleccione nuevo gestor:\n`+gestores.map(g=>g.nombre).join("\n"));
+    let opciones = gestores.map(g=>`${g.nombre} (${g.email})`).join("\n");
+    const nuevo = prompt(`Seleccione nuevo gestor:\n`+opciones);
     if(!nuevo) return;
+    const gestorEmail = nuevo.match(/\((.*)\)/)[1];
     const docRef=db.collection("tickets").doc(id);
     const doc=await docRef.get();
     const historial=doc.data().historial||[];
     historial.push({accion:"Reasignado a "+nuevo,usuario:currentUser.email,fecha:new Date()});
-    await docRef.update({gestor:nuevo,historial});
+    await docRef.update({gestor:gestorEmail,historial});
     alert("Ticket reasignado a "+nuevo);
   }
 
@@ -304,7 +312,6 @@
     alert("Usuario eliminado");
     cargarUsuarios();
   }
-
 </script>
 </body>
 </html>
