@@ -9,6 +9,7 @@
 <style>
 body{font-family:Arial;background:#f5f6fa;margin:0}
 
+/* LOGIN */
 #login{
 display:flex;
 height:100vh;
@@ -17,20 +18,12 @@ align-items:center;
 flex-direction:column;
 }
 
-#dashboard{
-display:none;
-}
-
-button{
-padding:10px 15px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-}
+/* DASHBOARD */
+#dashboard{display:none;}
 
 .dashboard{
 display:grid;
-grid-template-columns:repeat(3,1fr);
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
 gap:20px;
 padding:20px;
 }
@@ -42,6 +35,12 @@ border-radius:15px;
 text-align:center;
 cursor:pointer;
 box-shadow:0 3px 10px rgba(0,0,0,0.1);
+transition:0.3s;
+}
+
+.card:hover{
+transform:translateY(-5px);
+box-shadow:0 10px 25px rgba(0,0,0,0.2);
 }
 
 .card i{
@@ -49,10 +48,8 @@ font-size:30px;
 margin-bottom:10px;
 }
 
-.modulo{
-display:none;
-padding:20px;
-}
+/* MODULOS */
+.modulo{display:none;padding:20px;}
 
 .form-card{
 background:white;
@@ -67,6 +64,13 @@ padding:10px;
 margin:5px 0;
 border-radius:8px;
 border:1px solid #ccc;
+}
+
+button{
+padding:10px;
+border:none;
+border-radius:8px;
+cursor:pointer;
 }
 
 .ticket{
@@ -99,22 +103,22 @@ justify-content:space-between;
 <div id="dashboard">
 <div class="dashboard">
 
-<div class="card" onclick="abrir('crear')">
+<div id="card-crear" class="card" onclick="abrir('crear')">
 <i class="fas fa-plus-circle"></i>
 Crear Ticket
 </div>
 
-<div class="card" onclick="abrir('consultar')">
+<div id="card-consultar" class="card" onclick="abrir('consultar')">
 <i class="fas fa-search"></i>
 Consultar
 </div>
 
-<div class="card" onclick="abrir('admin')">
+<div id="card-admin" class="card" onclick="abrir('admin')">
 <i class="fas fa-cogs"></i>
 Administrar
 </div>
 
-<div class="card" onclick="abrir('usuarios')">
+<div id="card-usuarios" class="card" onclick="abrir('usuarios')">
 <i class="fas fa-users-cog"></i>
 Usuarios
 </div>
@@ -124,7 +128,7 @@ Usuarios
 
 <!-- CREAR -->
 <div id="crear" class="modulo">
-<button onclick="volver()">⬅</button>
+<button onclick="volver()">⬅ Volver</button>
 <h2>Crear Ticket</h2>
 
 <div class="form-card">
@@ -134,16 +138,23 @@ Usuarios
 </div>
 </div>
 
+<!-- CONSULTAR -->
+<div id="consultar" class="modulo">
+<button onclick="volver()">⬅ Volver</button>
+<h2>Consultar Tickets</h2>
+<div id="listaTickets"></div>
+</div>
+
 <!-- ADMIN -->
 <div id="admin" class="modulo">
-<button onclick="volver()">⬅</button>
+<button onclick="volver()">⬅ Volver</button>
 <h2>Administrar Tickets</h2>
 <div id="listaAdmin"></div>
 </div>
 
 <!-- USUARIOS -->
 <div id="usuarios" class="modulo">
-<button onclick="volver()">⬅</button>
+<button onclick="volver()">⬅ Volver</button>
 
 <h2>Usuarios</h2>
 
@@ -173,7 +184,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getAuth, GoogleAuthProvider, signInWithRedirect, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* 🔥 CONFIG FIREBASE */
+/* FIREBASE CONFIG */
 const firebaseConfig = {
   apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
   authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com",
@@ -194,75 +205,61 @@ let editId=null;
 /* LOGIN */
 window.login=()=>{
 const provider = new GoogleAuthProvider();
-signInWithRedirect(auth, provider).catch(error=>{
-console.error(error);
-alert(error.message);
-});
+signInWithRedirect(auth, provider);
 };
 
-/* 🔥 DETECTAR USUARIO */
+/* SESION */
 onAuthStateChanged(auth, (u)=>{
-if(u){
-mostrar(u);
-}
+if(u) mostrar(u);
 });
 
-/* MOSTRAR DASHBOARD SIN PARPADEO */
+/* MOSTRAR SIN PARPADEO */
 async function mostrar(u){
 user=u;
 
-document.getElementById("login").style.display="none";
-document.getElementById("dashboard").style.display="none";
+login.style.display="none";
+dashboard.style.display="none";
 
 await obtenerRol(user.email);
 
-document.getElementById("dashboard").style.display="block";
+dashboard.style.display="block";
 }
 
-/* OBTENER PERMISOS */
+/* PERMISOS */
 async function obtenerRol(email){
 
 const q = query(collection(db,"usuarios"), where("correo","==",email));
 const snap = await getDocs(q);
 
 if(!snap.empty){
-const data = snap.docs[0].data();
-permisosUsuario = data.permisos || {};
+permisosUsuario = snap.docs[0].data().permisos;
 }else{
-permisosUsuario = {
-crear:true,
-consultar:true,
-admin:false,
-usuarios:false
-};
+permisosUsuario = {crear:true,consultar:true,admin:false,usuarios:false};
 }
 
 controlAcceso();
 }
 
-/* CONTROL ACCESO */
+/* CONTROL TARJETAS */
 function controlAcceso(){
 
-document.querySelectorAll(".card").forEach(c=>c.style.display="none");
+card-crear.style.display="none";
+card-consultar.style.display="none";
+card-admin.style.display="none";
+card-usuarios.style.display="none";
 
-if(permisosUsuario.crear)
-document.querySelector("[onclick=\"abrir('crear')\"]").style.display="block";
-
-if(permisosUsuario.consultar)
-document.querySelector("[onclick=\"abrir('consultar')\"]").style.display="block";
-
-if(permisosUsuario.admin)
-document.querySelector("[onclick=\"abrir('admin')\"]").style.display="block";
-
-if(permisosUsuario.usuarios)
-document.querySelector("[onclick=\"abrir('usuarios')\"]").style.display="block";
+if(permisosUsuario.crear) card-crear.style.display="block";
+if(permisosUsuario.consultar) card-consultar.style.display="block";
+if(permisosUsuario.admin) card-admin.style.display="block";
+if(permisosUsuario.usuarios) card-usuarios.style.display="block";
 }
 
-/* NAVEGACIÓN */
+/* NAVEGACION */
 window.abrir=(id)=>{
 document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
 document.getElementById(id).style.display="block";
 
+if(id==="consultar") cargarTickets();
 if(id==="admin") cargarAdmin();
 if(id==="usuarios") cargarUsuarios();
 };
@@ -271,24 +268,40 @@ window.volver=()=>{
 document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
 };
 
-/* CREAR TICKET */
+/* CREAR */
 window.crearTicket=async()=>{
 await addDoc(collection(db,"tickets"),{
-titulo: titulo.value,
-descripcion: descripcion.value,
+titulo:titulo.value,
+descripcion:descripcion.value,
 estado:"pendiente",
 usuario:user.email
 });
 alert("Ticket creado");
 };
 
+/* CONSULTAR */
+function cargarTickets(){
+onSnapshot(collection(db,"tickets"), snap=>{
+listaTickets.innerHTML="";
+snap.forEach(docu=>{
+const t=docu.data();
+listaTickets.innerHTML+=`
+<div class="ticket">
+<b>${t.titulo}</b><br>
+${t.descripcion}<br>
+Estado: ${t.estado}
+</div>`;
+});
+});
+}
+
 /* ADMIN */
 function cargarAdmin(){
 onSnapshot(collection(db,"tickets"), snap=>{
 listaAdmin.innerHTML="";
 snap.forEach(docu=>{
-const t = docu.data();
-const id = docu.id;
+const t=docu.data();
+const id=docu.id;
 
 listaAdmin.innerHTML+=`
 <div class="ticket">
@@ -297,8 +310,7 @@ Estado: ${t.estado}<br>
 
 <button onclick="enProceso('${id}')">⏳</button>
 <button onclick="eliminar('${id}')">🗑</button>
-</div>
-`;
+</div>`;
 });
 });
 }
@@ -317,8 +329,8 @@ await deleteDoc(doc(db,"tickets",id));
 window.guardarUsuario=async()=>{
 
 const data={
-correo: correoUser.value,
-rol: rolUser.value,
+correo:correoUser.value,
+rol:rolUser.value,
 permisos:{
 crear:pCrear.checked,
 consultar:pConsultar.checked,
@@ -351,14 +363,13 @@ ${u.correo}
 <button onclick="editar('${id}')">✏️</button>
 <button onclick="delUser('${id}')">🗑</button>
 </div>
-</div>
-`;
+</div>`;
 });
 });
 }
 
 window.editar=async(id)=>{
-const q = await getDocs(collection(db,"usuarios"));
+const q=await getDocs(collection(db,"usuarios"));
 q.forEach(d=>{
 if(d.id===id){
 const u=d.data();
