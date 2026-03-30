@@ -2,9 +2,8 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Sistema Tickets TI</title>
+<title>Sistema Tickets e Inventario TI</title>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
@@ -12,7 +11,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-
 /* GENERAL */
 body{
 margin:0;
@@ -84,12 +82,13 @@ margin-top:20px;
 }
 
 /* FORM */
-textarea, select{
+textarea, select, input[type="text"]{
 width:100%;
 padding:10px;
 margin:10px 0;
 border-radius:8px;
 border:1px solid #ccc;
+box-sizing: border-box;
 }
 
 .btn{
@@ -101,7 +100,7 @@ border-radius:8px;
 cursor:pointer;
 }
 
-/* ADMIN */
+/* ADMIN & TABLES */
 table{
 width:100%;
 border-collapse:collapse;
@@ -133,142 +132,179 @@ margin:2px;
 border-radius:6px;
 }
 
+/* Estilos específicos Inventario */
+#formEquipo {
+    border: 2px dashed #cbd5e1;
+    margin-bottom: 25px;
+}
 </style>
 </head>
 
 <body>
 
 <header>
-<span>🎫 Sistema Tickets TI</span>
+<span>🎫 Sistema Integral TI</span>
 <button onclick="logout()">Salir</button>
 </header>
 
-<!-- LOGIN -->
 <div id="login">
 <h2>Iniciar sesión</h2>
 <button onclick="login()">Ingresar con Google</button>
 </div>
 
-<!-- DASHBOARD -->
 <div id="dashboard">
 
-<div id="panel" class="grid">
+    <div id="panel" class="grid">
+        <div class="card" onclick="abrir('consultar')">
+            <i class="fas fa-search"></i>
+            <h3>Consultar Tickets</h3>
+            <p>Ver el estado de tus tickets</p>
+        </div>
 
-<div class="card" onclick="abrir('consultar')">
-<i class="fas fa-search"></i>
-<h3>Consultar Tickets</h3>
-<p>Ver el estado de tus tickets</p>
-</div>
+        <div class="card" onclick="abrir('crear')">
+            <i class="fas fa-paper-plane"></i>
+            <h3>Enviar un Ticket</h3>
+            <p>Reportar un problema</p>
+        </div>
 
-<div class="card" onclick="abrir('crear')">
-<i class="fas fa-paper-plane"></i>
-<h3>Enviar un Ticket</h3>
-<p>Reportar un problema</p>
-</div>
+        <div class="card" onclick="abrir('admin')">
+            <i class="fas fa-clipboard-list"></i>
+            <h3>Administrar Tickets</h3>
+            <p>Gestionar los tickets</p>
+        </div>
 
-<div class="card" onclick="abrir('admin')">
-<i class="fas fa-clipboard-list"></i>
-<h3>Administrar Tickets</h3>
-<p>Gestionar los tickets</p>
-</div>
+        <div class="card" onclick="abrir('inventario')">
+            <i class="fas fa-desktop"></i>
+            <h3>Equipos Administrativos</h3>
+            <p>Inventario General</p>
+        </div>
 
-<div class="card">
-<i class="fas fa-desktop"></i>
-<h3>Equipos Administrativos</h3>
-</div>
+        <div class="card">
+            <i class="fas fa-laptop"></i>
+            <h3>Equipos de Salas</h3>
+        </div>
 
-<div class="card">
-<i class="fas fa-laptop"></i>
-<h3>Equipos de Salas</h3>
-</div>
+        <div class="card">
+            <i class="fas fa-calendar"></i>
+            <h3>Calendario</h3>
+        </div>
 
-<div class="card">
-<i class="fas fa-calendar"></i>
-<h3>Calendario</h3>
-</div>
+        <div class="card">
+            <i class="fas fa-school"></i>
+            <h3>Aulas DTI</h3>
+        </div>
 
-<div class="card">
-<i class="fas fa-school"></i>
-<h3>Aulas DTI</h3>
-</div>
+        <div class="card">
+            <i class="fas fa-server"></i>
+            <h3>Salas Sistemas</h3>
+        </div>
 
-<div class="card">
-<i class="fas fa-server"></i>
-<h3>Salas Sistemas</h3>
-</div>
+        <div class="card">
+            <i class="fas fa-print"></i>
+            <h3>Impresoras</h3>
+        </div>
+    </div>
 
-<div class="card">
-<i class="fas fa-print"></i>
-<h3>Impresoras</h3>
-</div>
+    <div id="crear" class="modulo">
+        <button onclick="volver()">⬅ Volver</button>
+        <h2>Crear Ticket</h2>
+        <select id="dependencia">
+            <option>Sistemas</option>
+            <option>Administración</option>
+            <option>Académico</option>
+        </select>
+        <select id="tipo">
+            <option>Soporte</option>
+            <option>Mantenimiento</option>
+            <option>Instalación</option>
+        </select>
+        <textarea id="descripcion" placeholder="Describe el problema"></textarea>
+        <select id="prioridad">
+            <option>Baja</option>
+            <option>Media</option>
+            <option>Alta</option>
+        </select>
+        <button class="btn" onclick="crearTicket()">Crear Ticket</button>
+    </div>
 
-</div>
+    <div id="consultar" class="modulo">
+        <button onclick="volver()">⬅ Volver</button>
+        <h2>Mis Tickets</h2>
+        <div id="lista"></div>
+    </div>
 
-<!-- CREAR -->
-<div id="crear" class="modulo">
-<button onclick="volver()">⬅ Volver</button>
-<h2>Crear Ticket</h2>
+    <div id="admin" class="modulo">
+        <button onclick="volver()">⬅ Volver</button>
+        <h2>Administrar Tickets</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Usuario</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaAdmin"></tbody>
+        </table>
+    </div>
 
-<select id="dependencia">
-<option>Sistemas</option>
-<option>Administración</option>
-<option>Académico</option>
-</select>
+    <div id="inventario" class="modulo">
+        <button onclick="volver()">⬅ Volver</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:15px;">
+            <h2>Inventario de Equipos TIC</h2>
+            <button class="btn" style="background:#22c55e;" onclick="mostrarFormEquipo()">+ Registrar nuevo equipo</button>
+        </div>
 
-<select id="tipo">
-<option>Soporte</option>
-<option>Mantenimiento</option>
-<option>Instalación</option>
-</select>
+        <div id="formEquipo" style="display:none; background:#f8fafc; padding:20px; border-radius:10px;">
+            <h3>Registrar Nuevo Equipo</h3>
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+                <input type="text" id="inv_pc" placeholder="Nombre PC (Ej: AuxTesorería)">
+                <select id="inv_tipo">
+                    <option value="AIO">AIO</option>
+                    <option value="Portátil">Portátil</option>
+                    <option value="Torre">Torre</option>
+                </select>
+                <input type="text" id="inv_modelo" placeholder="Modelo (Ej: HP ProOne)">
+                <input type="text" id="inv_placa" placeholder="Placa Inventario">
+                <input type="text" id="inv_responsable" placeholder="Responsable">
+                <input type="text" id="inv_dependencia" placeholder="Dependencia">
+                <input type="text" id="inv_campus" placeholder="Campus">
+                <input type="text" id="inv_sede" placeholder="Sede">
+            </div>
+            <div style="margin-top:15px;">
+                <button class="btn" onclick="guardarEquipo()">Guardar Equipo</button>
+                <button class="btn" style="background:#64748b;" onclick="document.getElementById('formEquipo').style.display='none'">Cancelar</button>
+            </div>
+        </div>
 
-<textarea id="descripcion" placeholder="Describe el problema"></textarea>
-
-<select id="prioridad">
-<option>Baja</option>
-<option>Media</option>
-<option>Alta</option>
-</select>
-
-<button class="btn" onclick="crearTicket()">Crear Ticket</button>
-</div>
-
-<!-- CONSULTAR -->
-<div id="consultar" class="modulo">
-<button onclick="volver()">⬅ Volver</button>
-<h2>Mis Tickets</h2>
-<div id="lista"></div>
-</div>
-
-<!-- ADMIN -->
-<div id="admin" class="modulo">
-<button onclick="volver()">⬅ Volver</button>
-<h2>Administrar Tickets</h2>
-
-<table>
-<thead>
-<tr>
-<th>ID</th>
-<th>Tipo</th>
-<th>Estado</th>
-<th>Usuario</th>
-<th>Acciones</th>
-</tr>
-</thead>
-
-<tbody id="tablaAdmin"></tbody>
-</table>
-
-</div>
+        <table>
+            <thead>
+                <tr style="background:#f8fafc;">
+                    <th>PC</th>
+                    <th>Tipo</th>
+                    <th>Modelo</th>
+                    <th>Inventario</th>
+                    <th>Responsable</th>
+                    <th>Dependencia</th>
+                    <th>Campus</th>
+                    <th>Sede</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tablaInventario"></tbody>
+        </table>
+    </div>
 
 </div>
 
 <script>
-
-// FIREBASE
+// FIREBASE CONFIG
 firebase.initializeApp({
-apiKey:"AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
-authDomain:"sistema-de-tickets-ti-b12f5.firebaseapp.com",
-projectId:"sistema-de-tickets-ti-b12f5"
+    apiKey:"AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
+    authDomain:"sistema-de-tickets-ti-b12f5.firebaseapp.com",
+    projectId:"sistema-de-tickets-ti-b12f5"
 });
 
 const auth = firebase.auth();
@@ -277,127 +313,165 @@ let user;
 
 // LOGIN
 function login(){
-const provider = new firebase.auth.GoogleAuthProvider();
-
-auth.signInWithPopup(provider)
-.then(res=>mostrar(res.user))
-.catch(e=>alert(e.message));
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider)
+    .then(res=>mostrar(res.user))
+    .catch(e=>alert(e.message));
 }
 
 auth.onAuthStateChanged(u=>{
-if(u) mostrar(u);
+    if(u) mostrar(u);
 });
 
 function mostrar(u){
-user=u;
-document.getElementById("login").style.display="none";
-document.getElementById("dashboard").style.display="block";
+    user=u;
+    document.getElementById("login").style.display="none";
+    document.getElementById("dashboard").style.display="block";
 }
 
-// NAV
+// NAVEGACIÓN
 function abrir(id){
-document.getElementById("panel").style.display="none";
-document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
-document.getElementById(id).style.display="block";
+    document.getElementById("panel").style.display="none";
+    document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
+    document.getElementById(id).style.display="block";
 
-if(id==="consultar") cargarTickets();
-if(id==="admin") cargarAdmin();
+    if(id==="consultar") cargarTickets();
+    if(id==="admin") cargarAdmin();
+    if(id==="inventario") cargarInventario();
 }
 
 function volver(){
-document.getElementById("panel").style.display="grid";
-document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
+    document.getElementById("panel").style.display="grid";
+    document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
 }
 
-// CREAR
+// --- LOGICA TICKETS ---
 async function crearTicket(){
-await db.collection("tickets").add({
-tipo: tipo.value,
-descripcion: descripcion.value,
-dependencia: dependencia.value,
-prioridad: prioridad.value,
-usuario: user.email,
-estado:"abierto"
-});
-alert("Ticket creado");
+    await db.collection("tickets").add({
+        tipo: tipo.value,
+        descripcion: descripcion.value,
+        dependencia: dependencia.value,
+        prioridad: prioridad.value,
+        usuario: user.email,
+        estado:"abierto"
+    });
+    alert("Ticket creado");
+    volver();
 }
 
-// CONSULTAR
 function cargarTickets(){
-db.collection("tickets")
-.where("usuario","==",user.email)
-.onSnapshot(snap=>{
-lista.innerHTML="";
-snap.forEach(doc=>{
-const t=doc.data();
-lista.innerHTML+=`<div>${t.tipo} - ${t.estado}</div>`;
-});
-});
+    db.collection("tickets")
+    .where("usuario","==",user.email)
+    .onSnapshot(snap=>{
+        lista.innerHTML="";
+        snap.forEach(doc=>{
+            const t=doc.data();
+            lista.innerHTML+=`<div style="padding:10px; border-bottom:1px solid #ddd;">${t.tipo} - <b>${t.estado}</b></div>`;
+        });
+    });
 }
 
-// ADMIN
 function cargarAdmin(){
-db.collection("tickets").onSnapshot(snap=>{
-tablaAdmin.innerHTML="";
-
-snap.forEach(doc=>{
-const t=doc.data();
-const id=doc.id;
-
-let clase = t.estado=="abierto"?"abierto":t.estado=="en proceso"?"enproceso":"cerrado";
-
-tablaAdmin.innerHTML+=`
-<tr>
-<td>${id.substring(0,5)}</td>
-<td>${t.tipo}</td>
-<td><span class="badge ${clase}">${t.estado}</span></td>
-<td>${t.usuario}</td>
-<td>
-<button onclick="verTicket('${id}')">👁</button>
-<button onclick="enProceso('${id}')">⏳</button>
-<button onclick="cerrarTicket('${id}')">✅</button>
-<button onclick="reasignar('${id}')">🔄</button>
-<button onclick="eliminar('${id}')">🗑</button>
-</td>
-</tr>
-`;
-});
-});
+    db.collection("tickets").onSnapshot(snap=>{
+        tablaAdmin.innerHTML="";
+        snap.forEach(doc=>{
+            const t=doc.data();
+            const id=doc.id;
+            let clase = t.estado=="abierto"?"abierto":t.estado=="en proceso"?"enproceso":"cerrado";
+            tablaAdmin.innerHTML+=`
+            <tr>
+                <td>${id.substring(0,5)}</td>
+                <td>${t.tipo}</td>
+                <td><span class="badge ${clase}">${t.estado}</span></td>
+                <td>${t.usuario}</td>
+                <td>
+                    <button onclick="verTicket('${id}')">👁</button>
+                    <button onclick="enProceso('${id}')">⏳</button>
+                    <button onclick="cerrarTicket('${id}')">✅</button>
+                    <button onclick="reasignar('${id}')">🔄</button>
+                    <button onclick="eliminar('${id}')">🗑</button>
+                </td>
+            </tr>`;
+        });
+    });
 }
 
-// ACCIONES
-function verTicket(id){
-db.collection("tickets").doc(id).get().then(doc=>{
-alert(doc.data().descripcion);
-});
-}
-
-function enProceso(id){
-db.collection("tickets").doc(id).update({estado:"en proceso"});
-}
-
-function cerrarTicket(id){
-db.collection("tickets").doc(id).update({estado:"cerrado"});
-}
-
-function eliminar(id){
-if(confirm("¿Eliminar ticket?")){
-db.collection("tickets").doc(id).delete();
-}
-}
-
+// ACCIONES TICKETS
+function verTicket(id){ db.collection("tickets").doc(id).get().then(doc=>alert(doc.data().descripcion)); }
+function enProceso(id){ db.collection("tickets").doc(id).update({estado:"en proceso"}); }
+function cerrarTicket(id){ db.collection("tickets").doc(id).update({estado:"cerrado"}); }
+function eliminar(id){ if(confirm("¿Eliminar ticket?")) db.collection("tickets").doc(id).delete(); }
 function reasignar(id){
-const nuevo = prompt("Nuevo correo:");
-if(!nuevo) return;
-db.collection("tickets").doc(id).update({usuario:nuevo});
+    const nuevo = prompt("Nuevo correo:");
+    if(nuevo) db.collection("tickets").doc(id).update({usuario:nuevo});
+}
+
+// --- LOGICA INVENTARIO ---
+function mostrarFormEquipo() {
+    document.getElementById("formEquipo").style.display = "block";
+}
+
+async function guardarEquipo() {
+    const pc = document.getElementById("inv_pc").value;
+    const placa = document.getElementById("inv_placa").value;
+
+    if(!pc || !placa) return alert("Por favor completa los campos principales (PC y Placa)");
+
+    await db.collection("inventario").add({
+        pc: pc,
+        tipo: document.getElementById("inv_tipo").value,
+        modelo: document.getElementById("inv_modelo").value,
+        inventario: placa,
+        responsable: document.getElementById("inv_responsable").value,
+        dependencia: document.getElementById("inv_dependencia").value,
+        campus: document.getElementById("inv_campus").value,
+        sede: document.getElementById("inv_sede").value
+    });
+
+    alert("Equipo registrado");
+    document.getElementById("formEquipo").style.display = "none";
+    // Limpiar campos
+    document.querySelectorAll("#formEquipo input").forEach(input => input.value = "");
+}
+
+function cargarInventario() {
+    db.collection("inventario").onSnapshot(snap => {
+        const tabla = document.getElementById("tablaInventario");
+        tabla.innerHTML = "";
+        snap.forEach(doc => {
+            const e = doc.data();
+            const id = doc.id;
+            tabla.innerHTML += `
+                <tr>
+                    <td><b>${e.pc}</b></td>
+                    <td>${e.tipo}</td>
+                    <td>${e.modelo}</td>
+                    <td>${e.inventario}</td>
+                    <td>${e.responsable}</td>
+                    <td>${e.dependencia}</td>
+                    <td>${e.campus}</td>
+                    <td>${e.sede}</td>
+                    <td>
+                        <button onclick="eliminarEquipo('${id}')" style="background:#fee2e2; color:#ef4444;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>`;
+        });
+    });
+}
+
+async function eliminarEquipo(id) {
+    if (confirm("¿Seguro que deseas eliminar este equipo del inventario?")) {
+        await db.collection("inventario").doc(id).delete();
+    }
 }
 
 // LOGOUT
 function logout(){
-auth.signOut();
-location.reload();
+    auth.signOut();
+    location.reload();
 }
-
 </script>
 
 </body>
