@@ -14,25 +14,27 @@
     .tabs button.active { background:#4285F4; color:white; border-radius:6px 6px 0 0; }
     .modulo { display:none; padding:20px; }
     .card { background:white; border-radius:12px; padding:15px; margin:15px 0; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-    .card:hover { box-shadow:0 5px 15px rgba(0,0,0,0.2); }
     .badge { padding:4px 10px; border-radius:6px; color:white; font-weight:bold; }
     .badge.baja { background:#4CAF50; }
     .badge.media { background:#FF9800; }
     .badge.alta { background:#F44336; }
     button { cursor:pointer; margin:5px 0; padding:8px 12px; border:none; border-radius:6px; }
     #logoutBtn { position:absolute; top:15px; right:15px; background:#F44336; color:white; }
-    input, select { padding:8px; margin:5px 0; width:100%; box-sizing:border-box; }
+    input, select { padding:6px; margin:3px 0; width:100%; box-sizing:border-box; }
     table { width:100%; border-collapse:collapse; margin-top:10px; }
     table, th, td { border:1px solid #ccc; border-radius:6px; }
     th { background:#4285F4; color:white; }
     td button { padding:4px 8px; margin:2px; font-size:12px; }
     .edit-btn { background:#2196F3; color:white; border-radius:4px; font-size:14px; margin-left:5px; }
-
-    /* ================= MODAL ================= */
+    /* Modal */
     .modal { display:none; position:fixed; z-index:999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.5); }
-    .modal-content { background:white; margin:10% auto; padding:20px; border-radius:8px; width:300px; position:relative; }
-    .modal-content h3 { margin-top:0; }
-    .modal-content button { width:48%; margin:5px 1%; }
+    .modal-content { background:white; margin:15% auto; padding:20px; border-radius:8px; width:300px; text-align:center; }
+    .modal-content select, .modal-content button { width:90%; margin:5px 0; }
+    /* Toast */
+    #toast { visibility:hidden; min-width:250px; background:#333; color:white; text-align:center; border-radius:6px; padding:16px; position:fixed; z-index:1000; bottom:30px; left:50%; transform:translateX(-50%); }
+    #toast.show { visibility:visible; animation:fadein 0.5s, fadeout 0.5s 2.5s; }
+    @keyframes fadein { from {bottom:0; opacity:0;} to {bottom:30px; opacity:1;} }
+    @keyframes fadeout { from {bottom:30px; opacity:1;} to {bottom:0; opacity:0;} }
   </style>
 </head>
 <body>
@@ -41,15 +43,11 @@
   <button id="logoutBtn" onclick="cerrarSesion()">Cerrar sesión</button>
 </header>
 
-<!-- LOGIN -->
 <div id="loginDiv" style="padding:20px; text-align:center;">
   <button id="loginBtn" style="padding:12px 25px; background:#4285F4; color:white; border:none; border-radius:6px; font-size:16px;">Iniciar sesión con Google</button>
 </div>
 
-<!-- DASHBOARD -->
 <div id="dashboard" style="display:none;">
-
-  <!-- TABS -->
   <div class="tabs">
     <button class="tabBtn active" onclick="mostrarModulo('crearTicket', this)">Crear Ticket</button>
     <button class="tabBtn" onclick="mostrarModulo('listaTickets', this)">Lista de Tickets</button>
@@ -77,7 +75,7 @@
     <div id="lista"></div>
   </div>
 
-  <!-- Gestión de Usuarios -->
+  <!-- Gestión Usuarios -->
   <div id="usuariosSection" class="modulo">
     <div class="card">
       <h3>Gestión de Usuarios (Solo Admin)</h3>
@@ -103,29 +101,22 @@
       </table>
     </div>
   </div>
-
 </div>
 
-<!-- ================= MODAL EDITAR USUARIO ================= -->
-<div id="modalEditar" class="modal">
+<!-- Modal Reasignar Ticket -->
+<div id="modalReasignar" class="modal">
   <div class="modal-content">
-    <h3>Editar Usuario</h3>
-    <input id="modalNombre" placeholder="Nombre">
-    <input id="modalEmail" placeholder="Email">
-    <select id="modalRol">
-      <option>Usuario</option>
-      <option>Gestor</option>
-      <option>Admin</option>
-    </select>
-    <div style="text-align:center;">
-      <button id="btnAceptar">Aceptar</button>
-      <button id="btnCancelar">Cancelar</button>
-    </div>
+    <h3>Reasignar Ticket</h3>
+    <select id="selectGestor"></select>
+    <button onclick="confirmarReasignacion()">Aceptar</button>
+    <button onclick="cancelarReasignacion()">Cancelar</button>
   </div>
 </div>
 
+<!-- Toast -->
+<div id="toast"></div>
+
 <script>
-  // ==================== FIREBASE ====================
   const firebaseConfig = {
     apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
     authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com",
@@ -138,12 +129,17 @@
   const auth = firebase.auth();
   const db = firebase.firestore();
   const storage = firebase.storage();
-  let currentUser, currentRole;
-  let usuarioEditarEmail=null; // Guardar email original para edición
+  let currentUser, currentRole, ticketAReasignar=null;
 
-  // ==================== LOGIN ====================
+  const showToast = (msg)=>{ 
+    const toast=document.getElementById("toast");
+    toast.innerText=msg; toast.className="show";
+    setTimeout(()=>{toast.className="";},3000);
+  };
+
+  // LOGIN
   document.getElementById("loginBtn").addEventListener("click", async ()=>{
-    const provider = new firebase.auth.GoogleAuthProvider();
+    const provider=new firebase.auth.GoogleAuthProvider();
     await auth.signInWithPopup(provider);
   });
 
@@ -154,44 +150,35 @@
     document.getElementById("dashboard").style.display="block";
 
     const roleRef=db.collection("roles").doc(user.email);
-    let doc = await roleRef.get();
-
+    let doc=await roleRef.get();
     if(user.email==="camicarmona1212@gmail.com"){
-      await roleRef.set({rol:"admin", nombre:"Cami Carmona"});
-      doc = await roleRef.get();
+      await roleRef.set({rol:"Admin", nombre:"Cami Carmona"}); doc=await roleRef.get();
     }
     if(!doc.exists){
-      await roleRef.set({rol:"usuario", nombre:user.displayName});
-      doc = await roleRef.get();
+      await roleRef.set({rol:"Usuario", nombre:user.displayName}); doc=await roleRef.get();
     }
-
     currentRole=doc.data().rol;
-
     document.querySelectorAll(".tabBtn").forEach(btn=>{
-      if(btn.textContent==="Gestión de Usuarios"){
-        btn.style.display = currentRole==="admin" ? "inline-block" : "none";
-      }
+      if(btn.textContent==="Gestión de Usuarios"){ btn.style.display=currentRole==="Admin"?"inline-block":"none"; }
     });
-    document.getElementById("usuariosSection").style.display = currentRole==="admin"?"block":"none";
-
+    document.getElementById("usuariosSection").style.display=currentRole==="Admin"?"block":"none";
     cargarUsuarios();
     cargarTickets();
   });
 
-  // ==================== MODULOS ====================
   function mostrarModulo(id, btn){
-    if(currentRole!=="admin" && id==="usuariosSection"){ alert("No tienes permiso"); return; }
+    if(currentRole!=="Admin" && id==="usuariosSection"){ alert("No tienes permiso"); return; }
     document.querySelectorAll(".modulo").forEach(m=>m.style.display="none");
     document.getElementById(id).style.display="block";
     document.querySelectorAll(".tabBtn").forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
   }
 
-  // ==================== TICKETS ====================
+  // ================= TICKETS =================
   async function crear(){
     let url="";
     const f=file.files[0];
-    if(f){ const ref=storage.ref("tickets/"+Date.now()); await ref.put(f); url=await ref.getDownloadURL(); }
+    if(f){ const ref=storage.ref("tickets/"+Date.now()); await ref.put(f); url=await ref.getDownloadURL();}
     await db.collection("tickets").add({
       titulo:titulo.value,
       descripcion:desc.value,
@@ -203,106 +190,124 @@
       fecha:new Date(),
       historial:[]
     });
-    alert("Ticket creado");
+    showToast("Ticket creado");
+  }
+
+  async function cargarTickets(){
+    const lista=document.getElementById("lista");
+    lista.innerHTML="";
+    const snap=await db.collection("tickets").orderBy("fecha","desc").get();
+    snap.docs.forEach(doc=>{
+      const t=doc.data();
+      if(currentRole==="Usuario" && t.usuario!==currentUser.email) return;
+      if(currentRole==="Gestor" && t.gestor!==currentUser.email) return;
+      let color=t.prioridad==="alta"?"#F44336":t.prioridad==="media"?"#FF9800":"#4CAF50";
+      const div=document.createElement("div");
+      div.className="card";
+      div.style.borderLeft=`6px solid ${color}`;
+      div.innerHTML=`
+        <b>${t.titulo}</b> <span class="badge ${t.prioridad}">${t.prioridad}</span><br>
+        ${t.descripcion}<br>
+        Estado: <b>${t.estado}</b><br>
+        Gestor: ${t.gestor||"Sin asignar"}<br>
+        ${t.adjunto?`<a href="${t.adjunto}" target="_blank">Ver archivo</a>`:""}<br>
+        ${acciones(doc.id,t)}
+        <input id="c-${doc.id}" placeholder="Comentario">
+        <button onclick="comentar('${doc.id}')">Enviar</button>
+      `;
+      lista.appendChild(div);
+    });
   }
 
   function acciones(id,t){
     let b="";
-    if(currentRole==="gestor"||currentRole==="admin"){
+    if(currentRole==="Gestor"||currentRole==="Admin"){
       b+=`<button onclick="asignar('${id}')">Asignarme</button>`;
       b+=`<button onclick="estado('${id}','proceso')">Proceso</button>`;
       b+=`<button onclick="estado('${id}','cerrado')">Cerrar</button>`;
     }
-    if(currentRole==="admin"){
+    if(currentRole==="Admin"){
       b+=`<button onclick="eliminarTicket('${id}')" style="background:red;color:white;">Eliminar</button>`;
-      b+=`<button onclick="reasignarTicket('${id}')" style="background:#FFA500;color:white;">Reasignar</button>`;
+      b+=`<button onclick="abrirModalReasignar('${id}')" style="background:#FFA500;color:white;">Reasignar</button>`;
     }
     return b;
   }
 
   function asignar(id){ actualizarTicket(id,{gestor:currentUser.email},"Asignado"); }
-  function estado(id,e){ actualizarTicket(id,{estado:e},"Cambio de estado a "+e); }
-  async function actualizarTicket(id, cambios, accion){
+  function estado(id,e){ actualizarTicket(id,{estado:e},"Cambio de estado a "+e);}
+  async function actualizarTicket(id,cambios,accion){
     const docRef=db.collection("tickets").doc(id);
     const doc=await docRef.get();
     const historial=doc.data().historial||[];
-    historial.push({accion, usuario:currentUser.email, fecha:new Date()});
+    historial.push({accion,usuario:currentUser.email,fecha:new Date()});
     await docRef.update({...cambios,historial});
-  }
-
-  async function cargarTickets(){
-    let query=db.collection("tickets");
-    if(currentRole==="usuario") query=query.where("usuario","==",currentUser.email);
-    if(currentRole==="gestor") query=query.where("gestor","in",["",currentUser.email]);
-    query.onSnapshot(snapshot=>{
-      const lista=document.getElementById("lista");
-      lista.innerHTML="";
-      snapshot.docs.forEach(doc=>{
-        const t=doc.data();
-        let color=t.prioridad==="alta"?"#F44336":t.prioridad==="media"?"#FF9800":"#4CAF50";
-        const div=document.createElement("div");
-        div.className="card";
-        div.style.borderLeft=`6px solid ${color}`;
-        div.innerHTML=`
-          <b>${t.titulo}</b> <span class="badge ${t.prioridad}">${t.prioridad}</span><br>
-          ${t.descripcion}<br>
-          Estado: <b>${t.estado}</b><br>
-          Gestor: ${t.gestor||"Sin asignar"}<br>
-          ${t.adjunto?`<a href="${t.adjunto}" target="_blank">Ver archivo</a>`:""}<br>
-          ${acciones(doc.id,t)}
-          <input id="c-${doc.id}" placeholder="Comentario">
-          <button onclick="comentar('${doc.id}')">Enviar</button>
-        `;
-        lista.prepend(div);
-      });
-    });
+    showToast("Ticket actualizado");
+    cargarTickets();
   }
 
   function comentar(id){
     const texto=document.getElementById("c-"+id).value;
-    db.collection("tickets").doc(id).collection("comentarios").add({
-      texto, usuario:currentUser.email, fecha:new Date()
-    });
+    if(!texto) return;
+    db.collection("tickets").doc(id).collection("comentarios").add({texto,usuario:currentUser.email,fecha:new Date()});
+    showToast("Comentario enviado");
   }
 
   async function eliminarTicket(id){
     if(!confirm("Eliminar ticket?")) return;
     await db.collection("tickets").doc(id).delete();
-    alert("Ticket eliminado");
+    showToast("Ticket eliminado");
+    cargarTickets();
   }
 
-  // ==================== GESTION USUARIOS ====================
+  // ==================== USUARIOS ====================
   async function agregarUsuario(){
-    if(currentRole!=="admin"){ alert("Solo admin"); return; }
-    const email = emailUser.value.trim();
-    const nombre = nombreUser.value.trim();
-    const rol = rolUser.value;
-    if(!email || !nombre){ alert("Ingrese email y nombre"); return; }
-    await db.collection("roles").doc(email).set({nombre, rol});
-    alert("Usuario agregado");
+    if(currentRole!=="Admin"){ alert("Solo Admin"); return; }
+    const email=emailUser.value.trim();
+    const nombre=nombreUser.value.trim();
+    const rol=rolUser.value;
+    if(!email||!nombre){ alert("Ingrese email y nombre"); return; }
+    await db.collection("roles").doc(email).set({nombre,rol});
+    showToast("Usuario agregado");
     emailUser.value=""; nombreUser.value="";
     cargarUsuarios();
   }
 
   async function cargarUsuarios(){
-    if(currentRole!=="admin") return;
-    const tabla = document.getElementById("tablaUsuarios");
+    if(currentRole!=="Admin") return;
+    const tabla=document.getElementById("tablaUsuarios");
     tabla.innerHTML="";
-    const snap = await db.collection("roles").get();
+    const snap=await db.collection("roles").get();
     snap.forEach(doc=>{
       const data=doc.data();
       const tr=document.createElement("tr");
       tr.innerHTML=`
-        <td>${data.nombre}</td>
-        <td>${doc.id}</td>
-        <td>${data.rol}</td>
+        <td contenteditable="true">${data.nombre}</td>
+        <td contenteditable="true">${doc.id}</td>
         <td>
-          <button class="edit-btn" onclick="abrirModal('${doc.id}','${data.nombre}','${data.rol}')">✏️</button>
-          <button style="background:#F44336;color:white;margin-left:5px;" onclick="eliminarUsuario('${doc.id}')">Eliminar</button>
+          <select>
+            <option ${data.rol==="Usuario"?"selected":""}>Usuario</option>
+            <option ${data.rol==="Gestor"?"selected":""}>Gestor</option>
+            <option ${data.rol==="Admin"?"selected":""}>Admin</option>
+          </select>
+        </td>
+        <td>
+          <button onclick="guardarFilaUsuario(this)">💾</button>
+          <button style="background:#F44336;color:white;" onclick="eliminarUsuario('${doc.id}')">Eliminar</button>
         </td>
       `;
       tabla.appendChild(tr);
     });
+  }
+
+  async function guardarFilaUsuario(btn){
+    const tr=btn.parentElement.parentElement;
+    const nombre=tr.children[0].innerText.trim();
+    const email=tr.children[1].innerText.trim();
+    const rol=tr.children[2].children[0].value;
+    if(!nombre||!email){ alert("Nombre y email requeridos"); return;}
+    await db.collection("roles").doc(email).set({nombre,rol});
+    showToast("Usuario actualizado");
+    cargarUsuarios();
   }
 
   function eliminarUsuario(email){
@@ -310,44 +315,41 @@
     db.collection("roles").doc(email).delete().then(()=>cargarUsuarios());
   }
 
-  // ==================== MODAL EDITAR ====================
-  const modal=document.getElementById("modalEditar");
-  const modalNombre=document.getElementById("modalNombre");
-  const modalEmail=document.getElementById("modalEmail");
-  const modalRol=document.getElementById("modalRol");
-  const btnAceptar=document.getElementById("btnAceptar");
-  const btnCancelar=document.getElementById("btnCancelar");
-
-  function abrirModal(email,nombre,rol){
-    usuarioEditarEmail=email;
-    modalNombre.value=nombre;
-    modalEmail.value=email;
-    modalRol.value=rol;
-    modal.style.display="block";
+  // ================== REASIGNAR TICKET =================
+  async function abrirModalReasignar(ticketId){
+    ticketAReasignar=ticketId;
+    const select=document.getElementById("selectGestor");
+    select.innerHTML="";
+    const snap=await db.collection("roles").where("rol","==","Gestor").get();
+    snap.forEach(doc=>{
+      const option=document.createElement("option");
+      option.value=doc.id;
+      option.text=`${doc.data().nombre} (${doc.id})`;
+      select.appendChild(option);
+    });
+    document.getElementById("modalReasignar").style.display="block";
   }
 
-  btnCancelar.onclick=()=>{ modal.style.display="none"; }
-
-  btnAceptar.onclick=async ()=>{
-    const nuevoNombre=modalNombre.value.trim();
-    const nuevoEmail=modalEmail.value.trim();
-    const nuevoRol=modalRol.value;
-
-    if(!nuevoNombre || !nuevoEmail){ alert("Nombre y email requeridos"); return; }
-
-    if(nuevoEmail!==usuarioEditarEmail){
-      await db.collection("roles").doc(nuevoEmail).set({nombre:nuevoNombre, rol:nuevoRol});
-      await db.collection("roles").doc(usuarioEditarEmail).delete();
-    } else {
-      await db.collection("roles").doc(usuarioEditarEmail).update({nombre:nuevoNombre, rol:nuevoRol});
-    }
-    modal.style.display="none";
-    cargarUsuarios();
+  async function confirmarReasignacion(){
+    const nuevoGestor=document.getElementById("selectGestor").value;
+    if(!ticketAReasignar || !nuevoGestor) return;
+    const docRef=db.collection("tickets").doc(ticketAReasignar);
+    const doc=await docRef.get();
+    const historial=doc.data().historial||[];
+    historial.push({accion:"Reasignado a "+nuevoGestor,usuario:currentUser.email,fecha:new Date()});
+    await docRef.update({gestor:nuevoGestor,historial});
+    ticketAReasignar=null;
+    document.getElementById("modalReasignar").style.display="none";
+    showToast("Ticket reasignado");
+    cargarTickets();
   }
 
-  window.onclick=(e)=>{ if(e.target==modal) modal.style.display="none"; }
+  function cancelarReasignacion(){
+    ticketAReasignar=null;
+    document.getElementById("modalReasignar").style.display="none";
+  }
 
-  // ==================== CERRAR SESION ====================
+  // ================== CERRAR SESION =================
   function cerrarSesion(){
     auth.signOut().then(()=>{
       currentUser=null; currentRole=null;
