@@ -192,7 +192,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw",
   authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com",
   projectId: "sistema-de-tickets-ti-b12f5",
-  storageBucket: "sistema-de-tickets-ti-b12f5.firebasestorage.app",
+  storageBucket: "sistema-de-tickets-ti-b12f5.appspot.com",
   messagingSenderId: "356054718850",
   appId: "1:356054718850:web:3a439d4ffbd4f017a7179b"
 };
@@ -207,16 +207,18 @@ let editId=null;
 
 /* LOGIN */
 window.login = async () => {
+  console.log("CLICK LOGIN");
+
   const provider = new GoogleAuthProvider();
   try {
     await signInWithPopup(auth, provider);
   } catch (error) {
-    console.log("Popup bloqueado, usando redirect...");
+    console.log("Popup bloqueado, usando redirect...", error);
     await signInWithRedirect(auth, provider);
   }
 };
 
-/* RECUPERAR REDIRECT */
+/* REDIRECT */
 getRedirectResult(auth).catch(console.error);
 
 /* SESION */
@@ -228,12 +230,12 @@ if(u) mostrar(u);
 async function mostrar(u){
 user=u;
 
-login.style.display="none";
-dashboard.style.display="none";
+document.getElementById("login").style.display="none";
+document.getElementById("dashboard").style.display="none";
 
 await obtenerRol(user.email);
 
-dashboard.style.display="block";
+document.getElementById("dashboard").style.display="block";
 }
 
 /* PERMISOS */
@@ -250,17 +252,17 @@ permisosUsuario = {crear:true,consultar:true,admin:false,usuarios:false};
 controlAcceso();
 }
 
-/* TARJETAS */
+/* CONTROL ACCESO */
 function controlAcceso(){
-card-crear.style.display="none";
-card-consultar.style.display="none";
-card-admin.style.display="none";
-card-usuarios.style.display="none";
+document.getElementById("card-crear").style.display="none";
+document.getElementById("card-consultar").style.display="none";
+document.getElementById("card-admin").style.display="none";
+document.getElementById("card-usuarios").style.display="none";
 
-if(permisosUsuario.crear) card-crear.style.display="block";
-if(permisosUsuario.consultar) card-consultar.style.display="block";
-if(permisosUsuario.admin) card-admin.style.display="block";
-if(permisosUsuario.usuarios) card-usuarios.style.display="block";
+if(permisosUsuario.crear) document.getElementById("card-crear").style.display="block";
+if(permisosUsuario.consultar) document.getElementById("card-consultar").style.display="block";
+if(permisosUsuario.admin) document.getElementById("card-admin").style.display="block";
+if(permisosUsuario.usuarios) document.getElementById("card-usuarios").style.display="block";
 }
 
 /* NAV */
