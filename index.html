@@ -15,9 +15,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        :root { --primary: #2563eb; --purple: #8b5cf6; --dark: #0f172a; --bg: #f1f5f9; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --info: #00bcd4; --gray: #607d8b; }
+        :root { --primary: #2563eb; --purple: #8b5cf6; --dark: #0f172a; --bg: #f1f5f9; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --info: #00bcd4; --gray: #64748b; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #334155; }
-        header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
+        header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
         /* DASHBOARD */
         #dashboard { display: none; padding: 25px; }
@@ -28,11 +28,11 @@
 
         .modulo { display: none; background: white; padding: 25px; border-radius: 12px; min-height: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-        /* FILTROS Y CABECERAS */
+        /* FILTROS Y TABLAS */
         .filtros-box { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
         .grid-filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
         .header-blue { background: var(--primary); color: white; padding: 10px 15px; border-radius: 5px 5px 0 0; font-weight: bold; }
-        .resumen-celeste { background: #e0f2fe; padding: 12px; border-radius: 8px; color: #0369a1; margin-bottom: 15px; text-align: center; font-weight: 500; }
+        .resumen-celeste { background: #e0f2fe; padding: 12px; border-radius: 8px; color: #0369a1; margin-bottom: 15px; text-align: center; font-weight: 500; border: 1px solid #bae6fd; }
 
         input, select, textarea { padding: 9px; border: 1px solid #cbd5e1; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 0.9rem; margin-top: 5px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
@@ -56,7 +56,7 @@
 
         .btn { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .btn-blue { background: var(--primary); color: white; }
-        .btn-gray { background: #64748b; color: white; }
+        .btn-gray { background: var(--gray); color: white; }
         
         .event-bga { background: #475569; color: white; padding: 3px; border-radius: 4px; font-size: 0.7rem; }
         .badge-bga { background: #f59e0b; color: black; padding: 1px 3px; border-radius: 3px; font-weight: bold; margin-right: 3px; }
@@ -108,35 +108,9 @@
         </div>
 
         <div class="header-blue">Listado de Salas de Sistemas</div>
-        <div style="overflow-x:auto;">
-            <table>
-                <thead><tr><th>Nombre</th><th>Campus</th><th>Sede</th><th>Ubicación</th><th>Acciones</th></tr></thead>
-                <tbody id="tablaSalasSistemas"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="mod_aulas" class="modulo">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px;">
-            <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-            <h2 style="color:var(--primary); margin:0;">Aulas DTI</h2>
-            <h2 style="color:red; margin:0;" id="totalAulas">0</h2>
-        </div>
-        <div class="filtros-box">
-            <div class="grid-filtros">
-                <input type="text" id="fa_nombre" placeholder="Nombre Aula" onkeyup="filtrarAulas()">
-                <select id="fa_sede_f" onchange="filtrarAulas()"><option value="">Todas las Sedes</option><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select>
-            </div>
-            <div style="margin-top:10px; display:flex; gap:10px; justify-content:flex-end;">
-                <button class="btn btn-blue" onclick="filtrarAulas()">Filtrar</button>
-                <button class="btn btn-gray" onclick="limpiarFiltrosAulas()">Limpiar</button>
-                <button class="btn btn-blue" onclick="abrirModalAulaRegistro()">+ Agregar Aula</button>
-            </div>
-        </div>
-        <div class="header-blue">Listado de Aulas</div>
         <table>
             <thead><tr><th>Nombre</th><th>Campus</th><th>Sede</th><th>Ubicación</th><th>Acciones</th></tr></thead>
-            <tbody id="tablaAulas"></tbody>
+            <tbody id="tablaSalasSistemas"></tbody>
         </table>
     </div>
 
@@ -155,16 +129,35 @@
             </div>
         </div>
         <table>
-            <thead><tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Inventario</th><th>Responsable</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Inventario</th><th>Responsable</th><th>Dependencia</th><th>Acciones</th></tr></thead>
             <tbody id="tablaInvData"></tbody>
         </table>
     </div>
 
-    <div id="mod_calendario" class="modulo"><button onclick="volver()" class="btn btn-gray">⬅ Volver</button><div id="calendar"></div></div>
+    <div id="mod_aulas" class="modulo">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">
+            <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
+            <h2 style="color:var(--primary); margin:0;">Aulas DTI</h2>
+            <h2 style="color:red; margin:0;" id="totalAulas">0</h2>
+        </div>
+        <div class="filtros-box" style="margin-top:20px;">
+            <div class="grid-filtros">
+                <input type="text" id="fa_nombre" placeholder="Nombre Aula" onkeyup="filtrarAulas()">
+                <select id="fa_sed_f" onchange="filtrarAulas()"><option value="">Todas las Sedes</option><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select>
+            </div>
+            <div style="margin-top:10px; display:flex; gap:10px; justify-content:flex-end;">
+                <button class="btn btn-blue" onclick="filtrarAulas()">Filtrar</button>
+                <button class="btn btn-gray" onclick="limpiarFiltrosAulas()">Limpiar</button>
+                <button class="btn btn-blue" onclick="abrirModalAulaRegistro()">+ Agregar Aula</button>
+            </div>
+        </div>
+        <table>
+            <thead><tr><th>Nombre</th><th>Campus</th><th>Sede</th><th>Ubicación</th><th>Acciones</th></tr></thead>
+            <tbody id="tablaAulas"></tbody>
+        </table>
+    </div>
 
-    <div id="crear" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Crear Ticket</h2><textarea id="t_desc" rows="4"></textarea><button onclick="crearTicket()">Enviar</button></div>
-    <div id="consultar" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Mis Tickets</h2><div id="lista-tickets"></div></div>
-    <div id="admin_tickets" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Admin Tickets</h2><table><tbody id="tablaAdminTickets"></tbody></table></div>
+    <div id="mod_calendario" class="modulo"><button onclick="volver()" class="btn btn-gray">⬅ Volver</button><div id="calendar"></div></div>
 </div>
 
 <div id="modalSalaSistemas" class="modal">
@@ -177,7 +170,10 @@
             <label>Sede</label><select id="ns_sed"><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select>
             <label>Ubicación Detallada</label><input type="text" id="ns_ubi" placeholder="Ej: Piso 2">
         </div>
-        <button class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="ejecutarGuardarSalaSistemas()">Guardar Sala</button>
+        <div style="margin-top:20px; text-align:right; display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn btn-blue" onclick="ejecutarGuardarSalaSistemas()"><i class="fas fa-save"></i> Guardar Sala</button>
+            <button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button>
+        </div>
     </div>
 </div>
 
@@ -187,15 +183,32 @@
         <h2 id="modalTitleInv">Registrar Equipo</h2>
         <div class="grid-modal" id="formInv">
             <input type="text" id="n_pc" placeholder="Nombre PC"><select id="n_tipo_inv"><option>Portátil</option><option>AIO</option><option>Torre</option></select>
-            <input type="text" id="n_mod_inv" placeholder="Modelo"><input type="text" id="n_inv_inv" placeholder="Placa Inventario">
+            <input type="text" id="n_mod_inv" placeholder="Modelo"><input type="text" id="n_inv_inv" placeholder="Inventario">
             <select id="n_so_inv"><option>Windows 10</option><option>Windows 11</option></select><input type="text" id="n_proc_inv" placeholder="Procesador">
             <select id="n_ram_inv"><option>8 GB</option><option>16 GB</option></select><input type="text" id="n_disco_inv" placeholder="Disco">
             <input type="text" id="n_ip_inv" placeholder="IP"><input type="text" id="n_res_inv" placeholder="Responsable">
             <select id="n_dep_inv"><option>Sistemas</option><option>Tesorería</option></select>
             <select id="n_cam_inv"><option>Bucaramanga</option></select><select id="n_sed_inv"><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select>
-            <input type="text" id="n_correo_inv" placeholder="Correo"><input type="date" id="n_fecha_inv">
+            <input type="date" id="n_fecha_inv">
         </div>
-        <button class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="ejecutarGuardadoInv()">Guardar Registro</button>
+        <button class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="ejecutarGuardadoInv()">Guardar</button>
+    </div>
+</div>
+
+<div id="modalHistorial" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="cerrarModales()">&times;</span>
+        <h2>Historial de Mantenimientos</h2>
+        <table><thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th></tr></thead><tbody id="bodyHistorial"></tbody></table>
+    </div>
+</div>
+
+<div id="modalMante" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <span class="close-modal" onclick="cerrarModales()">&times;</span>
+        <h2>Mantenimiento</h2>
+        <input type="date" id="m_fecha"><textarea id="m_desc" placeholder="Detalles técnicos..."></textarea>
+        <button class="btn btn-blue" onclick="guardarMantenimiento()">Guardar</button>
     </div>
 </div>
 
@@ -212,7 +225,6 @@
     function logout() { auth.signOut().then(() => location.reload()); }
     auth.onAuthStateChanged(u => { if(u){ user=u; document.getElementById('login').style.display='none'; document.getElementById('dashboard').style.display='block'; } });
 
-    // NAVIGATION
     function abrir(id) {
         document.getElementById('panel-principal').style.display='none';
         document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
@@ -235,30 +247,30 @@
     function cargarSalasSistemas() { db.collection("salas_sistemas").onSnapshot(snap => { localSalasSistemas = []; snap.forEach(doc => localSalasSistemas.push({id: doc.id, ...doc.data()})); filtrarSalasSistemas(); }); }
     function filtrarSalasSistemas() {
         const nom = fs_nombre.value.toLowerCase();
-        const filtrados = localSalasSistemas.filter(s => (s.nombre||"").toLowerCase().includes(nom));
-        document.getElementById('totalSalasSistemas').innerText = filtrados.length;
+        const res = localSalasSistemas.filter(s => (s.nombre||"").toLowerCase().includes(nom));
+        document.getElementById('totalSalasSistemas').innerText = res.length;
         const b = document.getElementById('tablaSalasSistemas'); b.innerHTML = "";
-        filtrados.forEach(s => {
+        res.forEach(s => {
             b.innerHTML += `<tr><td><b>${s.nombre}</b></td><td>${s.campus}</td><td>${s.sede}</td><td>${s.ubicacion}</td>
             <td>
-                <button class="btn-acc bg-view" title="Chequeo"><i class="fas fa-check-square"></i></button>
-                <button class="btn-acc bg-historial" title="Historial"><i class="fas fa-history"></i></button>
+                <button class="btn-acc bg-view"><i class="fas fa-check-square"></i></button>
+                <button class="btn-acc bg-historial"><i class="fas fa-history"></i></button>
                 <button class="btn-acc bg-edit" onclick="abrirEditSalaSistemas('${s.id}')"><i class="fas fa-edit"></i></button>
                 <button class="btn-acc bg-delete" onclick="eliminarSalaSistemas('${s.id}')"><i class="fas fa-trash"></i></button>
             </td></tr>`;
         });
     }
-    function abrirModalSalaSistemasRegistro() { modoModal="registro"; document.getElementById('modalSalaSistemas').style.display='block'; }
+    function abrirModalSalaSistemasRegistro() { modoModal="registro"; document.getElementById('modalSalaSistemasTitle').innerText="Registrar Sala"; document.getElementById('modalSalaSistemas').style.display='block'; }
+    function abrirEditSalaSistemas(id) { modoModal="editar"; selectedId=id; const d=localSalasSistemas.find(x=>x.id===id); ns_nombre.value=d.nombre; ns_sed.value=d.sede; ns_ubi.value=d.ubicacion; document.getElementById('modalSalaSistemas').style.display='block'; }
     async function ejecutarGuardarSalaSistemas() {
         const obj = { nombre: ns_nombre.value, campus: ns_cam.value, sede: ns_sed.value, ubicacion: ns_ubi.value };
         if(modoModal === "editar") await db.collection("salas_sistemas").doc(selectedId).update(obj);
         else await db.collection("salas_sistemas").add(obj);
         cerrarModales();
     }
-    function abrirEditSalaSistemas(id) { modoModal="editar"; selectedId=id; const d=localSalasSistemas.find(x=>x.id===id); ns_nombre.value=d.nombre; ns_cam.value=d.campus; ns_sed.value=d.sede; ns_ubi.value=d.ubicacion; document.getElementById('modalSalaSistemas').style.display='block'; }
     async function eliminarSalaSistemas(id) { if(confirm("¿Eliminar?")) await db.collection("salas_sistemas").doc(id).delete(); }
 
-    // --- INVENTARIOS (5 ACCIONES) ---
+    // --- INVENTARIO (5 ACCIONES) ---
     function cargarInventario() { db.collection(currentColl).onSnapshot(snap => { localInvData = []; snap.forEach(doc => localInvData.push({id: doc.id, ...doc.data()})); filtrarInv(); }); }
     function filtrarInv() {
         const b = document.getElementById('tablaInvData'); b.innerHTML = "";
@@ -273,8 +285,7 @@
             </td></tr>`;
         });
     }
-    async function eliminarEq(id) { if(confirm("¿Eliminar?")) await db.collection(currentColl).doc(id).delete(); }
-    
+
     // --- CALENDARIO ---
     function initCalendar() {
         if(calendar) calendar.destroy();
@@ -287,6 +298,11 @@
             }
         }); calendar.render();
     }
+
+    // GENERAL
+    async function eliminarEq(id) { if(confirm("¿Eliminar?")) await db.collection(currentColl).doc(id).delete(); }
+    function abrirMante(id) { selectedId=id; document.getElementById('modalMante').style.display='block'; }
+    async function guardarMantenimiento() { await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ fecha: m_fecha.value, desc: m_desc.value, responsable: user.email }); cerrarModales(); }
 </script>
 </body>
 </html>
