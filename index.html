@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL V7</title>
+    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL V8</title>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -24,26 +24,29 @@
 
         .modulo { display: none; background: white; padding: 25px; border-radius: 12px; min-height: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-        /* --- TARJETAS DE CONTEO TICKETS --- */
+        /* ESTADÍSTICAS TICKETS */
         .grid-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
-        .stat-card { padding: 15px; border-radius: 10px; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; }
-        .bg-open { background: var(--success); }
-        .bg-process { background: var(--warning); }
-        .bg-closed { background: var(--danger); }
-        .stat-card span { font-size: 1.8rem; margin-top: 5px; }
+        .stat-card { padding: 15px; border-radius: 10px; color: white; text-align: center; font-weight: bold; }
+        .stat-card span { font-size: 2rem; display: block; }
 
-        /* --- TABLAS Y BOTONES --- */
-        .filtros-box { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
-        .header-blue { background: var(--primary); color: white; padding: 10px 15px; border-radius: 5px 5px 0 0; font-weight: bold; }
-        
+        /* FORMULARIO ENVIAR TICKET */
+        .form-ticket { max-width: 600px; margin-top: 20px; }
+        .form-group { display: flex; align-items: center; margin-bottom: 15px; }
+        .form-group label { width: 200px; font-weight: 600; color: #475569; }
+        .form-group input, .form-group select, .form-group textarea { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+
+        /* TABLAS */
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
         td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
 
-        .btn-acc { width: 32px; height: 32px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-acc { width: 32px; height: 32px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
+        .bg-process { background: var(--warning); }
+        .bg-reassign { background: var(--purple); }
+        .bg-close { background: var(--success); }
         .bg-view { background: var(--info); }
         .bg-delete { background: var(--danger); }
-        
+
         .btn { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-gray { background: var(--gray); color: white; }
@@ -73,43 +76,58 @@
         <div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Mis Tickets</h3></div>
         <div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Enviar Ticket</h3></div>
         <div class="card" onclick="abrir('admin_tickets')"><i class="fas fa-clipboard-list"></i><h3>Admin Tickets</h3></div>
-        <div class="card" onclick="abrir('inv_admin')"><i class="fas fa-desktop"></i><h3>Inventarios</h3></div>
+        <div class="card" onclick="abrir('mod_inv')"><i class="fas fa-desktop"></i><h3>Inventarios</h3></div>
         <div class="card" onclick="abrir('mod_aulas')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
         <div class="card" onclick="abrir('mod_salas_sistemas')"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
         <div class="card" onclick="abrir('mod_impresoras')"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
+    </div>
+
+    <div id="crear" class="modulo">
+        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
+        <h2 style="color:var(--primary); border-bottom: 2px solid var(--primary); padding-bottom:10px;">Enviar un Ticket</h2>
+        <div class="form-ticket">
+            <div class="form-group">
+                <label>Dependencia</label>
+                <select id="tk_dep"><option>Sistemas</option><option>Tesorería</option><option>Rectoría</option></select>
+            </div>
+            <div class="form-group">
+                <label>Tipo Requerimiento</label>
+                <select id="tk_tipo"><option>Soporte Técnico</option><option>Mantenimiento</option><option>Redes</option></select>
+            </div>
+            <div class="form-group" style="align-items: flex-start;">
+                <label>Descripción</label>
+                <textarea id="tk_desc" rows="5" placeholder="Describa el problema..."></textarea>
+            </div>
+            <div style="margin-left: 200px;">
+                <button class="btn btn-blue" onclick="enviarTicket()">Enviar Ticket</button>
+            </div>
+        </div>
     </div>
 
     <div id="admin_tickets" class="modulo">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
             <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
             <h2 style="color:var(--primary); margin:0;">Administración de Tickets</h2>
-            <div></div>
+            <h2 style="color:red; margin:0;" id="count_total">0</h2>
         </div>
 
         <div class="grid-stats">
-            <div class="stat-card bg-open">TICKETS ABIERTOS <span id="countOpen">0</span></div>
-            <div class="stat-card bg-process">EN PROCESO <span id="countProcess">0</span></div>
-            <div class="stat-card bg-closed">TICKETS CERRADOS <span id="countClosed">0</span></div>
+            <div class="stat-card abierto">ABIERTOS <span id="stat_open">0</span></div>
+            <div class="stat-card en-proceso">EN PROCESO <span id="stat_proc">0</span></div>
+            <div class="stat-card cerrado">CERRADOS <span id="stat_close">0</span></div>
         </div>
 
         <div class="filtros-box">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="display:flex; gap:10px; align-items:center;">
-                    <label>Filtrar Estado:</label>
-                    <select id="adm_filtro_estado" onchange="cargarTicketsAdmin()" style="width: 150px; margin:0;">
-                        <option value="Abierto">Abiertos</option>
-                        <option value="En Proceso">En Proceso</option>
-                        <option value="Cerrado">Cerrados</option>
-                    </select>
-                </div>
-                <div style="display:flex; gap:10px;">
-                    <button class="btn btn-gray" onclick="filtrarPorEstado('Cerrado')">Cerrados</button>
-                    <button class="btn btn-blue" onclick="cargarTicketsAdmin()">Actualizar</button>
-                </div>
+                <select id="adm_filtro" onchange="cargarTicketsAdmin()" style="width:200px;">
+                    <option value="Abierto">Ver Abiertos</option>
+                    <option value="En Proceso">Ver En Proceso</option>
+                    <option value="Cerrado">Ver Cerrados</option>
+                </select>
+                <button class="btn btn-gray" onclick="filtrarPor('Cerrado')">Cerrados</button>
             </div>
         </div>
 
-        <div class="header-blue">Gestión de Tickets de Soporte</div>
         <table>
             <thead>
                 <tr><th>ID</th><th>Tipo</th><th>Estado</th><th>Usuario</th><th>Acciones</th></tr>
@@ -118,28 +136,30 @@
         </table>
     </div>
 
-    <div id="crear" class="modulo">
-        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-        <h2 style="border-bottom: 2px solid var(--primary); padding-bottom:10px;">Enviar un Ticket</h2>
-        <div style="max-width:500px; margin-top:20px;">
-            <label>Descripción del Problema</label>
-            <textarea id="tk_desc" rows="5" placeholder="Escriba aquí..."></textarea>
-            <button class="btn btn-blue" style="margin-top:15px;" onclick="enviarTicket()">Enviar Ticket</button>
-        </div>
-    </div>
-
-    <div id="consultar" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Mis Tickets</h2><div id="mis_tk"></div></div>
+    <div id="consultar" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Mis Tickets</h2><div id="lista_mis_tk"></div></div>
 </div>
 
 <div id="modalDetalle" class="modal">
     <div class="modal-content">
-        <h2>Detalles del Ticket</h2>
-        <p id="m_desc" style="background:#f1f5f9; padding:15px; border-radius:8px;"></p>
+        <h2 id="m_tit">Detalles</h2>
+        <p id="m_desc" style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0;"></p>
         <p><strong>De:</strong> <span id="m_user"></span></p>
-        <div style="text-align:right; margin-top:20px; display:flex; gap:10px; justify-content:flex-end;">
-            <button class="btn btn-blue" id="btnProceso" onclick="cambiarEstado('En Proceso')">En Proceso</button>
-            <button class="btn btn-blue" style="background:var(--danger);" id="btnCerrar" onclick="cambiarEstado('Cerrado')">Cerrar Ticket</button>
-            <button class="btn btn-gray" onclick="cerrarModales()">Volver</button>
+        <div id="m_acciones" style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+<div id="modalReasignar" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <h2>Reasignar Ticket</h2>
+        <label>Nueva Dependencia:</label>
+        <select id="re_dep" style="margin-top:10px;">
+            <option>Sistemas</option><option>Tesorería</option><option>Académico</option>
+        </select>
+        <div style="margin-top:20px; text-align:right;">
+            <button class="btn btn-blue" onclick="ejecutarReasignar()">Confirmar</button>
+            <button class="btn btn-gray" onclick="cerrarModales()">Cancelar</button>
         </div>
     </div>
 </div>
@@ -161,25 +181,37 @@
         document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
         document.getElementById(id).style.display='block';
         if(id === 'admin_tickets') cargarTicketsAdmin();
+        if(id === 'consultar') cargarMisTickets();
     }
     function volver() { document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
 
-    // --- LOGICA ADMIN ---
-    function filtrarPorEstado(est) {
-        document.getElementById('adm_filtro_estado').value = est;
-        cargarTicketsAdmin();
+    // --- ENVIAR TICKET ---
+    async function enviarTicket() {
+        if(!tk_desc.value) return alert("Escriba la descripción");
+        await db.collection("tickets").add({
+            usuario: user.email,
+            dep: tk_dep.value,
+            tipo: tk_tipo.value,
+            desc: tk_desc.value,
+            estado: "Abierto",
+            fecha: new Date().toLocaleString()
+        });
+        alert("¡Ticket enviado!");
+        tk_desc.value = "";
+        volver();
     }
 
+    // --- ADMIN TICKETS ---
+    function filtrarPor(est) { document.getElementById('adm_filtro').value = est; cargarTicketsAdmin(); }
+
     function cargarTicketsAdmin() {
-        const filtro = document.getElementById('adm_filtro_estado').value;
-        
-        // Listener para contadores globales
+        const filtro = document.getElementById('adm_filtro').value;
         db.collection("tickets").onSnapshot(snap => {
-            let o = 0, p = 0, c = 0;
+            let o=0, p=0, c=0;
             const tbody = document.getElementById('tbodyAdmin');
             tbody.innerHTML = "";
-
+            
             snap.forEach(doc => {
                 const t = doc.data();
                 if(t.estado === "Abierto") o++;
@@ -190,52 +222,57 @@
                     tbody.innerHTML += `
                         <tr>
                             <td><b>#${doc.id.substring(0,5).toUpperCase()}</b></td>
-                            <td>Soporte</td>
+                            <td>${t.tipo}</td>
                             <td><span class="badge ${t.estado.toLowerCase().replace(" ","-")}">${t.estado}</span></td>
                             <td>${t.usuario}</td>
                             <td>
-                                <button class="btn-acc bg-view" onclick="verDetalle('${doc.id}')"><i class="fas fa-eye"></i></button>
-                                <button class="btn-acc bg-delete" onclick="eliminarTicket('${doc.id}')"><i class="fas fa-trash"></i></button>
+                                <button class="btn-acc bg-view" onclick="verDetalle('${doc.id}')" title="Ver"><i class="fas fa-eye"></i></button>
+                                <button class="btn-acc bg-process" onclick="actualizarEstado('${doc.id}','En Proceso')" title="En Proceso"><i class="fas fa-clock"></i></button>
+                                <button class="btn-acc bg-reassign" onclick="abrirReasignar('${doc.id}')" title="Reasignar"><i class="fas fa-user-tag"></i></button>
+                                <button class="btn-acc bg-close" onclick="actualizarEstado('${doc.id}','Cerrado')" title="Cerrar"><i class="fas fa-check-circle"></i></button>
+                                <button class="btn-acc bg-delete" onclick="eliminarTicket('${doc.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>`;
                 }
             });
-            document.getElementById('countOpen').innerText = o;
-            document.getElementById('countProcess').innerText = p;
-            document.getElementById('countClosed').innerText = c;
+            stat_open.innerText = o; stat_proc.innerText = p; stat_close.innerText = c;
+            count_total.innerText = snap.size;
         });
     }
 
-    function verDetalle(id) {
-        selectedId = id;
-        db.collection("tickets").doc(id).get().then(doc => {
-            const t = doc.data();
-            document.getElementById('m_desc').innerText = t.desc;
-            document.getElementById('m_user').innerText = t.usuario;
-            document.getElementById('modalDetalle').style.display = 'block';
-        });
+    async function actualizarEstado(id, est) {
+        await db.collection("tickets").doc(id).update({ estado: est });
     }
 
-    async function cambiarEstado(nuevoEstado) {
-        await db.collection("tickets").doc(selectedId).update({ estado: nuevoEstado });
+    function abrirReasignar(id) { selectedId = id; document.getElementById('modalReasignar').style.display='block'; }
+    async function ejecutarReasignar() {
+        await db.collection("tickets").doc(selectedId).update({ dep: re_dep.value });
         cerrarModales();
     }
 
     async function eliminarTicket(id) {
-        if(confirm("¿Eliminar ticket?")) await db.collection("tickets").doc(id).delete();
+        if(confirm("¿Eliminar este ticket permanentemente?")) await db.collection("tickets").doc(id).delete();
     }
 
-    // --- LOGICA USUARIO ---
-    async function enviarTicket() {
-        await db.collection("tickets").add({
-            usuario: user.email,
-            desc: document.getElementById('tk_desc').value,
-            estado: "Abierto",
-            fecha: new Date().toLocaleString()
+    function verDetalle(id) {
+        db.collection("tickets").doc(id).get().then(doc => {
+            const t = doc.data();
+            m_desc.innerText = t.desc;
+            m_user.innerText = t.usuario;
+            m_tit.innerText = "Ticket #" + doc.id.substring(0,6).toUpperCase();
+            document.getElementById('modalDetalle').style.display = 'block';
         });
-        alert("Enviado");
-        document.getElementById('tk_desc').value = "";
-        volver();
+    }
+
+    function cargarMisTickets() {
+        db.collection("tickets").where("usuario","==",user.email).onSnapshot(snap => {
+            const container = document.getElementById('lista_mis_tk');
+            container.innerHTML = "";
+            snap.forEach(doc => {
+                const t = doc.data();
+                container.innerHTML += `<div style="padding:10px; border-bottom:1px solid #ddd;"><b>${t.estado}</b> - ${t.desc}</div>`;
+            });
+        });
     }
 </script>
 </body>
