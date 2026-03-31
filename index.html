@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL REPARADO</title>
+    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL FULL</title>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -164,9 +164,12 @@
 
 <div id="modalCierreTicket" class="modal">
     <div class="modal-content" style="max-width:500px;">
-        <h2>Cerrar Ticket</h2>
+        <h2>Finalizar Ticket</h2>
         <textarea id="tk_res_cierre" rows="5" placeholder="Respuesta para el usuario..." style="width:100%; padding:10px; border-radius:8px;"></textarea>
-        <button class="btn btn-blue" style="width:100%; margin-top:15px;" onclick="ejecutarCierreTicket()">Cerrar Definitivamente</button>
+        <div style="margin-top:15px; text-align:right; display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn btn-blue" onclick="ejecutarCierreTicket()">Cerrar Definitivamente</button>
+            <button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button>
+        </div>
     </div>
 </div>
 
@@ -175,7 +178,7 @@
         <h2 id="modal_tit" style="border-bottom:2px solid #f1f5f9; padding-bottom:10px;">Nuevo Registro</h2>
         <div class="grid-bonito" id="form_dinamico"></div>
         <div id="seccion_perifericos" style="display:none;">
-            <h4 style="text-align:center; color:#64748b; margin-top:25px;">Periféricos Seleccionables</h4>
+            <h4 style="text-align:center; color:#64748b; margin-top:25px;">Periféricos</h4>
             <div class="perifericos-grid" style="display:flex; gap:20px; justify-content:center;">
                 <i class="fas fa-tv icon-box" onclick="this.classList.toggle('active')" title="TV"></i>
                 <i class="fas fa-fan icon-box" onclick="this.classList.toggle('active')" title="Aire"></i>
@@ -216,32 +219,25 @@
         document.getElementById(id).style.display='block';
         if(id === 'mod_admin_tickets') cargarTicketsAdmin();
         if(id === 'mod_mis_tickets') cargarMisTickets();
-        if(id === 'mod_calendario') { setTimeout(initCalendar, 200); }
+        if(id === 'mod_calendario') { setTimeout(initCalendar, 250); }
     }
     function volver() { document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
 
-    // --- ENVIAR TICKET (CORREGIDO) ---
+    // --- TICKETS ---
     async function enviarTicket() {
         const desc = document.getElementById('tk_desc').value;
-        if(!desc) return alert("Por favor escriba una descripción");
-        try {
-            await db.collection("tickets").add({
-                usuario: user.email,
-                dep: document.getElementById('tk_dep').value,
-                tipo: document.getElementById('tk_tipo').value,
-                desc: desc,
-                estado: "Abierto",
-                fecha: new Date().toLocaleString(),
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-            alert("Ticket enviado exitosamente");
-            document.getElementById('tk_desc').value = "";
-            volver();
-        } catch(e) { alert("Error al enviar"); }
+        if(!desc) return alert("Escriba descripción");
+        await db.collection("tickets").add({
+            usuario: user.email,
+            dep: document.getElementById('tk_dep').value,
+            tipo: document.getElementById('tk_tipo').value,
+            desc: desc,
+            estado: "Abierto",
+            fecha: new Date().toLocaleString()
+        });
+        alert("Enviado"); document.getElementById('tk_desc').value = ""; volver();
     }
-
-    // --- ADMIN TICKETS ---
     function verCerradosAdmin() { document.getElementById('filtro_admin_status').value="Cerrado"; cargarTicketsAdmin(); }
     function cargarTicketsAdmin() {
         ticketFiltro = document.getElementById('filtro_admin_status').value;
@@ -278,11 +274,9 @@
 
     // --- MAESTRO ---
     function abrir_maestro(coll, tit) {
-        currentColl = coll; document.getElementById('m_titulo').innerText = tit;
-        abrir('mod_maestro');
+        currentColl = coll; document.getElementById('m_titulo').innerText = tit; abrir('mod_maestro');
         db.collection(currentColl).onSnapshot(snap => {
-            localData = []; snap.forEach(doc => localData.push({id: doc.id, ...doc.data()}));
-            renderMaestro();
+            localData = []; snap.forEach(doc => localData.push({id: doc.id, ...doc.data()})); renderMaestro();
         });
     }
     function renderMaestro() {
@@ -294,6 +288,7 @@
             h.innerHTML = `<tr><th>Nombre</th><th>Campus</th><th>Sede</th><th>Acciones</th></tr>`;
             localData.forEach(e => b.innerHTML += `<tr><td><b>${e.nom||''}</b></td><td>${e.cam||''}</td><td>${e.sed||''}</td><td>${getBotonesMaestro(e.id)}</td></tr>`);
         }
+        sec_contador.innerText = localData.length;
     }
     function getBotonesMaestro(id) {
         return `<button class="btn-acc bg-h"><i class="fas fa-history"></i></button><button class="btn-acc bg-p" onclick="abrirMante('${id}')"><i class="fas fa-tools"></i></button><button class="btn-acc bg-v"><i class="fas fa-edit"></i></button><button class="btn-acc bg-d" onclick="eliminar('${id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
@@ -301,13 +296,11 @@
     function abrirModalRegistro() {
         const f = document.getElementById('form_dinamico'); f.innerHTML = "";
         document.getElementById('seccion_perifericos').style.display = currentColl.includes('inventario') ? "none" : "block";
-        let c = currentColl.includes('inventario') ? 
-            [["Nombre PC","i_pc"],["Tipo","i_tip","select",["Portátil","Torre"]],["Modelo","i_mod"],["Placa Inv","i_pla"],["S.O","i_so","select",["Win 10","Win 11"]],["Procesador","i_pro"],["RAM","i_ram","select",["8 GB","16 GB"]],["Disco","i_dis"],["IP","i_ip"],["Terminal","i_ter"],["Responsable","i_res"],["Dependencia","i_dep","select",["Sistemas"]],["Correo","i_cor"],["Campus","i_cam","select",["BGA"]],["Sede","i_sed","select",["Sede A"]],["Ext","i_ext"],["Fecha","i_fec","date"],["Obs","i_obs"]] :
-            [["Nombre","e_nom"],["Campus","e_cam","select",["BGA"]],["Sede","e_sed","select",["Sede A"]],["Ubicación","e_ubi"]];
-        c.forEach(x => {
-            let i = `<input type="${x[2]||'text'}" id="${x[1]}">`;
-            if(x[2]==="select") i = `<select id="${x[1]}">${x[3].map(o=>`<option>${o}</option>`).join('')}</select>`;
-            f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${i}</div>`;
+        let campos = currentColl.includes('inventario') ? [["Nombre PC","i_pc"],["Tipo","i_tip","select",["Portátil","Torre"]],["Modelo","i_mod"],["Placa Inv","i_pla"],["S.O","i_so","select",["Win 10","Win 11"]],["Procesador","i_pro"],["RAM","i_ram","select",["8 GB","16 GB"]],["Disco","i_dis"],["IP","i_ip"],["Terminal","i_ter"],["Responsable","i_res"],["Dependencia","i_dep","select",["Sistemas"]],["Correo","i_cor"],["Campus","i_cam","select",["BGA"]],["Sede","i_sed","select",["Sede A"]],["Ext","i_ext"],["Fecha","i_fec","date"],["Obs","i_obs"]] : [["Nombre","e_nom"],["Campus","e_cam","select",["BGA"]],["Sede","e_sed","select",["Sede A"]],["Ubicación","e_ubi"]];
+        campos.forEach(x => {
+            let inp = `<input type="${x[2]||'text'}" id="${x[1]}">`;
+            if(x[2]==="select") inp = `<select id="${x[1]}">${x[3].map(o=>`<option>${o}</option>`).join('')}</select>`;
+            f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${inp}</div>`;
         });
         document.getElementById('modalRegistro').style.display='block';
     }
@@ -319,38 +312,29 @@
         await db.collection(currentColl).add(obj); cerrarModales();
     }
 
-    // --- CALENDARIO (REPARADO) ---
+    // --- CALENDARIO ---
     function initCalendar() {
         const calEl = document.getElementById('calendar');
         if(!calEl) return;
         calendar = new FullCalendar.Calendar(calEl, {
             locale: 'es',
-            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,dayGridWeek' },
-            events: async function(info, successCallback) {
-                try {
-                    let evs = [];
-                    const snap = await db.collectionGroup("mantenimientos").get();
-                    snap.forEach(doc => {
-                        const m = doc.data();
-                        evs.push({ title: "Mante: " + (m.responsable || "Equipo"), start: m.fecha || m.timestamp, color: '#f59e0b' });
-                    });
-                    successCallback(evs);
-                } catch(e) { console.error(e); }
+            events: async function(info, success) {
+                let evs = []; const snap = await db.collectionGroup("mantenimientos").get();
+                snap.forEach(doc => { const m = doc.data(); evs.push({ title: "Mante: " + (m.responsable || "Equipo"), start: m.fecha, color: '#f59e0b' }); });
+                success(evs);
             }
         });
         calendar.render();
     }
-
     function abrirMante(id) { selectedId=id; document.getElementById('modalMante').style.display='block'; }
     async function ejecutarMante() {
         const d = localData.find(x=>x.id===selectedId);
         await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({
             fecha: document.getElementById('m_fec').value,
             desc: document.getElementById('m_des').value,
-            responsable: d.pc || d.nom,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            responsable: d.pc || d.nom
         });
-        cerrarModales(); alert("Mantenimiento Registrado");
+        cerrarModales(); alert("Mantenimiento Guardado");
     }
 
     async function eliminar(id, coll) { if(confirm("¿Eliminar?")) await db.collection(coll).doc(id).delete(); }
