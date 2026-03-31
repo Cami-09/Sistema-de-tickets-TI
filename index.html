@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL V8</title>
+    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL V9</title>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        :root { --primary: #2563eb; --dark: #0f172a; --bg: #f1f5f9; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --info: #00bcd4; --gray: #64748b; }
+        :root { --primary: #2563eb; --dark: #0f172a; --bg: #f1f5f9; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --info: #00bcd4; --purple: #8b5cf6; --gray: #64748b; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #334155; }
         header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
 
@@ -29,24 +29,18 @@
         .stat-card { padding: 15px; border-radius: 10px; color: white; text-align: center; font-weight: bold; }
         .stat-card span { font-size: 2rem; display: block; }
 
-        /* FORMULARIO ENVIAR TICKET */
-        .form-ticket { max-width: 600px; margin-top: 20px; }
-        .form-group { display: flex; align-items: center; margin-bottom: 15px; }
-        .form-group label { width: 200px; font-weight: 600; color: #475569; }
-        .form-group input, .form-group select, .form-group textarea { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
-
-        /* TABLAS */
+        /* TABLAS Y BOTONES */
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
         td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
 
-        .btn-acc { width: 32px; height: 32px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
+        .btn-acc { width: 32px; height: 32px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; display: inline-flex; align-items: center; justify-content: center; }
+        .bg-view { background: var(--info); }
         .bg-process { background: var(--warning); }
         .bg-reassign { background: var(--purple); }
         .bg-close { background: var(--success); }
-        .bg-view { background: var(--info); }
         .bg-delete { background: var(--danger); }
-
+        
         .btn { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-gray { background: var(--gray); color: white; }
@@ -57,7 +51,13 @@
         .cerrado { background: var(--danger); }
 
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
-        .modal-content { background: white; margin: 5% auto; padding: 25px; width: 80%; max-width: 500px; border-radius: 12px; position: relative; }
+        .modal-content { background: white; margin: 5% auto; padding: 25px; width: 85%; max-width: 500px; border-radius: 12px; position: relative; }
+        
+        /* DISEÑO FORMULARIO ENVIAR TICKET */
+        .form-ticket { max-width: 600px; margin-top: 20px; }
+        .form-group { display: flex; align-items: center; margin-bottom: 15px; }
+        .form-group label { width: 200px; font-weight: 600; color: #475569; }
+        .form-group input, .form-group select, .form-group textarea { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
     </style>
 </head>
 <body>
@@ -74,8 +74,8 @@
 <div id="dashboard">
     <div id="panel-principal" class="grid-main">
         <div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Mis Tickets</h3></div>
-        <div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Enviar Ticket</h3></div>
-        <div class="card" onclick="abrir('admin_tickets')"><i class="fas fa-clipboard-list"></i><h3>Admin Tickets</h3></div>
+        <div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Enviar un Ticket</h3></div>
+        <div class="card" onclick="abrir('admin_tickets')"><i class="fas fa-clipboard-list"></i><h3>Administrar Tickets</h3></div>
         <div class="card" onclick="abrir('mod_inv')"><i class="fas fa-desktop"></i><h3>Inventarios</h3></div>
         <div class="card" onclick="abrir('mod_aulas')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
         <div class="card" onclick="abrir('mod_salas_sistemas')"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
@@ -86,21 +86,10 @@
         <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
         <h2 style="color:var(--primary); border-bottom: 2px solid var(--primary); padding-bottom:10px;">Enviar un Ticket</h2>
         <div class="form-ticket">
-            <div class="form-group">
-                <label>Dependencia</label>
-                <select id="tk_dep"><option>Sistemas</option><option>Tesorería</option><option>Rectoría</option></select>
-            </div>
-            <div class="form-group">
-                <label>Tipo Requerimiento</label>
-                <select id="tk_tipo"><option>Soporte Técnico</option><option>Mantenimiento</option><option>Redes</option></select>
-            </div>
-            <div class="form-group" style="align-items: flex-start;">
-                <label>Descripción</label>
-                <textarea id="tk_desc" rows="5" placeholder="Describa el problema..."></textarea>
-            </div>
-            <div style="margin-left: 200px;">
-                <button class="btn btn-blue" onclick="enviarTicket()">Enviar Ticket</button>
-            </div>
+            <div class="form-group"><label>Dependencia</label><select id="tk_dep"><option>Sistemas</option><option>Tesorería</option></select></div>
+            <div class="form-group"><label>Tipo Requerimiento</label><select id="tk_tipo"><option>Soporte Técnico</option><option>Mantenimiento</option></select></div>
+            <div class="form-group" style="align-items: flex-start;"><label>Descripción</label><textarea id="tk_desc" rows="5" placeholder="Escriba aquí..."></textarea></div>
+            <div style="margin-left: 200px;"><button class="btn btn-blue" onclick="enviarTicket()">Enviar Ticket</button></div>
         </div>
     </div>
 
@@ -124,7 +113,7 @@
                     <option value="En Proceso">Ver En Proceso</option>
                     <option value="Cerrado">Ver Cerrados</option>
                 </select>
-                <button class="btn btn-gray" onclick="filtrarPor('Cerrado')">Cerrados</button>
+                <button class="btn btn-gray" onclick="filtrarPor('Cerrado')">Ver Cerrados</button>
             </div>
         </div>
 
@@ -139,13 +128,15 @@
     <div id="consultar" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Mis Tickets</h2><div id="lista_mis_tk"></div></div>
 </div>
 
-<div id="modalDetalle" class="modal">
+<div id="modalCerrarTicket" class="modal">
     <div class="modal-content">
-        <h2 id="m_tit">Detalles</h2>
-        <p id="m_desc" style="background:#f8fafc; padding:15px; border-radius:8px; border:1px solid #e2e8f0;"></p>
-        <p><strong>De:</strong> <span id="m_user"></span></p>
-        <div id="m_acciones" style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end;">
-            <button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button>
+        <span class="close-modal" onclick="cerrarModales()">&times;</span>
+        <h2>Finalizar Ticket</h2>
+        <p>Proporcione una respuesta o comentario de cierre para el usuario:</p>
+        <textarea id="tk_respuesta" rows="5" placeholder="Ej: El equipo fue reparado exitosamente..." style="width:100%; padding:10px; border-radius:8px;"></textarea>
+        <div style="margin-top:20px; text-align:right; display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn btn-blue" onclick="ejecutarCierreConRespuesta()">Finalizar y Cerrar</button>
+            <button class="btn btn-gray" onclick="cerrarModales()">Cancelar</button>
         </div>
     </div>
 </div>
@@ -154,13 +145,8 @@
     <div class="modal-content" style="max-width: 400px;">
         <h2>Reasignar Ticket</h2>
         <label>Nueva Dependencia:</label>
-        <select id="re_dep" style="margin-top:10px;">
-            <option>Sistemas</option><option>Tesorería</option><option>Académico</option>
-        </select>
-        <div style="margin-top:20px; text-align:right;">
-            <button class="btn btn-blue" onclick="ejecutarReasignar()">Confirmar</button>
-            <button class="btn btn-gray" onclick="cerrarModales()">Cancelar</button>
-        </div>
+        <select id="re_dep" style="margin-top:10px;"><option>Sistemas</option><option>Mantenimiento General</option><option>Académico</option></select>
+        <button class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="ejecutarReasignar()">Confirmar Reasignación</button>
     </div>
 </div>
 
@@ -195,7 +181,8 @@
             tipo: tk_tipo.value,
             desc: tk_desc.value,
             estado: "Abierto",
-            fecha: new Date().toLocaleString()
+            fecha: new Date().toLocaleString(),
+            respuesta: ""
         });
         alert("¡Ticket enviado!");
         tk_desc.value = "";
@@ -211,7 +198,6 @@
             let o=0, p=0, c=0;
             const tbody = document.getElementById('tbodyAdmin');
             tbody.innerHTML = "";
-            
             snap.forEach(doc => {
                 const t = doc.data();
                 if(t.estado === "Abierto") o++;
@@ -226,10 +212,10 @@
                             <td><span class="badge ${t.estado.toLowerCase().replace(" ","-")}">${t.estado}</span></td>
                             <td>${t.usuario}</td>
                             <td>
-                                <button class="btn-acc bg-view" onclick="verDetalle('${doc.id}')" title="Ver"><i class="fas fa-eye"></i></button>
+                                <button class="btn-acc bg-view" title="Ver Detalle"><i class="fas fa-eye"></i></button>
                                 <button class="btn-acc bg-process" onclick="actualizarEstado('${doc.id}','En Proceso')" title="En Proceso"><i class="fas fa-clock"></i></button>
-                                <button class="btn-acc bg-reassign" onclick="abrirReasignar('${doc.id}')" title="Reasignar"><i class="fas fa-user-tag"></i></button>
-                                <button class="btn-acc bg-close" onclick="actualizarEstado('${doc.id}','Cerrado')" title="Cerrar"><i class="fas fa-check-circle"></i></button>
+                                <button class="btn-acc bg-reassign" onclick="abrirReasignar('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>
+                                <button class="btn-acc bg-close" onclick="abrirModalCierre('${doc.id}')" title="Cerrar Ticket"><i class="fas fa-check-circle"></i></button>
                                 <button class="btn-acc bg-delete" onclick="eliminarTicket('${doc.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>`;
@@ -240,9 +226,7 @@
         });
     }
 
-    async function actualizarEstado(id, est) {
-        await db.collection("tickets").doc(id).update({ estado: est });
-    }
+    async function actualizarEstado(id, est) { await db.collection("tickets").doc(id).update({ estado: est }); }
 
     function abrirReasignar(id) { selectedId = id; document.getElementById('modalReasignar').style.display='block'; }
     async function ejecutarReasignar() {
@@ -250,19 +234,18 @@
         cerrarModales();
     }
 
-    async function eliminarTicket(id) {
-        if(confirm("¿Eliminar este ticket permanentemente?")) await db.collection("tickets").doc(id).delete();
+    function abrirModalCierre(id) { selectedId = id; tk_respuesta.value = ""; document.getElementById('modalCerrarTicket').style.display='block'; }
+    async function ejecutarCierreConRespuesta() {
+        if(!tk_respuesta.value) return alert("Por favor escriba una respuesta de cierre.");
+        await db.collection("tickets").doc(selectedId).update({
+            estado: "Cerrado",
+            respuesta: tk_respuesta.value,
+            fechaCierre: new Date().toLocaleString()
+        });
+        cerrarModales();
     }
 
-    function verDetalle(id) {
-        db.collection("tickets").doc(id).get().then(doc => {
-            const t = doc.data();
-            m_desc.innerText = t.desc;
-            m_user.innerText = t.usuario;
-            m_tit.innerText = "Ticket #" + doc.id.substring(0,6).toUpperCase();
-            document.getElementById('modalDetalle').style.display = 'block';
-        });
-    }
+    async function eliminarTicket(id) { if(confirm("¿Eliminar?")) await db.collection("tickets").doc(id).delete(); }
 
     function cargarMisTickets() {
         db.collection("tickets").where("usuario","==",user.email).onSnapshot(snap => {
@@ -270,7 +253,11 @@
             container.innerHTML = "";
             snap.forEach(doc => {
                 const t = doc.data();
-                container.innerHTML += `<div style="padding:10px; border-bottom:1px solid #ddd;"><b>${t.estado}</b> - ${t.desc}</div>`;
+                container.innerHTML += `
+                    <div style="background:white; padding:15px; border-radius:10px; margin-bottom:10px; border-left: 5px solid ${t.estado==='Abierto'?'#22c55e':'#ef4444'}">
+                        <strong>${t.tipo} (${t.estado})</strong><br>${t.desc}
+                        ${t.respuesta ? `<div style="margin-top:10px; color:var(--primary);"><b>Respuesta TIC:</b> ${t.respuesta}</div>` : ''}
+                    </div>`;
             });
         });
     }
