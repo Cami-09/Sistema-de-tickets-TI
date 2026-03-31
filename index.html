@@ -194,7 +194,21 @@
     </div>
 </div>
 
-<div id="modalReasignar" class="modal"><div class="modal-content" style="max-width:450px;"><h2>Reasignar Gestor</h2><div class="campo-group"><label>Seleccione Gestor:</label><select id="re_gestor_new"></select></div><br><button class="btn-blue" onclick="ejecutarReasignar()" style="width:100%;">Confirmar Reasignación</button></div></div>
+<div id="modalReasignar" class="modal">
+    <div class="modal-content" style="max-width:450px;">
+        <h2 style="color:var(--primary);">Reasignar Gestor</h2>
+        <div class="campo-group">
+            <label>Seleccione Gestor:</label>
+            <select id="re_gestor_new">
+                <option value="">Cargando gestores...</option>
+            </select>
+        </div>
+        <br>
+        <button class="btn-blue" onclick="ejecutarReasignar()" style="width:100%;">Confirmar Reasignación</button>
+        <br><br>
+        <button class="btn-gray" onclick="cerrarModales()" style="width:100%;">Cancelar</button>
+    </div>
+</div>
 
 <script>
     const firebaseConfig = { apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw", authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com", projectId: "sistema-de-tickets-ti-b12f5" };
@@ -315,8 +329,48 @@
     function volver() { document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
     async function eliminar(id, coll) { if(confirm("¿Seguro que desea eliminar?")) await db.collection(coll).doc(id).delete(); }
-    async function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; const q = await db.collection("usuarios").where("rol", "==", "Gestor").get(); q.forEach(doc => s.innerHTML += `<option value="${doc.data().nom}">${doc.data().nom}</option>`); document.getElementById('modalReasignar').style.display='block'; }
-    async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); alert("Ticket reasignado"); }
+    
+    // --- NUEVAS FUNCIONES DE REASIGNACIÓN CORREGIDAS ---
+    async function abrirRe(id) { 
+        selectedId = id; // Guardamos el ID del ticket en la variable global
+        const select = document.getElementById('re_gestor_new'); 
+        select.innerHTML = '<option value="">Cargando gestores...</option>'; 
+        
+        try {
+            const q = await db.collection("usuarios").where("rol", "==", "Gestor").get();
+            select.innerHTML = '<option value="">Seleccione un gestor</option>';
+            if(q.empty) {
+                select.innerHTML = '<option value="">No hay gestores disponibles</option>';
+            }
+            q.forEach(doc => {
+                select.innerHTML += `<option value="${doc.data().nom}">${doc.data().nom}</option>`;
+            });
+            document.getElementById('modalReasignar').style.display = 'block'; 
+        } catch (error) {
+            console.error("Error al obtener gestores:", error);
+            alert("No se pudieron cargar los gestores.");
+        }
+    }
+
+    async function ejecutarReasignar() { 
+        const nuevoGestor = document.getElementById('re_gestor_new').value;
+        if(!nuevoGestor) {
+            alert("Por favor seleccione un gestor de la lista.");
+            return;
+        }
+
+        try {
+            await db.collection("tickets").doc(selectedId).update({ 
+                asignado: nuevoGestor 
+            }); 
+            cerrarModales(); 
+            alert("Ticket reasignado correctamente a: " + nuevoGestor);
+        } catch (error) {
+            console.error("Error al actualizar reasignación:", error);
+            alert("Error al reasignar el ticket.");
+        }
+    }
+
     function initCal() { if(calendar) calendar.destroy(); calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { locale: 'es', events: async (i, s) => { let evs = []; const snap = await db.collectionGroup("mantenimientos").get(); snap.forEach(d => evs.push({ title: d.data().responsable, start: d.data().fecha, backgroundColor: '#2563eb' })); s(evs); } }); calendar.render(); }
     async function enviarTicket() { const q = await db.collection("usuarios").where("rol", "==", "Gestor").get(); let asig = "Sin asignar"; if(!q.empty) { const g = []; q.forEach(d => g.push(d.data().nom)); asig = g[Math.floor(Math.random() * g.length)]; } await db.collection("tickets").add({ usuario: user.email, tipo: tk_tipo.value, desc: tk_desc.value, estado: "Abierto", asignado: asig, fecha: new Date().toLocaleString() }); alert("Ticket Radicado"); volver(); }
 </script>
