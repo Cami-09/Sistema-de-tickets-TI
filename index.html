@@ -21,7 +21,7 @@
 
         #dashboard { display: none; padding: 25px; }
         .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-        .card { background: white; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; }
+        .card { background: white; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; display: none; } /* Ocultos por defecto */
         .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); border-color: var(--primary); }
         .card i { font-size: 35px; color: var(--primary); margin-bottom: 12px; }
 
@@ -71,6 +71,7 @@
 
 <header>
     <strong>SISTEMA TIC - UNICIENCIA</strong>
+    <span id="user_info" style="font-size: 0.8rem; opacity: 0.8;"></span>
     <button onclick="logout()" class="btn" style="background:#334155; color:white; padding:5px 12px;">Salir</button>
 </header>
 
@@ -80,16 +81,16 @@
 
 <div id="dashboard">
     <div id="panel-principal" class="grid-main">
-        <div class="card" onclick="abrir('mod_mis_tickets')"><i class="fas fa-search"></i><h3>Mis Tickets</h3></div>
-        <div class="card" onclick="abrir('mod_enviar_ticket')"><i class="fas fa-paper-plane"></i><h3>Enviar Ticket</h3></div>
-        <div class="card" onclick="abrir('mod_admin_tickets')"><i class="fas fa-clipboard-list"></i><h3>Admin Tickets</h3></div>
-        <div class="card" onclick="abrir_maestro('inventario', 'Equipos Administrativos')"><i class="fas fa-desktop"></i><h3>Inventario Admin</h3></div>
-        <div class="card" onclick="abrir_maestro('inventario_salas', 'Equipos de Salas')"><i class="fas fa-laptop"></i><h3>Inventario Salas</h3></div>
-        <div class="card" onclick="abrir('mod_calendario')"><i class="fas fa-calendar-alt"></i><h3>Calendario</h3></div>
-        <div class="card" onclick="abrir_maestro('aulas_dti', 'Aulas DTI')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
-        <div class="card" onclick="abrir_maestro('salas_sistemas', 'Salas Sistemas')"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
-        <div class="card" onclick="abrir_maestro('impresoras', 'Impresoras')"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
-        <div class="card" onclick="abrir_maestro('usuarios', 'Administrar Usuarios')"><i class="fas fa-users-cog"></i><h3>Usuarios</h3></div>
+        <div class="card" id="card_mis_tickets" onclick="abrir('mod_mis_tickets')"><i class="fas fa-search"></i><h3>Mis Tickets</h3></div>
+        <div class="card" id="card_enviar_ticket" onclick="abrir('mod_enviar_ticket')"><i class="fas fa-paper-plane"></i><h3>Enviar Ticket</h3></div>
+        <div class="card" id="card_admin_tickets" onclick="abrir('mod_admin_tickets')"><i class="fas fa-clipboard-list"></i><h3>Admin Tickets</h3></div>
+        <div class="card" id="card_inv_admin" onclick="abrir_maestro('inventario', 'Equipos Administrativos')"><i class="fas fa-desktop"></i><h3>Inventario Admin</h3></div>
+        <div class="card" id="card_inv_salas" onclick="abrir_maestro('inventario_salas', 'Equipos de Salas')"><i class="fas fa-laptop"></i><h3>Inventario Salas</h3></div>
+        <div class="card" id="card_calendario" onclick="abrir('mod_calendario')"><i class="fas fa-calendar-alt"></i><h3>Calendario</h3></div>
+        <div class="card" id="card_aulas" onclick="abrir_maestro('aulas_dti', 'Aulas DTI')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
+        <div class="card" id="card_salas" onclick="abrir_maestro('salas_sistemas', 'Salas Sistemas')"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
+        <div class="card" id="card_impresoras" onclick="abrir_maestro('impresoras', 'Impresoras')"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
+        <div class="card" id="card_usuarios" onclick="abrir_maestro('usuarios', 'Administrar Usuarios')"><i class="fas fa-users-cog"></i><h3>Usuarios</h3></div>
     </div>
 
     <div id="mod_admin_tickets" class="modulo">
@@ -141,20 +142,6 @@
     <div id="mod_mis_tickets" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Mis Tickets</h2><div id="mis_tk_container"></div></div>
 </div>
 
-<div id="modalVerTicketAdmin" class="modal">
-    <div class="modal-content" style="max-width: 600px;">
-        <h2 style="color:var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px;">Detalles del Ticket</h2>
-        <div class="grid-bonito" style="grid-template-columns: 1fr;">
-            <div class="campo-group"><label>ID Ticket:</label><div id="v_tk_id" style="flex:1; padding:10px; background:#f8fafc; border-radius:8px;"></div></div>
-            <div class="campo-group"><label>Usuario:</label><div id="v_tk_user" style="flex:1; padding:10px; background:#f8fafc; border-radius:8px;"></div></div>
-            <div class="campo-group" style="align-items:flex-start;"><label>Descripción:</label><div id="v_tk_desc" style="flex:1; padding:10px; background:#f8fafc; border-radius:8px; min-height:80px;"></div></div>
-            <div class="campo-group"><label>Fecha Reporte:</label><div id="v_tk_fecha" style="flex:1; padding:10px; background:#f8fafc; border-radius:8px;"></div></div>
-            <div class="campo-group"><label>Estado Actual:</label><div id="v_tk_est" style="flex:1; padding:10px; background:#f8fafc; border-radius:8px;"></div></div>
-        </div>
-        <div style="margin-top: 25px; text-align: right;"><button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button></div>
-    </div>
-</div>
-
 <div id="modalRegistro" class="modal">
     <div class="modal-content">
         <h2 id="modal_tit">Registrar</h2>
@@ -171,6 +158,20 @@
             <button class="btn btn-blue" onclick="guardarDatoMaestro()"><i class="fas fa-save"></i> Guardar</button>
             <button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button>
         </div>
+    </div>
+</div>
+
+<div id="modalVerTicketAdmin" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <h2 style="color:var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px;">Detalles</h2>
+        <div class="grid-bonito" style="grid-template-columns: 1fr;" id="v_tk_content">
+             <div class="campo-group"><label>ID:</label><div id="v_tk_id"></div></div>
+             <div class="campo-group"><label>Usuario:</label><div id="v_tk_user"></div></div>
+             <div class="campo-group"><label>Descripción:</label><div id="v_tk_desc"></div></div>
+             <div class="campo-group"><label>Estado:</label><div id="v_tk_est"></div></div>
+             <div class="campo-group"><label>Asignado a:</label><div id="v_tk_asig" style="color: var(--purple); font-weight: bold;"></div></div>
+        </div>
+        <div style="margin-top: 25px; text-align: right;"><button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button></div>
     </div>
 </div>
 
@@ -205,24 +206,78 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
     
-    let user, currentColl = "", localData = [], selectedId = "", modoModal = "nuevo", calendar, ticketFiltro = "Abierto";
+    let user, userRole = "Usuario", currentColl = "", localData = [], selectedId = "", modoModal = "nuevo", calendar, ticketFiltro = "Abierto";
 
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { auth.signOut().then(() => location.reload()); }
-    auth.onAuthStateChanged(u => { if(u){ user=u; document.getElementById('login').style.display='none'; document.getElementById('dashboard').style.display='block'; } });
 
-    function abrir(id) {
-        document.getElementById('panel-principal').style.display='none';
-        document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
-        document.getElementById(id).style.display='block';
-        if(id === 'mod_admin_tickets') cargarTicketsAdmin();
-        if(id === 'mod_mis_tickets') cargarMisTickets();
-        if(id === 'mod_calendario') { setTimeout(initCalendar, 300); }
+    auth.onAuthStateChanged(async (u) => { 
+        if(u){ 
+            user = u; 
+            document.getElementById('login').style.display='none'; 
+            document.getElementById('dashboard').style.display='block';
+            await verificarRol();
+        } 
+    });
+
+    // --- SISTEMA DE ROLES Y PERMISOS ---
+    async function verificarRol() {
+        const q = await db.collection("usuarios").where("cor", "==", user.email).get();
+        if(!q.empty) {
+            userRole = q.docs[0].data().rol;
+        } else {
+            userRole = "Usuario"; // Rol por defecto si no existe en la BD
+        }
+        document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
+        aplicarPermisos();
     }
-    function volver() { document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
-    function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
+
+    function aplicarPermisos() {
+        // Ocultar todo primero
+        const allCards = document.querySelectorAll('.card');
+        allCards.forEach(c => c.style.display = 'none');
+
+        // Definir que ve cada uno
+        const visibleCards = {
+            "Admin": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_calendario", "card_aulas", "card_salas", "card_impresoras", "card_usuarios"],
+            "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_calendario", "card_aulas", "card_salas", "card_impresoras"],
+            "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
+        };
+
+        (visibleCards[userRole] || visibleCards["Usuario"]).forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.style.display = 'block';
+        });
+    }
 
     // --- TICKETS ---
+    async function enviarTicket() {
+        if(!tk_desc.value) return alert("Escriba descripción");
+        
+        // Obtener gestores para asignación aleatoria
+        const gestoresSnap = await db.collection("usuarios").where("rol", "==", "Gestor").get();
+        let asignadoA = "Sin asignar";
+        
+        if(!gestoresSnap.empty) {
+            const gestores = [];
+            gestoresSnap.forEach(doc => gestores.push(doc.data().nom));
+            asignadoA = gestores[Math.floor(Math.random() * gestores.length)];
+        }
+
+        await db.collection("tickets").add({ 
+            usuario: user.email, 
+            dep: tk_dep.value, 
+            tipo: tk_tipo.value, 
+            desc: tk_desc.value, 
+            estado: "Abierto", 
+            asignado: asignadoA,
+            fecha: new Date().toLocaleString() 
+        });
+        alert("Enviado. Asignado a: " + asignadoA); 
+        tk_desc.value = ""; 
+        volver();
+    }
+
     function cargarTicketsAdmin() {
         ticketFiltro = document.getElementById('filtro_admin_status').value;
         db.collection("tickets").onSnapshot(snap => {
@@ -232,13 +287,18 @@
                 const t = doc.data();
                 if(t.estado === "Abierto") o++; if(t.estado === "En Proceso") p++; if(t.estado === "Cerrado") c++;
                 if(t.estado === ticketFiltro) {
+                    
+                    // Lógica de botones según Rol
+                    let btnReasignar = userRole === 'Admin' ? `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>` : '';
+                    let btnEliminar = userRole === 'Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}','tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>` : '';
+
                     tbody.innerHTML += `<tr><td><b>#${doc.id.substring(0,5).toUpperCase()}</b></td><td>${t.tipo}</td><td><span class="badge ${t.estado.toLowerCase().replace(" ","")}"> ${t.estado}</span></td><td>${t.usuario}</td>
                     <td>
                         <button class="btn-acc bg-v-gray" onclick="verDetalleTicketAdmin('${doc.id}')" title="Ver"><i class="fas fa-eye"></i></button>
                         <button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')" title="Proceso"><i class="fas fa-clock"></i></button>
-                        <button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>
+                        ${btnReasignar}
                         <button class="btn-acc bg-c-green" onclick="abrirCierre('${doc.id}')" title="Cerrar"><i class="fas fa-check-circle"></i></button>
-                        <button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}','tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                        ${btnEliminar}
                     </td></tr>`;
                 }
             });
@@ -246,23 +306,14 @@
         });
     }
 
-    async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
-    function abrirRe(id) { selectedId=id; document.getElementById('modalReasignar').style.display='block'; }
-    async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({dep: re_dep_new.value}); cerrarModales(); }
-    function abrirCierre(id) { selectedId=id; tk_res_cierre.value=""; document.getElementById('modalCierreTicket').style.display='block'; }
-    async function ejecutarCierreTicket() {
-        if(!tk_res_cierre.value) return alert("Respuesta obligatoria");
-        await db.collection("tickets").doc(selectedId).update({estado: 'Cerrado', respuesta: tk_res_cierre.value});
-        cerrarModales();
-    }
     function verDetalleTicketAdmin(id) {
         db.collection("tickets").doc(id).get().then(doc => {
             const t = doc.data();
             v_tk_id.innerText = "#" + doc.id.toUpperCase();
             v_tk_user.innerText = t.usuario;
             v_tk_desc.innerText = t.desc;
-            v_tk_fecha.innerText = t.fecha;
             v_tk_est.innerText = t.estado;
+            v_tk_asig.innerText = t.asignado || "No asignado";
             document.getElementById('modalVerTicketAdmin').style.display = 'block';
         });
     }
@@ -280,7 +331,6 @@
 
     function renderTabla() {
         const h = document.getElementById('m_thead'); const b = document.getElementById('m_tbody'); b.innerHTML = "";
-        
         if(currentColl === 'usuarios') {
             h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
             localData.forEach(e => b.innerHTML += `<tr><td><b>${e.nom||''}</b></td><td>${e.cor||''}</td><td>${e.rol||''}</td><td>${getBotonesMaestro(e.id)}</td></tr>`);
@@ -297,14 +347,29 @@
         let btn_mante = currentColl === 'usuarios' ? '' : `<button class="btn-acc bg-b-blue" onclick="abrirMante('${id}')" title="Mante"><i class="fas fa-tools"></i></button>`;
         let btn_copy = currentColl === 'usuarios' ? '' : `<button class="btn-acc bg-r-purple" onclick="abrirModalRegistro('copiar', '${id}')" title="Copiar"><i class="fas fa-copy"></i></button>`;
         
+        // Bloqueo de Eliminar para Gestores en maestros
+        let btnEliminar = userRole === 'Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${id}','${currentColl}')" title="Eliminar"><i class="fas fa-trash"></i></button>` : '';
+
         return `
             <button class="btn-acc bg-v-gray" title="Ver"><i class="fas fa-eye"></i></button>
             ${btn_mante}
             ${btn_copy}
             <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar', '${id}')" title="Editar"><i class="fas fa-edit"></i></button>
-            <button class="btn-acc bg-d-red" onclick="eliminar('${id}','${currentColl}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+            ${btnEliminar}
         `;
     }
+
+    // --- FUNCIONES BASE ---
+    function abrir(id) {
+        document.getElementById('panel-principal').style.display='none';
+        document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
+        document.getElementById(id).style.display='block';
+        if(id === 'mod_admin_tickets') cargarTicketsAdmin();
+        if(id === 'mod_mis_tickets') cargarMisTickets();
+        if(id === 'mod_calendario') { setTimeout(initCalendar, 300); }
+    }
+    function volver() { document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
+    function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
 
     function abrirModalRegistro(modo = 'nuevo', id = '') {
         modoModal = modo; selectedId = id;
@@ -342,11 +407,19 @@
             const key = i.id.split('_')[1];
             obj[key] = i.value;
         });
-
         if(modoModal === 'editar') await db.collection(currentColl).doc(selectedId).update(obj);
         else await db.collection(currentColl).add(obj);
-        
-        cerrarModales(); alert("Guardado con éxito");
+        cerrarModales(); alert("Éxito");
+    }
+
+    async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
+    function abrirRe(id) { selectedId=id; document.getElementById('modalReasignar').style.display='block'; }
+    async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({dep: re_dep_new.value}); cerrarModales(); }
+    function abrirCierre(id) { selectedId=id; tk_res_cierre.value=""; document.getElementById('modalCierreTicket').style.display='block'; }
+    async function ejecutarCierreTicket() {
+        if(!tk_res_cierre.value) return alert("Respuesta obligatoria");
+        await db.collection("tickets").doc(selectedId).update({estado: 'Cerrado', respuesta: tk_res_cierre.value});
+        cerrarModales();
     }
 
     function abrirMante(id) { selectedId = id; document.getElementById('modalMante').style.display = 'block'; }
@@ -356,7 +429,7 @@
         cerrarModales(); alert("Mantenimiento guardado");
     }
 
-    async function eliminar(id, coll) { if(confirm("¿Eliminar este registro definitivamente?")) await db.collection(coll).doc(id).delete(); }
+    async function eliminar(id, coll) { if(confirm("¿Eliminar definitivamente?")) await db.collection(coll).doc(id).delete(); }
 
     function initCalendar() {
         calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
@@ -366,12 +439,6 @@
                 success(evs);
             }
         }); calendar.render();
-    }
-
-    async function enviarTicket() {
-        if(!tk_desc.value) return alert("Escriba descripción");
-        await db.collection("tickets").add({ usuario: user.email, dep: tk_dep.value, tipo: tk_tipo.value, desc: tk_desc.value, estado: "Abierto", fecha: new Date().toLocaleString() });
-        alert("Enviado"); tk_desc.value = ""; volver();
     }
 
     function cargarMisTickets() {
