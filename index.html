@@ -3,61 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL V9</title>
+    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL</title>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root { --primary: #2563eb; --dark: #0f172a; --bg: #f1f5f9; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --info: #00bcd4; --purple: #8b5cf6; --gray: #64748b; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #334155; }
-        header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
+        header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
         #dashboard { display: none; padding: 25px; }
-        .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+        .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
         .card { background: white; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); border-color: var(--primary); }
         .card i { font-size: 35px; color: var(--primary); margin-bottom: 12px; }
 
         .modulo { display: none; background: white; padding: 25px; border-radius: 12px; min-height: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-        /* ESTADÍSTICAS TICKETS */
-        .grid-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
+        /* Estilo Admin Tickets */
+        .grid-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
         .stat-card { padding: 15px; border-radius: 10px; color: white; text-align: center; font-weight: bold; }
         .stat-card span { font-size: 2rem; display: block; }
+        .bg-open { background: var(--success); }
+        .bg-proc { background: var(--warning); }
+        .bg-close { background: var(--danger); }
 
-        /* TABLAS Y BOTONES */
+        /* Formulario Enviar Ticket */
+        .form-ticket { max-width: 600px; }
+        .form-row { display: flex; align-items: center; margin-bottom: 15px; }
+        .form-row label { width: 180px; font-weight: 600; color: #475569; }
+        .form-row input, .form-row select, .form-row textarea { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+
+        /* Tablas y Botones */
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
         td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
 
-        .btn-acc { width: 32px; height: 32px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; display: inline-flex; align-items: center; justify-content: center; }
-        .bg-view { background: var(--info); }
-        .bg-process { background: var(--warning); }
-        .bg-reassign { background: var(--purple); }
-        .bg-close { background: var(--success); }
-        .bg-delete { background: var(--danger); }
-        
+        .btn-acc { width: 32px; height: 32px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; display: inline-flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-acc:hover { opacity: 0.8; transform: scale(1.1); }
+        .bg-v { background: var(--info); }
+        .bg-p { background: var(--warning); }
+        .bg-r { background: var(--purple); }
+        .bg-c { background: var(--success); }
+        .bg-d { background: var(--danger); }
+        .bg-h { background: var(--gray); }
+
+        /* Modales */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 85%; max-width: 900px; border-radius: 12px; position: relative; max-height: 90vh; overflow-y: auto; }
+        .grid-modal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+
+        /* Iconos Periféricos */
+        .perifericos-box { display: flex; gap: 15px; justify-content: center; margin-top: 15px; padding: 10px; background: #f8fafc; border-radius: 10px; }
+        .icon-btn { font-size: 1.5rem; color: #cbd5e1; cursor: pointer; padding: 8px; border-radius: 50%; transition: 0.3s; }
+        .icon-btn.active { color: var(--primary); background: #eff6ff; box-shadow: 0 0 5px var(--primary); }
+
         .btn { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-gray { background: var(--gray); color: white; }
-
-        .badge { padding: 4px 10px; border-radius: 12px; color: white; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; }
-        .abierto { background: var(--success); }
-        .en-proceso { background: var(--warning); }
-        .cerrado { background: var(--danger); }
-
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
-        .modal-content { background: white; margin: 5% auto; padding: 25px; width: 85%; max-width: 500px; border-radius: 12px; position: relative; }
-        
-        /* DISEÑO FORMULARIO ENVIAR TICKET */
-        .form-ticket { max-width: 600px; margin-top: 20px; }
-        .form-group { display: flex; align-items: center; margin-bottom: 15px; }
-        .form-group label { width: 200px; font-weight: 600; color: #475569; }
-        .form-group input, .form-group select, .form-group textarea { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+        .badge { padding: 4px 10px; border-radius: 12px; color: white; font-weight: bold; font-size: 0.7rem; }
     </style>
 </head>
 <body>
@@ -74,68 +85,73 @@
 <div id="dashboard">
     <div id="panel-principal" class="grid-main">
         <div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Mis Tickets</h3></div>
-        <div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Enviar un Ticket</h3></div>
-        <div class="card" onclick="abrir('admin_tickets')"><i class="fas fa-clipboard-list"></i><h3>Administrar Tickets</h3></div>
-        <div class="card" onclick="abrir('mod_inv')"><i class="fas fa-desktop"></i><h3>Inventarios</h3></div>
-        <div class="card" onclick="abrir('mod_aulas')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
-        <div class="card" onclick="abrir('mod_salas_sistemas')"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
-        <div class="card" onclick="abrir('mod_impresoras')"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
-    </div>
-
-    <div id="crear" class="modulo">
-        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-        <h2 style="color:var(--primary); border-bottom: 2px solid var(--primary); padding-bottom:10px;">Enviar un Ticket</h2>
-        <div class="form-ticket">
-            <div class="form-group"><label>Dependencia</label><select id="tk_dep"><option>Sistemas</option><option>Tesorería</option></select></div>
-            <div class="form-group"><label>Tipo Requerimiento</label><select id="tk_tipo"><option>Soporte Técnico</option><option>Mantenimiento</option></select></div>
-            <div class="form-group" style="align-items: flex-start;"><label>Descripción</label><textarea id="tk_desc" rows="5" placeholder="Escriba aquí..."></textarea></div>
-            <div style="margin-left: 200px;"><button class="btn btn-blue" onclick="enviarTicket()">Enviar Ticket</button></div>
-        </div>
+        <div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Enviar Ticket</h3></div>
+        <div class="card" onclick="abrir('admin_tickets')"><i class="fas fa-clipboard-list"></i><h3>Admin Tickets</h3></div>
+        <div class="card" onclick="abrir_inv('inventario', 'E. Administrativos')"><i class="fas fa-desktop"></i><h3>Equipos Administrativos</h3></div>
+        <div class="card" onclick="abrir_inv('inventario_salas', 'Equipos de Salas')"><i class="fas fa-laptop"></i><h3>Equipos de Salas</h3></div>
+        <div class="card" onclick="abrir('mod_calendario')"><i class="fas fa-calendar-alt"></i><h3>Calendario</h3></div>
+        <div class="card" onclick="abrir_espacios('aulas_dti', 'Aulas DTI')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
+        <div class="card" onclick="abrir_espacios('salas_sistemas', 'Salas Sistemas')"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
+        <div class="card" onclick="abrir_imp()"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
     </div>
 
     <div id="admin_tickets" class="modulo">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">
             <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
             <h2 style="color:var(--primary); margin:0;">Administración de Tickets</h2>
-            <h2 style="color:red; margin:0;" id="count_total">0</h2>
+            <h2 style="color:red; margin:0;" id="count_t">0</h2>
         </div>
-
-        <div class="grid-stats">
-            <div class="stat-card abierto">ABIERTOS <span id="stat_open">0</span></div>
-            <div class="stat-card en-proceso">EN PROCESO <span id="stat_proc">0</span></div>
-            <div class="stat-card cerrado">CERRADOS <span id="stat_close">0</span></div>
+        <div class="grid-stats" style="margin-top:20px;">
+            <div class="stat-card bg-open">ABIERTOS <span id="s_open">0</span></div>
+            <div class="stat-card bg-proc">EN PROCESO <span id="s_proc">0</span></div>
+            <div class="stat-card bg-close">CERRADOS <span id="s_close">0</span></div>
         </div>
-
-        <div class="filtros-box">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <select id="adm_filtro" onchange="cargarTicketsAdmin()" style="width:200px;">
-                    <option value="Abierto">Ver Abiertos</option>
-                    <option value="En Proceso">Ver En Proceso</option>
-                    <option value="Cerrado">Ver Cerrados</option>
-                </select>
-                <button class="btn btn-gray" onclick="filtrarPor('Cerrado')">Ver Cerrados</button>
-            </div>
+        <div style="margin: 15px 0; text-align: right;">
+            <button class="btn btn-gray" onclick="filtrarTickets('Cerrado')">Ver Cerrados</button>
+            <button class="btn btn-blue" onclick="filtrarTickets('Abierto')">Actualizar</button>
         </div>
-
         <table>
-            <thead>
-                <tr><th>ID</th><th>Tipo</th><th>Estado</th><th>Usuario</th><th>Acciones</th></tr>
-            </thead>
+            <thead><tr><th>ID</th><th>Tipo</th><th>Estado</th><th>Usuario</th><th>Acciones</th></tr></thead>
             <tbody id="tbodyAdmin"></tbody>
         </table>
     </div>
 
-    <div id="consultar" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Mis Tickets</h2><div id="lista_mis_tk"></div></div>
+    <div id="crear" class="modulo">
+        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
+        <h2 style="border-bottom: 2px solid var(--primary); padding-bottom: 10px; color: var(--primary);">Enviar un Ticket</h2>
+        <div class="form-ticket" style="margin-top:25px;">
+            <div class="form-row"><label>Dependencia</label><select id="tk_dep"><option>Sistemas</option><option>Tesorería</option><option>Rectoría</option></select></div>
+            <div class="form-row"><label>Tipo Requerimiento</label><select id="tk_tipo"><option>Soporte Técnico</option><option>Redes</option><option>Software</option></select></div>
+            <div class="form-row" style="align-items:flex-start;"><label>Descripción</label><textarea id="tk_desc" rows="6" placeholder="Detalle su problema aquí..."></textarea></div>
+            <div style="margin-left:180px;"><button class="btn btn-blue" onclick="enviarTicket()">Enviar Ticket</button></div>
+        </div>
+    </div>
+
+    <div id="mod_maestro" class="modulo">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--primary); padding-bottom: 10px;">
+            <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
+            <h2 id="m_titulo" style="color:var(--primary); margin:0;"></h2>
+            <button class="btn btn-blue" onclick="abrirModalSeccion()">+ Agregar Registro</button>
+        </div>
+        <div class="grid-stats" id="box_filtros" style="grid-template-columns: repeat(4, 1fr); margin-top:20px; color: black;">
+            <input type="text" id="f_1" placeholder="Buscar..." onkeyup="renderMaestro()">
+            <select id="f_2" onchange="renderMaestro()"><option value="">Campus</option><option>Bucaramanga</option><option>Bogotá</option></select>
+            <select id="f_3" onchange="renderMaestro()"><option value="">Sede</option><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select>
+            <button class="btn btn-gray" onclick="limpiarFiltrosMaestro()">Limpiar</button>
+        </div>
+        <table><thead id="m_thead"></thead><tbody id="m_tbody"></tbody></table>
+    </div>
+
+    <div id="mod_calendario" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><div id="calendar" style="margin-top:20px;"></div></div>
+    <div id="consultar" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Mis Tickets</h2><div id="mis_tk"></div></div>
 </div>
 
-<div id="modalCerrarTicket" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="cerrarModales()">&times;</span>
-        <h2>Finalizar Ticket</h2>
-        <p>Proporcione una respuesta o comentario de cierre para el usuario:</p>
-        <textarea id="tk_respuesta" rows="5" placeholder="Ej: El equipo fue reparado exitosamente..." style="width:100%; padding:10px; border-radius:8px;"></textarea>
-        <div style="margin-top:20px; text-align:right; display:flex; gap:10px; justify-content:flex-end;">
-            <button class="btn btn-blue" onclick="ejecutarCierreConRespuesta()">Finalizar y Cerrar</button>
+<div id="modalCierre" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <h2>Cerrar Ticket</h2>
+        <textarea id="res_cierre" rows="5" placeholder="Escriba la respuesta para el usuario..." style="width:100%; padding:10px; border-radius:8px;"></textarea>
+        <div style="margin-top:15px; text-align:right;">
+            <button class="btn btn-blue" onclick="ejecutarCierre()">Finalizar y Cerrar</button>
             <button class="btn btn-gray" onclick="cerrarModales()">Cancelar</button>
         </div>
     </div>
@@ -144,19 +160,68 @@
 <div id="modalReasignar" class="modal">
     <div class="modal-content" style="max-width: 400px;">
         <h2>Reasignar Ticket</h2>
-        <label>Nueva Dependencia:</label>
-        <select id="re_dep" style="margin-top:10px;"><option>Sistemas</option><option>Mantenimiento General</option><option>Académico</option></select>
-        <button class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="ejecutarReasignar()">Confirmar Reasignación</button>
+        <select id="re_dep_new" style="width:100%; padding:10px;"><option>Sistemas</option><option>Mantenimiento</option><option>Académico</option></select>
+        <button class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="ejecutarReasignar()">Confirmar</button>
+    </div>
+</div>
+
+<div id="modalInv" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="cerrarModales()">&times;</span>
+        <h2 id="titleInv">Registro de Equipo</h2>
+        <div class="grid-modal">
+            <input type="text" id="i_pc" placeholder="Nombre PC"><select id="i_tipo"><option>Portátil</option><option>AIO</option><option>Torre</option></select>
+            <input type="text" id="i_mod" placeholder="Modelo"><input type="text" id="i_pla" placeholder="Placa Inventario">
+            <select id="i_so"><option>Windows 10</option><option>Windows 11</option></select><input type="text" id="i_pro" placeholder="Procesador">
+            <select id="i_ram"><option>8 GB</option><option>16 GB</option><option>32 GB</option></select><input type="text" id="i_dis" placeholder="Disco Duro">
+            <input type="text" id="i_ip" placeholder="Dirección IP"><input type="text" id="i_ter" placeholder="Terminal">
+            <input type="text" id="i_res" placeholder="Responsable"><select id="i_dep"><option>Sistemas</option><option>Tesorería</option></select>
+            <input type="text" id="i_cor" placeholder="Correo"><select id="i_cam"><option>Bucaramanga</option><option>Bogotá</option></select>
+            <select id="i_sed"><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select><input type="text" id="i_ext" placeholder="Extensión">
+            <input type="date" id="i_fec"><input type="text" id="i_obs" placeholder="Observaciones">
+        </div>
+        <button class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="guardarInventario()">Guardar Equipo</button>
+    </div>
+</div>
+
+<div id="modalEsp" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="cerrarModales()">&times;</span>
+        <h2 id="titleEsp">Registro de Espacio</h2>
+        <div class="grid-modal">
+            <input type="text" id="e_nom" placeholder="Nombre"><input type="number" id="e_can" placeholder="Cant. Equipos">
+            <select id="e_tip"><option>Escritorio</option><option>Portátil</option></select><input type="text" id="e_mar" placeholder="Marca">
+            <input type="text" id="e_mod" placeholder="Modelo"><input type="text" id="e_pro" placeholder="Procesador">
+            <select id="e_ram"><option>8 GB</option><option>16 GB</option></select><select id="e_so"><option>Windows 10</option><option>Windows 11</option></select>
+            <select id="e_cam"><option>Bucaramanga</option><option>Bogotá</option></select><select id="e_sed"><option>Sede A</option><option>Sede B</option></select>
+            <input type="text" id="e_ubi" placeholder="Ubicación Detallada" style="grid-column: span 2;">
+        </div>
+        <div class="perifericos-box">
+            <i class="fas fa-tv icon-btn" title="TV" onclick="this.classList.toggle('active')"></i>
+            <i class="fas fa-fan icon-btn" title="Aire" onclick="this.classList.toggle('active')"></i>
+            <i class="fas fa-video icon-btn" title="Cámara" onclick="this.classList.toggle('active')"></i>
+            <i class="fas fa-network-wired icon-btn" title="LAN" onclick="this.classList.toggle('active')"></i>
+        </div>
+        <button class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="guardarEspacio()">Guardar Espacio</button>
+    </div>
+</div>
+
+<div id="modalMante" class="modal">
+    <div class="modal-content" style="max-width: 450px;">
+        <h2>Mantenimiento</h2>
+        <input type="date" id="m_fec"><textarea id="m_des" placeholder="Detalles..." rows="4"></textarea>
+        <button class="btn btn-blue" style="width:100%; margin-top:10px;" onclick="ejecutarMante()">Guardar</button>
     </div>
 </div>
 
 <script>
+    // CONFIG FIREBASE
     const firebaseConfig = { apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw", authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com", projectId: "sistema-de-tickets-ti-b12f5" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
     
-    let user, selectedId = "";
+    let user, currentColl = "", localData = [], selectedId = "", calendar, filtroActivo = "Abierto";
 
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { auth.signOut().then(() => location.reload()); }
@@ -168,32 +233,14 @@
         document.getElementById(id).style.display='block';
         if(id === 'admin_tickets') cargarTicketsAdmin();
         if(id === 'consultar') cargarMisTickets();
+        if(id === 'mod_calendario') initCalendar();
     }
     function volver() { document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
 
-    // --- ENVIAR TICKET ---
-    async function enviarTicket() {
-        if(!tk_desc.value) return alert("Escriba la descripción");
-        await db.collection("tickets").add({
-            usuario: user.email,
-            dep: tk_dep.value,
-            tipo: tk_tipo.value,
-            desc: tk_desc.value,
-            estado: "Abierto",
-            fecha: new Date().toLocaleString(),
-            respuesta: ""
-        });
-        alert("¡Ticket enviado!");
-        tk_desc.value = "";
-        volver();
-    }
-
-    // --- ADMIN TICKETS ---
-    function filtrarPor(est) { document.getElementById('adm_filtro').value = est; cargarTicketsAdmin(); }
-
+    // --- TICKETS ADMIN ---
+    function filtrarTickets(e) { filtroActivo = e; cargarTicketsAdmin(); }
     function cargarTicketsAdmin() {
-        const filtro = document.getElementById('adm_filtro').value;
         db.collection("tickets").onSnapshot(snap => {
             let o=0, p=0, c=0;
             const tbody = document.getElementById('tbodyAdmin');
@@ -204,63 +251,105 @@
                 if(t.estado === "En Proceso") p++;
                 if(t.estado === "Cerrado") c++;
 
-                if(t.estado === filtro) {
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><b>#${doc.id.substring(0,5).toUpperCase()}</b></td>
-                            <td>${t.tipo}</td>
-                            <td><span class="badge ${t.estado.toLowerCase().replace(" ","-")}">${t.estado}</span></td>
-                            <td>${t.usuario}</td>
-                            <td>
-                                <button class="btn-acc bg-view" title="Ver Detalle"><i class="fas fa-eye"></i></button>
-                                <button class="btn-acc bg-process" onclick="actualizarEstado('${doc.id}','En Proceso')" title="En Proceso"><i class="fas fa-clock"></i></button>
-                                <button class="btn-acc bg-reassign" onclick="abrirReasignar('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>
-                                <button class="btn-acc bg-close" onclick="abrirModalCierre('${doc.id}')" title="Cerrar Ticket"><i class="fas fa-check-circle"></i></button>
-                                <button class="btn-acc bg-delete" onclick="eliminarTicket('${doc.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>`;
+                if(t.estado === filtroActivo) {
+                    tbody.innerHTML += `<tr>
+                        <td><b>#${doc.id.substring(0,5).toUpperCase()}</b></td>
+                        <td>${t.tipo}</td>
+                        <td><span class="badge ${t.estado.toLowerCase().replace(" ","-")}">${t.estado}</span></td>
+                        <td>${t.usuario}</td>
+                        <td>
+                            <button class="btn-acc bg-v" title="Ver"><i class="fas fa-eye"></i></button>
+                            <button class="btn-acc bg-p" onclick="actEstado('${doc.id}','En Proceso')" title="Proceso"><i class="fas fa-clock"></i></button>
+                            <button class="btn-acc bg-r" onclick="abrirReasignar('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>
+                            <button class="btn-acc bg-c" onclick="abrirCierre('${doc.id}')" title="Cerrar"><i class="fas fa-check-circle"></i></button>
+                            <button class="btn-acc bg-d" onclick="eliminar('${doc.id}','tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                        </td></tr>`;
                 }
             });
-            stat_open.innerText = o; stat_proc.innerText = p; stat_close.innerText = c;
-            count_total.innerText = snap.size;
+            s_open.innerText=o; s_proc.innerText=p; s_close.innerText=c; count_t.innerText=snap.size;
+        });
+    }
+    async function actEstado(id, e) { await db.collection("tickets").doc(id).update({estado: e}); }
+    function abrirCierre(id) { selectedId=id; res_cierre.value=""; document.getElementById('modalCierre').style.display='block'; }
+    async function ejecutarCierre() {
+        if(!res_cierre.value) return alert("Escriba respuesta");
+        await db.collection("tickets").doc(selectedId).update({estado: 'Cerrado', respuesta: res_cierre.value});
+        cerrarModales();
+    }
+    function abrirReasignar(id) { selectedId=id; document.getElementById('modalReasignar').style.display='block'; }
+    async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({dep: re_dep_new.value}); cerrarModales(); }
+
+    // --- ENVIAR TICKET ---
+    async function enviarTicket() {
+        if(!tk_desc.value) return alert("Descripción vacía");
+        await db.collection("tickets").add({ usuario: user.email, dep: tk_dep.value, tipo: tk_tipo.value, desc: tk_desc.value, estado: "Abierto", fecha: new Date().toLocaleString() });
+        alert("¡Enviado!"); tk_desc.value=""; volver();
+    }
+
+    // --- MODULO MAESTRO (INV / ESPACIOS) ---
+    function abrir_inv(c, t) { currentColl=c; m_titulo.innerText=t; abrir('mod_maestro'); cargarMaestro(); }
+    function abrir_espacios(c, t) { currentColl=c; m_titulo.innerText=t; abrir('mod_maestro'); cargarMaestro(); }
+
+    function cargarMaestro() {
+        db.collection(currentColl).onSnapshot(snap => {
+            localData = []; snap.forEach(doc => localData.push({id: doc.id, ...doc.data()}));
+            renderMaestro();
         });
     }
 
-    async function actualizarEstado(id, est) { await db.collection("tickets").doc(id).update({ estado: est }); }
+    function renderMaestro() {
+        const h = document.getElementById('m_thead'); const b = document.getElementById('m_tbody');
+        if(currentColl.includes('inventario')) {
+            h.innerHTML = `<tr><th>PC</th><th>Inventario</th><th>Responsable</th><th>Acciones</th></tr>`;
+            b.innerHTML = localData.map(e => `<tr><td><b>${e.pc}</b></td><td>${e.pla}</td><td>${e.res}</td><td>${getAcc(e.id)}</td></tr>`).join('');
+        } else {
+            h.innerHTML = `<tr><th>Nombre</th><th>Campus</th><th>Sede</th><th>Acciones</th></tr>`;
+            b.innerHTML = localData.map(e => `<tr><td><b>${e.nom}</b></td><td>${e.cam}</td><td>${e.sed}</td><td>${getAcc(e.id)}</td></tr>`).join('');
+        }
+    }
 
-    function abrirReasignar(id) { selectedId = id; document.getElementById('modalReasignar').style.display='block'; }
-    async function ejecutarReasignar() {
-        await db.collection("tickets").doc(selectedId).update({ dep: re_dep.value });
+    function getAcc(id) {
+        return `<button class="btn-acc bg-h" onclick="verHistorial('${id}')"><i class="fas fa-history"></i></button>
+                <button class="btn-acc bg-tools" onclick="abrirMante('${id}')"><i class="fas fa-tools"></i></button>
+                <button class="btn-acc bg-edit"><i class="fas fa-edit"></i></button>
+                <button class="btn-acc bg-d" onclick="eliminar('${id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
+    }
+
+    function abrirModalSeccion() {
+        if(currentColl.includes('inventario')) document.getElementById('modalInv').style.display='block';
+        else document.getElementById('modalEsp').style.display='block';
+    }
+
+    async function guardarInventario() {
+        await db.collection(currentColl).add({ pc: i_pc.value, pla: i_pla.value, res: i_res.value, cam: i_cam.value, sed: i_sed.value });
         cerrarModales();
     }
 
-    function abrirModalCierre(id) { selectedId = id; tk_respuesta.value = ""; document.getElementById('modalCerrarTicket').style.display='block'; }
-    async function ejecutarCierreConRespuesta() {
-        if(!tk_respuesta.value) return alert("Por favor escriba una respuesta de cierre.");
-        await db.collection("tickets").doc(selectedId).update({
-            estado: "Cerrado",
-            respuesta: tk_respuesta.value,
-            fechaCierre: new Date().toLocaleString()
-        });
+    async function guardarEspacio() {
+        let p = []; document.querySelectorAll('.icon-btn.active').forEach(i => p.push(i.title));
+        await db.collection(currentColl).add({ nom: e_nom.value, cam: e_cam.value, sed: e_sed.value, perifericos: p });
         cerrarModales();
     }
 
-    async function eliminarTicket(id) { if(confirm("¿Eliminar?")) await db.collection("tickets").doc(id).delete(); }
-
-    function cargarMisTickets() {
-        db.collection("tickets").where("usuario","==",user.email).onSnapshot(snap => {
-            const container = document.getElementById('lista_mis_tk');
-            container.innerHTML = "";
-            snap.forEach(doc => {
-                const t = doc.data();
-                container.innerHTML += `
-                    <div style="background:white; padding:15px; border-radius:10px; margin-bottom:10px; border-left: 5px solid ${t.estado==='Abierto'?'#22c55e':'#ef4444'}">
-                        <strong>${t.tipo} (${t.estado})</strong><br>${t.desc}
-                        ${t.respuesta ? `<div style="margin-top:10px; color:var(--primary);"><b>Respuesta TIC:</b> ${t.respuesta}</div>` : ''}
-                    </div>`;
-            });
-        });
+    // --- MANTENIMIENTO ---
+    function abrirMante(id) { selectedId=id; document.getElementById('modalMante').style.display='block'; }
+    async function ejecutarMante() {
+        const d = localData.find(x=>x.id===selectedId);
+        await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ fecha: m_fec.value, desc: m_des.value, responsable: d.res || d.nom });
+        cerrarModales();
     }
+
+    function initCalendar() {
+        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+            locale: 'es', events: async function(i, s) {
+                let evs = []; const snap = await db.collectionGroup("mantenimientos").get();
+                snap.forEach(doc => evs.push({ title: doc.data().responsable, start: doc.data().fecha }));
+                s(evs);
+            }
+        }); calendar.render();
+    }
+
+    async function eliminar(id, coll) { if(confirm("¿Eliminar?")) await db.collection(coll).doc(id).delete(); }
 </script>
 </body>
 </html>
