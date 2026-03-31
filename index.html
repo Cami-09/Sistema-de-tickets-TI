@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL V6</title>
+    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL V7</title>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -14,7 +14,7 @@
     <style>
         :root { --primary: #2563eb; --dark: #0f172a; --bg: #f1f5f9; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --info: #00bcd4; --gray: #64748b; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #334155; }
-        header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; }
 
         #dashboard { display: none; padding: 25px; }
         .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
@@ -24,20 +24,21 @@
 
         .modulo { display: none; background: white; padding: 25px; border-radius: 12px; min-height: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-        /* --- DISEÑO ENVIAR TICKET (SEGÚN IMAGEN) --- */
-        .form-ticket { max-width: 600px; margin: 20px 0; }
-        .form-group { display: flex; align-items: center; margin-bottom: 15px; }
-        .form-group label { width: 180px; font-weight: 600; color: #475569; }
-        .form-group input, .form-group select, .form-group textarea { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; }
-        
-        /* --- ESTILOS GENERALES --- */
+        /* --- TARJETAS DE CONTEO TICKETS --- */
+        .grid-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
+        .stat-card { padding: 15px; border-radius: 10px; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: bold; }
+        .bg-open { background: var(--success); }
+        .bg-process { background: var(--warning); }
+        .bg-closed { background: var(--danger); }
+        .stat-card span { font-size: 1.8rem; margin-top: 5px; }
+
+        /* --- TABLAS Y BOTONES --- */
         .filtros-box { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
-        .grid-filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
         .header-blue { background: var(--primary); color: white; padding: 10px 15px; border-radius: 5px 5px 0 0; font-weight: bold; }
         
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
-        td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
+        td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
 
         .btn-acc { width: 32px; height: 32px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; display: inline-flex; align-items: center; justify-content: center; }
         .bg-view { background: var(--info); }
@@ -47,8 +48,9 @@
         .btn-blue { background: var(--primary); color: white; }
         .btn-gray { background: var(--gray); color: white; }
 
-        .badge { padding: 4px 10px; border-radius: 12px; color: white; font-weight: bold; font-size: 0.7rem; }
+        .badge { padding: 4px 10px; border-radius: 12px; color: white; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; }
         .abierto { background: var(--success); }
+        .en-proceso { background: var(--warning); }
         .cerrado { background: var(--danger); }
 
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
@@ -69,70 +71,45 @@
 <div id="dashboard">
     <div id="panel-principal" class="grid-main">
         <div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Mis Tickets</h3></div>
-        <div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Enviar un Ticket</h3></div>
-        <div class="card" onclick="abrir('admin_tickets')"><i class="fas fa-clipboard-list"></i><h3>Administrar Tickets</h3></div>
-        <div class="card" onclick="abrir('inv_admin')"><i class="fas fa-desktop"></i><h3>Equipos Administrativos</h3></div>
+        <div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Enviar Ticket</h3></div>
+        <div class="card" onclick="abrir('admin_tickets')"><i class="fas fa-clipboard-list"></i><h3>Admin Tickets</h3></div>
+        <div class="card" onclick="abrir('inv_admin')"><i class="fas fa-desktop"></i><h3>Inventarios</h3></div>
         <div class="card" onclick="abrir('mod_aulas')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
         <div class="card" onclick="abrir('mod_salas_sistemas')"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
         <div class="card" onclick="abrir('mod_impresoras')"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
     </div>
 
-    <div id="crear" class="modulo">
-        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-        <h2 style="color:var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px;">Enviar un Ticket</h2>
-        
-        <div class="form-ticket">
-            <div class="form-group">
-                <label>Seleccione Dependencia</label>
-                <select id="tk_dep">
-                    <option>Sistemas</option>
-                    <option>Tesorería</option>
-                    <option>Rectoría</option>
-                    <option>Secretaría General</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Tipo de Requerimiento</label>
-                <select id="tk_tipo">
-                    <option>Soporte Técnico</option>
-                    <option>Mantenimiento</option>
-                    <option>Redes / Internet</option>
-                    <option>Software / Aplicativos</option>
-                </select>
-            </div>
-            <div class="form-group" style="align-items: flex-start;">
-                <label>Descripción</label>
-                <textarea id="tk_desc" rows="6" placeholder="Describa detalladamente su solicitud o problema..."></textarea>
-            </div>
-            <div style="text-align: left; margin-left: 180px;">
-                <button class="btn btn-blue" onclick="enviarTicket()">Enviar Ticket</button>
-            </div>
-        </div>
-    </div>
-
     <div id="admin_tickets" class="modulo">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
             <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
             <h2 style="color:var(--primary); margin:0;">Administración de Tickets</h2>
-            <h2 style="color:red; margin:0;" id="countAdmin">0</h2>
+            <div></div>
+        </div>
+
+        <div class="grid-stats">
+            <div class="stat-card bg-open">TICKETS ABIERTOS <span id="countOpen">0</span></div>
+            <div class="stat-card bg-process">EN PROCESO <span id="countProcess">0</span></div>
+            <div class="stat-card bg-closed">TICKETS CERRADOS <span id="countClosed">0</span></div>
         </div>
 
         <div class="filtros-box">
-            <div class="grid-filtros">
-                <div><label>Estado</label>
-                    <select id="adm_estado" onchange="cargarTicketsAdmin()">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <label>Filtrar Estado:</label>
+                    <select id="adm_filtro_estado" onchange="cargarTicketsAdmin()" style="width: 150px; margin:0;">
                         <option value="Abierto">Abiertos</option>
+                        <option value="En Proceso">En Proceso</option>
                         <option value="Cerrado">Cerrados</option>
                     </select>
                 </div>
-            </div>
-            <div style="margin-top:15px; text-align:right;">
-                <button class="btn btn-gray" onclick="verTicketsCerradosAdmin()">Cerrados</button>
-                <button class="btn btn-blue" onclick="cargarTicketsAdmin()">Filtrar</button>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn btn-gray" onclick="filtrarPorEstado('Cerrado')">Cerrados</button>
+                    <button class="btn btn-blue" onclick="cargarTicketsAdmin()">Actualizar</button>
+                </div>
             </div>
         </div>
 
-        <div class="header-blue">Listado General de Tickets</div>
+        <div class="header-blue">Gestión de Tickets de Soporte</div>
         <table>
             <thead>
                 <tr><th>ID</th><th>Tipo</th><th>Estado</th><th>Usuario</th><th>Acciones</th></tr>
@@ -141,24 +118,28 @@
         </table>
     </div>
 
-    <div id="consultar" class="modulo">
+    <div id="crear" class="modulo">
         <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-        <h2>Mis Tickets Enviados</h2>
-        <div id="mis_tickets_container" style="margin-top:20px;"></div>
+        <h2 style="border-bottom: 2px solid var(--primary); padding-bottom:10px;">Enviar un Ticket</h2>
+        <div style="max-width:500px; margin-top:20px;">
+            <label>Descripción del Problema</label>
+            <textarea id="tk_desc" rows="5" placeholder="Escriba aquí..."></textarea>
+            <button class="btn btn-blue" style="margin-top:15px;" onclick="enviarTicket()">Enviar Ticket</button>
+        </div>
     </div>
 
-    <div id="inv_admin" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Inventario</h2></div>
+    <div id="consultar" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Mis Tickets</h2><div id="mis_tk"></div></div>
 </div>
 
 <div id="modalDetalle" class="modal">
     <div class="modal-content">
-        <h2 id="m_tit">Detalles del Ticket</h2>
-        <p id="m_desc"></p>
-        <hr>
-        <p><strong>Usuario:</strong> <span id="m_user"></span></p>
-        <div style="text-align:right; margin-top:20px;">
-            <button class="btn btn-blue" id="btnCerrarTicket" onclick="cerrarTicketAccion()">Cerrar Ticket</button>
-            <button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button>
+        <h2>Detalles del Ticket</h2>
+        <p id="m_desc" style="background:#f1f5f9; padding:15px; border-radius:8px;"></p>
+        <p><strong>De:</strong> <span id="m_user"></span></p>
+        <div style="text-align:right; margin-top:20px; display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn btn-blue" id="btnProceso" onclick="cambiarEstado('En Proceso')">En Proceso</button>
+            <button class="btn btn-blue" style="background:var(--danger);" id="btnCerrar" onclick="cambiarEstado('Cerrado')">Cerrar Ticket</button>
+            <button class="btn btn-gray" onclick="cerrarModales()">Volver</button>
         </div>
     </div>
 </div>
@@ -180,74 +161,48 @@
         document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
         document.getElementById(id).style.display='block';
         if(id === 'admin_tickets') cargarTicketsAdmin();
-        if(id === 'consultar') cargarMisTickets();
     }
     function volver() { document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
 
-    // --- ENVIAR TICKET ---
-    async function enviarTicket() {
-        const desc = document.getElementById('tk_desc').value;
-        if(!desc) return alert("Por favor escriba una descripción");
-
-        await db.collection("tickets").add({
-            usuario: user.email,
-            dependencia: document.getElementById('tk_dep').value,
-            tipo: document.getElementById('tk_tipo').value,
-            desc: desc,
-            estado: "Abierto",
-            fecha: new Date().toLocaleString()
-        });
-
-        alert("¡Ticket enviado con éxito!");
-        document.getElementById('tk_desc').value = "";
-        volver();
-    }
-
-    // --- MIS TICKETS (USUARIO) ---
-    function cargarMisTickets() {
-        db.collection("tickets").where("usuario", "==", user.email).onSnapshot(snap => {
-            const container = document.getElementById('mis_tickets_container');
-            container.innerHTML = "";
-            snap.forEach(doc => {
-                const t = doc.data();
-                container.innerHTML += `
-                    <div style="background:white; padding:15px; border-radius:8px; border-left:5px solid ${t.estado === 'Abierto' ? '#22c55e' : '#ef4444'}; margin-bottom:10px; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-                        <strong>${t.tipo}</strong> - <small>${t.fecha}</small> <span class="badge ${t.estado.toLowerCase()}">${t.estado}</span><br>
-                        <p style="margin:5px 0; color:#64748b;">${t.desc}</p>
-                    </div>`;
-            });
-        });
-    }
-
-    // --- ADMIN TICKETS ---
-    function verTicketsCerradosAdmin() {
-        document.getElementById('adm_estado').value = "Cerrado";
+    // --- LOGICA ADMIN ---
+    function filtrarPorEstado(est) {
+        document.getElementById('adm_filtro_estado').value = est;
         cargarTicketsAdmin();
     }
 
     function cargarTicketsAdmin() {
-        const est = document.getElementById('adm_estado').value;
-        db.collection("tickets").where("estado", "==", est).onSnapshot(snap => {
+        const filtro = document.getElementById('adm_filtro_estado').value;
+        
+        // Listener para contadores globales
+        db.collection("tickets").onSnapshot(snap => {
+            let o = 0, p = 0, c = 0;
             const tbody = document.getElementById('tbodyAdmin');
             tbody.innerHTML = "";
-            let count = 0;
+
             snap.forEach(doc => {
-                count++;
                 const t = doc.data();
-                tbody.innerHTML += `
-                    <tr>
-                        <td><b>#${doc.id.substring(0,5).toUpperCase()}</b></td>
-                        <td>${t.tipo}</td>
-                        <td><span class="badge ${t.estado.toLowerCase()}">${t.estado}</span></td>
-                        <td>${t.usuario}</td>
-                        <td>
-                            <button class="btn-acc bg-view" onclick="verDetalle('${doc.id}')"><i class="fas fa-eye"></i></button>
-                            <button class="btn-acc bg-delete" onclick="eliminarTicket('${doc.id}')"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>`;
+                if(t.estado === "Abierto") o++;
+                if(t.estado === "En Proceso") p++;
+                if(t.estado === "Cerrado") c++;
+
+                if(t.estado === filtro) {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><b>#${doc.id.substring(0,5).toUpperCase()}</b></td>
+                            <td>Soporte</td>
+                            <td><span class="badge ${t.estado.toLowerCase().replace(" ","-")}">${t.estado}</span></td>
+                            <td>${t.usuario}</td>
+                            <td>
+                                <button class="btn-acc bg-view" onclick="verDetalle('${doc.id}')"><i class="fas fa-eye"></i></button>
+                                <button class="btn-acc bg-delete" onclick="eliminarTicket('${doc.id}')"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>`;
+                }
             });
-            document.getElementById('countAdmin').innerText = count;
+            document.getElementById('countOpen').innerText = o;
+            document.getElementById('countProcess').innerText = p;
+            document.getElementById('countClosed').innerText = c;
         });
     }
 
@@ -257,22 +212,30 @@
             const t = doc.data();
             document.getElementById('m_desc').innerText = t.desc;
             document.getElementById('m_user').innerText = t.usuario;
-            document.getElementById('btnCerrarTicket').style.display = t.estado === "Cerrado" ? "none" : "inline-block";
             document.getElementById('modalDetalle').style.display = 'block';
         });
     }
 
-    async function cerrarTicketAccion() {
-        if(confirm("¿Marcar como solucionado/cerrado?")) {
-            await db.collection("tickets").doc(selectedId).update({ estado: "Cerrado" });
-            cerrarModales();
-        }
+    async function cambiarEstado(nuevoEstado) {
+        await db.collection("tickets").doc(selectedId).update({ estado: nuevoEstado });
+        cerrarModales();
     }
 
     async function eliminarTicket(id) {
-        if(confirm("¿Eliminar este ticket permanentemente?")) {
-            await db.collection("tickets").doc(id).delete();
-        }
+        if(confirm("¿Eliminar ticket?")) await db.collection("tickets").doc(id).delete();
+    }
+
+    // --- LOGICA USUARIO ---
+    async function enviarTicket() {
+        await db.collection("tickets").add({
+            usuario: user.email,
+            desc: document.getElementById('tk_desc').value,
+            estado: "Abierto",
+            fecha: new Date().toLocaleString()
+        });
+        alert("Enviado");
+        document.getElementById('tk_desc').value = "";
+        volver();
     }
 </script>
 </body>
