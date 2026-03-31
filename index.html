@@ -63,7 +63,11 @@
         .btn-blue { background: var(--primary); color: white; border-radius: 10px; padding: 12px 25px; cursor: pointer; border: none; font-weight: 600; }
         .btn-gray { background: #e2e8f0; color: #475569; border-radius: 10px; padding: 12px 25px; cursor: pointer; border: none; font-weight: 600; }
         
-        /* Animación Carga Tickets */
+        /* Calendario Styles */
+        #calendar { max-width: 100%; margin-top: 20px; background: white; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0; }
+        .fc-toolbar-title { font-size: 1.2rem !important; color: var(--dark); font-weight: bold; text-transform: capitalize; }
+        .fc-button-primary { background-color: var(--primary) !important; border-color: var(--primary) !important; }
+
         .loader-puntos { display: inline-block; position: relative; width: 25px; height: 25px; }
         .loader-puntos div { position: absolute; width: 5px; height: 5px; background: var(--warning); border-radius: 50%; animation: loader-puntos 1.2s linear infinite; }
         .loader-puntos div:nth-child(1) { top: 2px; left: 10px; animation-delay: 0s; }
@@ -148,7 +152,11 @@
     </div>
 
     <div id="mod_mis_tickets" class="modulo"><button onclick="volver()" class="btn-gray">⬅ Volver</button><div id="mis_tk_container" style="margin-top:20px"></div></div>
-    <div id="mod_calendario" class="modulo"><button onclick="volver()" class="btn-gray">Volver</button><div id="calendar" style="margin-top:20px;"></div></div>
+    
+    <div id="mod_calendario" class="modulo">
+        <button onclick="volver()" class="btn-gray">Volver</button>
+        <div id="calendar"></div>
+    </div>
 </div>
 
 <div id="modalVerTicket" class="modal">
@@ -221,7 +229,10 @@
         document.getElementById('panel-principal').style.display='none';
         document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
         document.getElementById(id).style.display='block';
+        
+        // Lógica de carga específica por módulo
         if(id === 'mod_admin_tickets') cargarTicketsAdmin();
+        if(id === 'mod_calendario') inicializarCalendario();
     }
 
     function volver() { localStorage.removeItem("ultimoModulo"); document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
@@ -273,6 +284,36 @@
             });
             s_open.innerText=o; s_proc.innerText=p; s_close.innerText=c; count_admin_total.innerText=snap.size;
         });
+    }
+
+    // FUNCIÓN PARA CALENDARIO
+    function inicializarCalendario() {
+        const calendarEl = document.getElementById('calendar');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'es',
+            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listWeek' },
+            events: async function(info, successCallback, failureCallback) {
+                try {
+                    const snap = await db.collection("tickets").get();
+                    const evs = [];
+                    snap.forEach(doc => {
+                        const d = doc.data();
+                        // Se asume que d.fecha tiene formato compatible con Date()
+                        const f = d.fecha ? new Date(d.fecha) : new Date();
+                        evs.push({
+                            title: `${d.tipo} - ${d.usuario.split('@')[0]}`,
+                            start: f,
+                            backgroundColor: d.estado === 'Cerrado' ? '#22c55e' : (d.estado === 'En Proceso' ? '#f59e0b' : '#2563eb'),
+                            extendedProps: { id: doc.id }
+                        });
+                    });
+                    successCallback(evs);
+                } catch (e) { console.error(e); }
+            },
+            eventClick: function(info) { verDetalleTicket(info.event.extendedProps.id); }
+        });
+        calendar.render();
     }
 
     function verDetalleMaestro(id) {
