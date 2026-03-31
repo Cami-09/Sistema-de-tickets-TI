@@ -140,9 +140,9 @@
         <div style="max-width:800px; margin:30px auto;">
             <h2 style="text-align:center; color:var(--dark); margin-bottom:30px;"><i class="fas fa-headset" style="color:var(--primary)"></i> Radicar Solicitud de Soporte</h2>
             <div class="grid-bonito">
-                <div class="campo-group"><label>Área</label><select id="tk_dep"><option>Sistemas</option><option>Tesorería</option></select></div>
-                <div class="campo-group"><label>Tipo Soporte</label><select id="tk_tipo"><option>Técnico</option><option>Redes</option></select></div>
-                <div class="campo-group" style="grid-column: span 2;"><label>Descripción</label><textarea id="tk_desc" rows="6"></textarea></div>
+                <div class="campo-group"><label>Dependencia / Área</label><select id="tk_dep"><option>Sistemas</option><option>Tesorería</option></select></div>
+                <div class="campo-group"><label>Tipo de Requerimiento</label><select id="tk_tipo"><option>Soporte Técnico</option><option>Redes e Internet</option></select></div>
+                <div class="campo-group" style="grid-column: span 2;"><label>Descripción</label><textarea id="tk_desc" rows="6" placeholder="Describa el problema..."></textarea></div>
             </div>
             <div style="text-align:center; margin-top:30px;"><button class="btn-agregar-master" onclick="enviarTicket()">Enviar Solicitud</button></div>
         </div>
@@ -164,7 +164,7 @@
 
 <div id="modalRegistro" class="modal">
     <div class="modal-content">
-        <h2 id="modal_tit" style="color:var(--primary); margin-bottom:25px;">Registro de Datos</h2>
+        <h2 id="modal_tit" style="color:var(--primary); margin-bottom:25px;">Formulario de Registro</h2>
         <div class="grid-bonito" id="form_dinamico"></div>
         <div style="margin-top:40px; text-align:right;"><button class="btn-gray" onclick="cerrarModales()">Cancelar</button><button class="btn-blue" onclick="guardarDatoMaestro()">Guardar</button></div>
     </div>
@@ -275,9 +275,15 @@
         document.getElementById('modalVerTicket').style.display = 'block';
     }
 
+    // FUNCIÓN CORREGIDA PARA INVENTARIOS
     function verDetalleMaestro(id) {
         const e = localData.find(x => x.id === id);
-        let h = ""; for (const k in e) if(k !== 'id') h += `<div class="campo-group"><label>${k.toUpperCase()}</label><p style="padding:10px; background:#f1f5f9; border-radius:8px;">${e[k]}</p></div>`;
+        let h = ""; 
+        for (const k in e) {
+            if(k !== 'id') {
+                h += `<div class="campo-group"><label>${k.replace('_',' ').toUpperCase()}</label><p style="padding:10px; background:#f1f5f9; border-radius:8px; margin:0;">${e[k]}</p></div>`;
+            }
+        }
         document.getElementById('detalle_ticket_content').innerHTML = h;
         document.getElementById('modalVerTicket').style.display = 'block';
     }
@@ -296,8 +302,14 @@
     async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
     async function eliminar(id, coll) { if(confirm("¿Eliminar registro?")) await db.collection(coll).doc(id).delete(); }
-    async function guardarDatoMaestro() { let o = {}; document.querySelectorAll('#form_dinamico input').forEach(i=>o[i.id]=i.value); if(modoModal==='editar') await db.collection(currentColl).doc(selectedId).update(o); else await db.collection(currentColl).add(o); cerrarModales(); }
-    async function enviarTicket() { await db.collection("tickets").add({ usuario: user.email, tipo: tk_tipo.value, desc: tk_desc.value, estado: "Abierto", asignado: "Pendiente", fecha: new Date().toLocaleString() }); alert("Enviado"); volver(); }
+    async function guardarDatoMaestro() { 
+        let o = {}; 
+        document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i=>o[i.id]=i.value); 
+        if(modoModal==='editar') await db.collection(currentColl).doc(selectedId).update(o); 
+        else await db.collection(currentColl).add(o); 
+        cerrarModales(); 
+    }
+    async function enviarTicket() { await db.collection("tickets").add({ usuario: user.email, tipo: tk_dep.value, desc: tk_desc.value, estado: "Abierto", asignado: "Pendiente", fecha: new Date().toLocaleString() }); alert("Enviado"); volver(); }
     function initCal() { if(calendar) calendar.destroy(); calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { locale: 'es', events: async (i, s) => { let evs = []; const snap = await db.collectionGroup("mantenimientos").get(); snap.forEach(d => evs.push({ title: d.data().responsable, start: d.data().fecha })); s(evs); } }); calendar.render(); }
 </script>
 </body>
