@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL V10</title>
+    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL V11</title>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -44,13 +44,14 @@
         th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; font-size: 0.85rem; }
         td { padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
 
-        /* Botones Acción Estilo Solicitado */
+        /* Botones Acción Estilo Solicitado con Colores */
         .btn-acc { width: 32px; height: 32px; border-radius: 6px; border: none; color: white; cursor: pointer; margin-right: 3px; display: inline-flex; align-items: center; justify-content: center; }
-        .bg-gray-v { background: var(--gray); } /* Para el ojito */
-        .bg-blue-t { background: var(--primary); } /* Para herramientas */
-        .bg-purple-c { background: var(--purple); } /* Para copiar */
-        .bg-info-e { background: var(--info); } /* Para editar */
-        .bg-red-d { background: var(--danger); } /* Para eliminar */
+        .bg-v-gray { background: var(--gray); }
+        .bg-p-orange { background: var(--warning); }
+        .bg-r-purple { background: var(--purple); }
+        .bg-c-green { background: var(--success); }
+        .bg-d-red { background: var(--danger); }
+        .bg-b-blue { background: var(--primary); }
 
         /* Modales */
         .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); }
@@ -66,7 +67,6 @@
         .btn-gray { background: #e2e8f0; color: #475569; }
         .badge { padding: 4px 10px; border-radius: 12px; color: white; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; }
 
-        /* Filtros Maestra */
         .filtros-maestro { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
     </style>
 </head>
@@ -100,14 +100,12 @@
             <h2 id="m_titulo" style="color:var(--dark); margin:0;"></h2>
             <button class="btn btn-blue" onclick="abrirModalRegistro('nuevo')">+ Agregar Registro</button>
         </div>
-
         <div class="filtros-maestro">
             <div><label>Nombre PC</label><input type="text" id="f_pc" onkeyup="renderTabla()"></div>
             <div><label>Placa Inv.</label><input type="text" id="f_placa" onkeyup="renderTabla()"></div>
             <div><label>Campus</label><select id="f_campus" onchange="renderTabla()"><option value="">Todos</option><option>Bucaramanga</option><option>Bogotá</option></select></div>
             <div><label>Sede</label><select id="f_sede" onchange="renderTabla()"><option value="">Todas</option><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select></div>
         </div>
-
         <div class="header-blue">Listado General</div>
         <table><thead id="m_thead"></thead><tbody id="m_tbody"></tbody></table>
     </div>
@@ -156,31 +154,13 @@
     </div>
 </div>
 
-<div id="modalRegistro" class="modal">
-    <div class="modal-content">
-        <h2 id="modal_tit">Registro de Equipo</h2>
-        <div class="grid-bonito" id="form_dinamico"></div>
-        <div style="margin-top:30px; text-align:right; display:flex; gap:12px; justify-content:flex-end;">
-            <button class="btn btn-blue" onclick="guardarDatoMaestro()"><i class="fas fa-save"></i> Guardar</button>
-            <button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button>
-        </div>
-    </div>
-</div>
-
-<div id="modalMante" class="modal">
-    <div class="modal-content" style="max-width: 450px;">
-        <h2>Registrar Mantenimiento</h2>
-        <input type="date" id="m_fec" style="width:100%; padding:10px;"><textarea id="m_des" placeholder="Descripción..." rows="4" style="width:100%; margin-top:10px;"></textarea>
-        <button class="btn btn-blue" style="width:100%; margin-top:10px;" onclick="ejecutarMante()">Guardar</button>
-    </div>
-</div>
-
 <div id="modalReasignar" class="modal">
     <div class="modal-content" style="max-width:400px;">
         <h2>Reasignar Ticket</h2>
-        <select id="re_dep_new" style="width:100%; padding:10px;"><option>Sistemas</option><option>Mantenimiento</option></select>
-        <div style="margin-top:20px; text-align:right; display:flex; gap:10px; justify-content:flex-end;">
-            <button class="btn btn-blue" onclick="ejecutarReasignar()">Reasignar</button>
+        <label>Nueva Dependencia:</label>
+        <select id="re_dep_new" style="width:100%; padding:10px; margin-top:10px;"><option>Sistemas</option><option>Tesorería</option></select>
+        <div style="margin-top:25px; text-align:right; display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn btn-blue" onclick="ejecutarReasignar()">Confirmar</button>
             <button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button>
         </div>
     </div>
@@ -203,7 +183,7 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
     
-    let user, currentColl = "", localData = [], selectedId = "", modoModal = "nuevo", calendar;
+    let user, currentColl = "", localData = [], selectedId = "", modoModal = "nuevo", calendar, ticketFiltro = "Abierto";
 
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { auth.signOut().then(() => location.reload()); }
@@ -220,93 +200,24 @@
     function volver() { document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
 
-    // --- LOGICA MAESTRA (INVENTARIOS) ---
-    function abrir_maestro(coll, tit) {
-        currentColl = coll; document.getElementById('m_titulo').innerText = tit; abrir('mod_maestro');
-        db.collection(currentColl).onSnapshot(snap => {
-            localData = []; snap.forEach(doc => localData.push({id: doc.id, ...doc.data()})); renderTabla();
-        });
-    }
-
-    function renderTabla() {
-        const thead = document.getElementById('m_thead'); const tbody = document.getElementById('m_tbody');
-        const fpc = document.getElementById('f_pc').value.toLowerCase();
-        const fpla = document.getElementById('f_placa').value.toLowerCase();
-        const fcam = document.getElementById('f_campus').value;
-        const fsed = document.getElementById('f_sede').value;
-
-        tbody.innerHTML = "";
-        thead.innerHTML = `<tr><th>Nombre PC</th><th>Tipo</th><th>Placa</th><th>Responsable</th><th>Sede</th><th>Acciones</th></tr>`;
-        localData.filter(d => (d.pc||"").toLowerCase().includes(fpc) && (d.placa||"").toLowerCase().includes(fpla) && (fcam==="" || d.cam===fcam) && (fsed==="" || d.sed===fsed)).forEach(d => {
-            tbody.innerHTML += `<tr><td><b>${d.pc||''}</b></td><td>${d.tipo||''}</td><td>${d.placa||''}</td><td>${d.res||''}</td><td>${d.sed||''}</td>
-            <td>
-                <button class="btn-acc bg-gray-v" onclick="verDetalleEquipo('${d.id}')" title="Ver"><i class="fas fa-eye"></i></button>
-                <button class="btn-acc bg-blue-t" onclick="abrirMante('${d.id}')" title="Mantenimiento"><i class="fas fa-tools"></i></button>
-                <button class="btn-acc bg-purple-c" onclick="abrirModalRegistro('copiar','${d.id}')" title="Copiar"><i class="fas fa-copy"></i></button>
-                <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${d.id}')" title="Editar"><i class="fas fa-edit"></i></button>
-                <button class="btn-acc bg-red-d" onclick="eliminar('${d.id}','${currentColl}')" title="Eliminar"><i class="fas fa-trash"></i></button>
-            </td></tr>`;
-        });
-    }
-
-    function verDetalleEquipo(id) {
-        const d = localData.find(x => x.id === id);
-        const cont = document.getElementById('ver_datos_content');
-        cont.innerHTML = `
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <p><strong>PC:</strong> ${d.pc}</p><p><strong>Inventario:</strong> ${d.placa}</p>
-                <p><strong>Responsable:</strong> ${d.res}</p><p><strong>Sede:</strong> ${d.sed}</p>
-                <p><strong>Procesador:</strong> ${d.pro}</p><p><strong>RAM:</strong> ${d.ram}</p>
-                <p><strong>IP:</strong> ${d.ip}</p><p><strong>SO:</strong> ${d.so}</p>
-            </div>
-        `;
-        document.getElementById('modalVerDatos').style.display = 'block';
-    }
-
-    function abrirModalRegistro(m, id) {
-        modoModal = m; selectedId = id;
-        const f = document.getElementById('form_dinamico'); f.innerHTML = "";
-        let c = [["Nombre PC","i_pc"],["Tipo","i_tipo","select",["Portátil","Torre","AIO"]],["Modelo","i_mod"],["Placa Inv","i_placa"],["S.O","i_so","select",["Win 10","Win 11"]],["Procesador","i_pro"],["RAM","i_ram","select",["8 GB","16 GB"]],["Disco","i_dis"],["IP","i_ip"],["Terminal","i_ter"],["Responsable","i_res"],["Dependencia","i_dep","select",["Sistemas"]],["Correo","i_cor"],["Campus","i_cam","select",["BGA","BOG"]],["Sede","i_sed","select",["Sede A","Sede B"]],["Ext","i_ext"],["Fecha","i_fec","date"],["Obs","i_obs"]];
-        c.forEach(x => {
-            let i = `<input type="${x[2]||'text'}" id="${x[1]}">`;
-            if(x[2]==="select") i = `<select id="${x[1]}">${x[3].map(o=>`<option>${o}</option>`).join('')}</select>`;
-            f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${i}</div>`;
-        });
-        if(m !== 'nuevo') {
-            const data = localData.find(x => x.id === id);
-            document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(inp => inp.value = data[inp.id.split('_')[1]] || "");
-        }
-        document.getElementById('modalRegistro').style.display='block';
-    }
-
-    async function guardarDatoMaestro() {
-        let obj = {}; document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => obj[i.id.split('_')[1]] = i.value);
-        if(modoModal === "editar") await db.collection(currentColl).doc(selectedId).update(obj);
-        else await db.collection(currentColl).add(obj);
-        cerrarModales();
-    }
-
-    // --- LOGICA TICKETS ---
-    async function enviarTicket() {
-        await db.collection("tickets").add({ usuario: user.email, dep: tk_dep.value, tipo: tk_tipo.value, desc: tk_desc.value, estado: "Abierto", fecha: new Date().toLocaleString() });
-        alert("Enviado"); tk_desc.value = ""; volver();
-    }
+    // --- LOGICA TICKETS (COLORES APLICADOS) ---
     function cargarTicketsAdmin() {
-        const est = document.getElementById('filtro_admin_status').value;
+        ticketFiltro = document.getElementById('filtro_admin_status').value;
         db.collection("tickets").onSnapshot(snap => {
             let o=0, p=0, c=0;
             const tbody = document.getElementById('tbody_admin_tickets'); tbody.innerHTML = "";
             snap.forEach(doc => {
                 const t = doc.data();
                 if(t.estado === "Abierto") o++; if(t.estado === "En Proceso") p++; if(t.estado === "Cerrado") c++;
-                if(t.estado === est) {
-                    tbody.innerHTML += `<tr><td><b>#${doc.id.substring(0,5).toUpperCase()}</b></td><td>${t.tipo}</td><td><span class="badge ${t.estado.toLowerCase().replace(" ","-")}">${t.estado}</span></td><td>${t.usuario}</td>
+                if(t.estado === ticketFiltro) {
+                    tbody.innerHTML += `<tr><td><b>#${doc.id.substring(0,5).toUpperCase()}</b></td><td>${t.tipo}</td>
+                    <td><span class="badge ${t.estado.toLowerCase().replace(" ","-")}">${t.estado}</span></td><td>${t.usuario}</td>
                     <td>
-                        <button class="btn-acc bg-v" title="Ver"><i class="fas fa-eye"></i></button>
-                        <button class="btn-acc bg-p" onclick="actEstado('${doc.id}','En Proceso')" title="Proceso"><i class="fas fa-clock"></i></button>
-                        <button class="btn-acc bg-r" onclick="abrirRe('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>
-                        <button class="btn-acc bg-c" onclick="abrirCierre('${doc.id}')" title="Cerrar"><i class="fas fa-check-circle"></i></button>
-                        <button class="btn-acc bg-d" onclick="eliminar('${doc.id}','tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                        <button class="btn-acc bg-v-gray" title="Ver"><i class="fas fa-eye"></i></button>
+                        <button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')" title="Proceso"><i class="fas fa-clock"></i></button>
+                        <button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>
+                        <button class="btn-acc bg-c-green" onclick="abrirCierre('${doc.id}')" title="Cerrar"><i class="fas fa-check-circle"></i></button>
+                        <button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}','tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>
                     </td></tr>`;
                 }
             });
@@ -322,33 +233,33 @@
         await db.collection("tickets").doc(selectedId).update({estado: 'Cerrado', respuesta: tk_res_cierre.value});
         cerrarModales();
     }
-
-    // --- CALENDARIO ---
-    function initCalendar() {
-        const calEl = document.getElementById('calendar');
-        if(!calEl) return;
-        calendar = new FullCalendar.Calendar(calEl, {
-            locale: 'es', events: async function(info, success) {
-                let evs = []; const snap = await db.collectionGroup("mantenimientos").get();
-                snap.forEach(doc => { const m = doc.data(); evs.push({ title: "Mante: " + (m.responsable || "Equipo"), start: m.fecha, color: '#f59e0b' }); });
-                success(evs);
-            }
-        }); calendar.render();
+    async function enviarTicket() {
+        await db.collection("tickets").add({ usuario: user.email, dep: tk_dep.value, tipo: tk_tipo.value, desc: tk_desc.value, estado: "Abierto", fecha: new Date().toLocaleString() });
+        alert("Enviado"); volver();
     }
-
-    function abrirMante(id) { selectedId=id; document.getElementById('modalMante').style.display='block'; }
-    async function ejecutarMante() {
-        const d = localData.find(x=>x.id===selectedId);
-        await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ fecha: document.getElementById('m_fec').value, desc: document.getElementById('m_des').value, responsable: d.pc || d.res });
-        cerrarModales(); alert("Mantenimiento Guardado");
-    }
-
     async function eliminar(id, coll) { if(confirm("¿Eliminar?")) await db.collection(coll).doc(id).delete(); }
-    function cargarMisTickets() {
-        db.collection("tickets").where("usuario","==",user.email).onSnapshot(s => {
-            const c = document.getElementById('mis_tk_container'); c.innerHTML = "";
-            s.forEach(doc => { const t = doc.data(); c.innerHTML += `<div style="padding:10px; border-bottom:1px solid #ddd;"><b>${t.estado}</b> - ${t.desc}</div>`; });
+
+    // --- LOGICA MAESTRO ---
+    function abrir_maestro(coll, tit) {
+        currentColl = coll; document.getElementById('m_titulo').innerText = tit; abrir('mod_maestro');
+        db.collection(currentColl).onSnapshot(snap => {
+            localData = []; snap.forEach(doc => localData.push({id: doc.id, ...doc.data()})); renderTabla();
         });
+    }
+    function renderTabla() {
+        const h = document.getElementById('m_thead'); const b = document.getElementById('m_tbody');
+        tbody_admin_tickets.innerHTML = ""; // Limpieza técnica
+        if(currentColl.includes('inventario')) {
+            h.innerHTML = `<tr><th>Nombre PC</th><th>Tipo</th><th>Placa</th><th>Responsable</th><th>Sede</th><th>Acciones</th></tr>`;
+            localData.forEach(e => b.innerHTML += `<tr><td><b>${e.pc||''}</b></td><td>${e.tipo||''}</td><td>${e.placa||''}</td><td>${e.res||''}</td><td>${e.sed||''}</td>
+            <td>
+                <button class="btn-acc bg-v-gray" title="Ver"><i class="fas fa-eye"></i></button>
+                <button class="btn-acc bg-b-blue" title="Herramientas"><i class="fas fa-tools"></i></button>
+                <button class="btn-acc bg-r-purple" title="Copiar"><i class="fas fa-copy"></i></button>
+                <button class="btn-acc bg-info-e" title="Editar"><i class="fas fa-edit"></i></button>
+                <button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+            </td></tr>`);
+        }
     }
 </script>
 </body>
