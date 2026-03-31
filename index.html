@@ -27,6 +27,10 @@
 
         .modulo { display: none; background: white; padding: 25px; border-radius: 12px; min-height: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
+        /* Estilo Botón Agregar Maestro */
+        .btn-agregar-master { background: linear-gradient(135deg, var(--primary), #1d4ed8); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2); }
+        .btn-agregar-master:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3); filter: brightness(1.1); }
+
         /* Diseño de Tarjetas Mis Tickets */
         .grid-tickets-user { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
         .tk-user-card { background: white; border-radius: 15px; padding: 20px; border-left: 6px solid var(--gray); box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: 0.3s; position: relative; }
@@ -98,6 +102,24 @@
         <div class="card" id="card_usuarios" onclick="abrir_maestro('usuarios', 'Administrar Usuarios')"><i class="fas fa-users-cog"></i><h3>Usuarios</h3></div>
     </div>
 
+    <div id="mod_calendario" class="modulo">
+        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
+        <h2 style="color:var(--primary); margin-top:15px;"><i class="fas fa-calendar-day"></i> Calendario de Mantenimientos</h2>
+        <div id="calendar" style="margin-top:20px; background: white; padding: 10px; border-radius: 12px; border: 1px solid #ddd;"></div>
+    </div>
+
+    <div id="mod_maestro" class="modulo">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+            <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
+            <h2 id="m_titulo" style="color:var(--dark); margin:0;"></h2>
+            <button class="btn-agregar-master" id="btn_maestro_agregar" onclick="abrirModalRegistro('nuevo')">
+                <i class="fas fa-plus-circle"></i> <span>Agregar Registro</span>
+            </button>
+        </div>
+        <div class="header-blue">Listado General</div>
+        <table><thead id="m_thead"></thead><tbody id="m_tbody"></tbody></table>
+    </div>
+
     <div id="mod_admin_tickets" class="modulo">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
             <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
@@ -120,16 +142,6 @@
             <thead><tr><th>ID</th><th>Tipo</th><th>Estado</th><th>Usuario</th><th>Acciones</th></tr></thead>
             <tbody id="tbody_admin_tickets"></tbody>
         </table>
-    </div>
-
-    <div id="mod_maestro" class="modulo">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-            <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-            <h2 id="m_titulo" style="color:var(--dark); margin:0;"></h2>
-            <button class="btn btn-blue" id="btn_maestro_agregar" onclick="abrirModalRegistro('nuevo')">+ Agregar Registro</button>
-        </div>
-        <div class="header-blue">Listado General</div>
-        <table><thead id="m_thead"></thead><tbody id="m_tbody"></tbody></table>
     </div>
 
     <div id="mod_enviar_ticket" class="modulo">
@@ -201,7 +213,7 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
     
-    let user, userRole = "Usuario", userNom = "", currentColl = "", localData = [], selectedId = "", modoModal = "nuevo";
+    let user, userRole = "Usuario", userNom = "", currentColl = "", localData = [], selectedId = "", modoModal = "nuevo", calendar;
 
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { auth.signOut().then(() => location.reload()); }
@@ -245,15 +257,11 @@
         });
     }
 
-    // --- CARGAR TICKETS ADMIN (CON FILTRO DE PRIVACIDAD PARA GESTORES) ---
+    // --- CARGAR TICKETS ADMIN ---
     function cargarTicketsAdmin() {
         const ticketFiltro = document.getElementById('filtro_admin_status').value;
         let query = db.collection("tickets");
-
-        // REGLA DE PRIVACIDAD: Si es Gestor, solo ve lo que tiene asignado
-        if (userRole === "Gestor") {
-            query = query.where("asignado", "==", userNom);
-        }
+        if (userRole === "Gestor") { query = query.where("asignado", "==", userNom); }
 
         query.onSnapshot(snap => {
             const tbody = document.getElementById('tbody_admin_tickets'); tbody.innerHTML = "";
@@ -261,11 +269,9 @@
             snap.forEach(doc => {
                 const t = doc.data();
                 if(t.estado === "Abierto") o++; if(t.estado === "En Proceso") p++; if(t.estado === "Cerrado") c++;
-                
                 if(t.estado === ticketFiltro) {
                     let btnReasignar = userRole === 'Admin' ? `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : '';
                     let btnEliminar = userRole === 'Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}','tickets')"><i class="fas fa-trash"></i></button>` : '';
-                    
                     tbody.innerHTML += `<tr><td><b>#${doc.id.substring(0,5).toUpperCase()}</b></td><td>${t.tipo}</td><td><span class="badge ${t.estado.toLowerCase().replace(" ","")}"> ${t.estado}</span></td><td>${t.usuario}</td>
                     <td>
                         <button class="btn-acc bg-v-gray" onclick="verDetalleTicketAdmin('${doc.id}')"><i class="fas fa-eye"></i></button>
@@ -280,19 +286,52 @@
         });
     }
 
-    // --- MIS TICKETS (DISEÑO TARJETAS) ---
+    // --- FUNCIONALIDAD CALENDARIO ---
+    function initCalendar() {
+        if (calendar) calendar.destroy();
+        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+            locale: 'es',
+            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek' },
+            events: async function(info, success, failure) {
+                try {
+                    let evs = [];
+                    // Busca mantenimientos en todas las colecciones principales
+                    const colecciones = ['inventario', 'inventario_salas', 'aulas_dti', 'impresoras'];
+                    for (const col of colecciones) {
+                        const snap = await db.collectionGroup("mantenimientos").get();
+                        snap.forEach(doc => {
+                            const data = doc.data();
+                            if(data.fecha) {
+                                evs.push({
+                                    title: `Mante: ${data.responsable || 'Equipo'}`,
+                                    start: data.fecha,
+                                    description: data.desc || '',
+                                    backgroundColor: col === 'inventario' ? '#2563eb' : '#8b5cf6',
+                                    allDay: true
+                                });
+                            }
+                        });
+                    }
+                    success(evs);
+                } catch (e) { failure(e); }
+            },
+            eventClick: function(info) {
+                alert("Detalle: " + info.event.title + "\nDescripción: " + info.event.extendedProps.description);
+            }
+        });
+        calendar.render();
+    }
+
+    // --- MIS TICKETS ---
     function cargarMisTickets() {
         db.collection("tickets").where("usuario","==",user.email).onSnapshot(s => {
             const c = document.getElementById('mis_tk_container'); c.innerHTML = "";
-            if(s.empty) { c.innerHTML = "<p>No tienes solicitudes registradas.</p>"; return; }
             s.forEach(doc => {
                 const t = doc.data();
                 const estClass = t.estado.toLowerCase().replace(" ","");
-                const icon = t.estado === "Cerrado" ? "fa-check-double" : (t.estado === "En Proceso" ? "fa-spinner fa-spin" : "fa-envelope-open");
-                
                 c.innerHTML += `
                 <div class="tk-user-card ${estClass}">
-                    <h4><span>#${doc.id.substring(0,5).toUpperCase()}</span> <i class="fas ${icon}"></i></h4>
+                    <h4><span>#${doc.id.substring(0,5).toUpperCase()}</span> <i class="fas fa-ticket-alt"></i></h4>
                     <p><b>Tipo:</b> ${t.tipo}</p>
                     <p><b>Descripción:</b> ${t.desc}</p>
                     <p><b>Gestor:</b> ${t.asignado || 'Pendiente'}</p>
@@ -323,6 +362,7 @@
         document.getElementById(id).style.display='block';
         if(id === 'mod_admin_tickets') cargarTicketsAdmin();
         if(id === 'mod_mis_tickets') cargarMisTickets();
+        if(id === 'mod_calendario') { setTimeout(initCalendar, 300); }
     }
     function volver() { document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
@@ -359,7 +399,11 @@
 
     // --- MAESTROS ---
     function abrir_maestro(coll, tit) {
-        currentColl = coll; document.getElementById('m_titulo').innerText = tit; abrir('mod_maestro');
+        currentColl = coll; 
+        document.getElementById('m_titulo').innerText = tit;
+        const btnText = document.querySelector("#btn_maestro_agregar span");
+        btnText.innerText = coll === 'usuarios' ? "Agregar Usuario" : "Agregar Registro";
+        abrir('mod_maestro');
         db.collection(currentColl).onSnapshot(snap => {
             localData = []; snap.forEach(doc => localData.push({id: doc.id, ...doc.data()})); renderTabla();
         });
