@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA TIC UNICIENCIA - MASTER TOTAL FINAL</title>
+    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL REPARADO</title>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -32,13 +32,20 @@
         .stat-card { padding: 15px; border-radius: 10px; color: white; text-align: center; font-weight: bold; }
         .stat-card span { font-size: 2.2rem; display: block; }
 
-        /* Tablas y Botones Acciones */
+        /* Formulario Enviar Ticket */
+        .form-ticket { max-width: 600px; margin-top: 20px; }
+        .form-row { display: flex; align-items: center; margin-bottom: 15px; }
+        .form-row label { width: 180px; font-weight: 600; color: #475569; }
+        .form-row input, .form-row select, .form-row textarea { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; }
+
+        /* Tablas */
         .header-blue { background: var(--primary); color: white; padding: 12px 15px; border-radius: 8px 8px 0 0; font-weight: bold; }
         table { width: 100%; border-collapse: collapse; background: white; }
         th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; font-size: 0.85rem; }
         td { padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 0.85rem; }
 
-        .btn-acc { width: 32px; height: 32px; border-radius: 6px; border: none; color: white; cursor: pointer; margin-right: 3px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
+        /* Botones Acción Colores */
+        .btn-acc { width: 32px; height: 32px; border-radius: 6px; border: none; color: white; cursor: pointer; margin-right: 3px; display: inline-flex; align-items: center; justify-content: center; }
         .bg-v-gray { background: var(--gray); }
         .bg-p-orange { background: var(--warning); }
         .bg-r-purple { background: var(--purple); }
@@ -51,13 +58,11 @@
         .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(4px); }
         .modal-content { background: white; margin: 2% auto; padding: 30px; width: 90%; max-width: 1000px; border-radius: 16px; position: relative; max-height: 95vh; overflow-y: auto; }
         
-        /* Formulario Estilo Imagen */
         .grid-bonito { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px 40px; margin-top: 20px; }
         .campo-group { display: flex; align-items: center; justify-content: space-between; }
         .campo-group label { font-weight: 600; color: #475569; font-size: 0.9rem; width: 160px; }
-        .campo-group input, .campo-group select, .campo-group textarea { flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; }
+        .campo-group input, .campo-group select { flex: 1; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; }
 
-        /* Periféricos */
         .icon-box { font-size: 1.8rem; color: #94a3b8; cursor: pointer; transition: 0.3s; padding: 10px; border-radius: 50%; }
         .icon-box.active { color: var(--primary); background: #eff6ff; border: 1px solid var(--primary); transform: scale(1.1); }
 
@@ -65,7 +70,7 @@
         .btn-blue { background: var(--primary); color: white; }
         .btn-gray { background: #e2e8f0; color: #475569; }
         .badge { padding: 4px 10px; border-radius: 12px; color: white; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; }
-        
+
         .filtros-maestro { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px; }
     </style>
 </head>
@@ -110,28 +115,11 @@
                 <option value="En Proceso">En Proceso</option>
                 <option value="Cerrado">Cerrados</option>
             </select>
-            <button class="btn btn-gray" style="background:var(--dark); color:white;" onclick="verCerradosAdmin()">Cerrados</button>
         </div>
         <table>
             <thead><tr><th>ID</th><th>Tipo</th><th>Estado</th><th>Usuario</th><th>Acciones</th></tr></thead>
             <tbody id="tbody_admin_tickets"></tbody>
         </table>
-    </div>
-
-    <div id="mod_maestro" class="modulo">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-            <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-            <h2 id="m_titulo" style="color:var(--dark); margin:0;"></h2>
-            <button class="btn btn-blue" onclick="abrirModalRegistro('nuevo')">+ Agregar Registro</button>
-        </div>
-        <div class="filtros-maestro">
-            <div><label>Nombre PC</label><input type="text" id="f_pc" onkeyup="renderTabla()"></div>
-            <div><label>Placa Inv.</label><input type="text" id="f_placa" onkeyup="renderTabla()"></div>
-            <div><label>Campus</label><select id="f_campus" onchange="renderTabla()"><option value="">Todos</option><option>Bucaramanga</option></select></div>
-            <div><label>Sede</label><select id="f_sede" onchange="renderTabla()"><option value="">Todas</option><option>Sede A</option></select></div>
-        </div>
-        <div class="header-blue">Listado General</div>
-        <table><thead id="m_thead"></thead><tbody id="m_tbody"></tbody></table>
     </div>
 
     <div id="mod_enviar_ticket" class="modulo">
@@ -145,6 +133,16 @@
         </div>
     </div>
 
+    <div id="mod_maestro" class="modulo">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+            <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
+            <h2 id="m_titulo" style="color:var(--dark); margin:0;"></h2>
+            <button class="btn btn-blue" onclick="abrirModalRegistro()">+ Agregar Registro</button>
+        </div>
+        <div class="header-blue">Listado General</div>
+        <table><thead id="m_thead"></thead><tbody id="m_tbody"></tbody></table>
+    </div>
+
     <div id="mod_calendario" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><div id="calendar" style="margin-top:20px;"></div></div>
     <div id="mod_mis_tickets" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Mis Tickets</h2><div id="mis_tk_container"></div></div>
 </div>
@@ -155,8 +153,6 @@
         <div class="grid-bonito" style="grid-template-columns: 1fr;">
             <div class="campo-group"><label>ID Ticket:</label><div id="v_tk_id" style="flex:1; padding:10px; background:#f8fafc; border-radius:8px;"></div></div>
             <div class="campo-group"><label>Usuario:</label><div id="v_tk_user" style="flex:1; padding:10px; background:#f8fafc; border-radius:8px;"></div></div>
-            <div class="campo-group"><label>Dependencia:</label><div id="v_tk_dep" style="flex:1; padding:10px; background:#f8fafc; border-radius:8px;"></div></div>
-            <div class="campo-group"><label>Tipo:</label><div id="v_tk_tipo" style="flex:1; padding:10px; background:#f8fafc; border-radius:8px;"></div></div>
             <div class="campo-group" style="align-items:flex-start;"><label>Descripción:</label><div id="v_tk_desc" style="flex:1; padding:10px; background:#f8fafc; border-radius:8px; min-height:80px;"></div></div>
             <div class="campo-group"><label>Fecha Reporte:</label><div id="v_tk_fecha" style="flex:1; padding:10px; background:#f8fafc; border-radius:8px;"></div></div>
             <div class="campo-group"><label>Estado Actual:</label><div id="v_tk_est" style="flex:1; padding:10px; background:#f8fafc; border-radius:8px;"></div></div>
@@ -165,25 +161,9 @@
     </div>
 </div>
 
-<div id="modalReasignar" class="modal">
-    <div class="modal-content" style="max-width:400px;">
-        <h2>Reasignar Ticket</h2>
-        <select id="re_dep_new" style="width:100%; padding:10px; margin-top:10px;"><option>Sistemas</option><option>Mantenimiento</option></select>
-        <div style="margin-top:25px; text-align:right; display:flex; gap:10px; justify-content:flex-end;"><button class="btn btn-blue" onclick="ejecutarReasignar()">Confirmar</button><button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button></div>
-    </div>
-</div>
-
-<div id="modalCierre" class="modal">
-    <div class="modal-content" style="max-width:500px;">
-        <h2>Cerrar Ticket</h2>
-        <textarea id="tk_res_cierre" rows="5" placeholder="Respuesta..." style="width:100%; padding:10px; border-radius:8px;"></textarea>
-        <div style="margin-top:15px; text-align:right; display:flex; gap:10px; justify-content:flex-end;"><button class="btn btn-blue" onclick="ejecutarCierre()">Finalizar</button><button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button></div>
-    </div>
-</div>
-
 <div id="modalRegistro" class="modal">
     <div class="modal-content">
-        <h2 id="modal_tit">Registro</h2>
+        <h2 id="modal_tit">Registrar</h2>
         <div class="grid-bonito" id="form_dinamico"></div>
         <div id="seccion_perifericos" style="display:none;">
             <div class="perifericos-grid" style="display:flex; gap:20px; justify-content:center; margin-top:20px;">
@@ -202,7 +182,7 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
     
-    let user, currentColl = "", localData = [], selectedId = "", ticketFiltro = "Abierto";
+    let user, currentColl = "", localData = [], calendar, ticketFiltro = "Abierto";
 
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { auth.signOut().then(() => location.reload()); }
@@ -213,26 +193,27 @@
         document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
         document.getElementById(id).style.display='block';
         if(id === 'mod_admin_tickets') cargarTicketsAdmin();
-        if(id === 'mod_calendario') { setTimeout(() => { calendar && calendar.render(); }, 300); }
+        if(id === 'mod_calendario') { setTimeout(initCalendar, 300); }
     }
     function volver() { document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
 
-    // --- TICKETS ADMIN ---
+    // TICKETS
+    async function enviarTicket() {
+        await db.collection("tickets").add({ usuario: user.email, dep: tk_dep.value, tipo: tk_tipo.value, desc: tk_desc.value, estado: "Abierto", fecha: new Date().toLocaleString() });
+        alert("Enviado"); volver();
+    }
     function verDetalleTicketAdmin(id) {
         db.collection("tickets").doc(id).get().then(doc => {
             const t = doc.data();
-            document.getElementById('v_tk_id').innerText = "#" + doc.id.substring(0,8).toUpperCase();
-            document.getElementById('v_tk_user').innerText = t.usuario;
-            document.getElementById('v_tk_dep').innerText = t.dep || "N/A";
-            document.getElementById('v_tk_tipo').innerText = t.tipo;
-            document.getElementById('v_tk_desc').innerText = t.desc;
-            document.getElementById('v_tk_fecha').innerText = t.fecha;
-            document.getElementById('v_tk_est').innerText = t.estado;
+            v_tk_id.innerText = "#" + doc.id.substring(0,8).toUpperCase();
+            v_tk_user.innerText = t.usuario;
+            v_tk_desc.innerText = t.desc;
+            v_tk_fecha.innerText = t.fecha;
+            v_tk_est.innerText = t.estado;
             document.getElementById('modalVerTicketAdmin').style.display = 'block';
         });
     }
-
     function cargarTicketsAdmin() {
         ticketFiltro = document.getElementById('filtro_admin_status').value;
         db.collection("tickets").onSnapshot(snap => {
@@ -242,14 +223,10 @@
                 const t = doc.data();
                 if(t.estado === "Abierto") o++; if(t.estado === "En Proceso") p++; if(t.estado === "Cerrado") c++;
                 if(t.estado === ticketFiltro) {
-                    tbody.innerHTML += `<tr><td><b>#${doc.id.substring(0,5).toUpperCase()}</b></td><td>${t.tipo}</td>
-                    <td><span class="badge ${t.estado.toLowerCase().replace(" ","-")}">${t.estado}</span></td><td>${t.usuario}</td>
-                    <td>
-                        <button class="btn-acc bg-v-gray" onclick="verDetalleTicketAdmin('${doc.id}')" title="Ver"><i class="fas fa-eye"></i></button>
-                        <button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')" title="Proceso"><i class="fas fa-clock"></i></button>
-                        <button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>
-                        <button class="btn-acc bg-c-green" onclick="abrirCierre('${doc.id}')" title="Cerrar"><i class="fas fa-check-circle"></i></button>
-                        <button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}','tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    tbody.innerHTML += `<tr><td><b>#${doc.id.substring(0,5).toUpperCase()}</b></td><td>${t.tipo}</td><td><span class="badge ${t.estado.toLowerCase().replace(" ","-")}">${t.estado}</span></td><td>${t.usuario}</td>
+                    <td><button class="btn-acc bg-v-gray" onclick="verDetalleTicketAdmin('${doc.id}')"><i class="fas fa-eye"></i></button>
+                        <button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>
+                        <button class="btn-acc bg-c-green" onclick="abrirCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>
                     </td></tr>`;
                 }
             });
@@ -257,17 +234,7 @@
         });
     }
 
-    async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
-    function abrirRe(id) { selectedId=id; document.getElementById('modalReasignar').style.display='block'; }
-    async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({dep: re_dep_new.value}); cerrarModales(); }
-    function abrirCierre(id) { selectedId=id; tk_res_cierre.value=""; document.getElementById('modalCierre').style.display='block'; }
-    async function ejecutarCierre() {
-        if(!tk_res_cierre.value) return alert("Escriba respuesta");
-        await db.collection("tickets").doc(selectedId).update({estado: 'Cerrado', respuesta: tk_res_cierre.value});
-        cerrarModales();
-    }
-
-    // --- MAESTRO ---
+    // MAESTRO
     function abrir_maestro(coll, tit) {
         currentColl = coll; document.getElementById('m_titulo').innerText = tit; abrir('mod_maestro');
         db.collection(currentColl).onSnapshot(snap => {
@@ -277,17 +244,35 @@
     function renderTabla() {
         const h = document.getElementById('m_thead'); const b = document.getElementById('m_tbody'); b.innerHTML = "";
         if(currentColl.includes('inventario')) {
-            h.innerHTML = `<tr><th>Nombre PC</th><th>Tipo</th><th>Placa</th><th>Responsable</th><th>Acciones</th></tr>`;
-            localData.forEach(e => b.innerHTML += `<tr><td><b>${e.pc||''}</b></td><td>${e.tipo||''}</td><td>${e.placa||''}</td><td>${e.res||''}</td><td>${getBotonesMaestro(e.id)}</td></tr>`);
-        } else {
-            h.innerHTML = `<tr><th>Nombre</th><th>Campus</th><th>Sede</th><th>Acciones</th></tr>`;
-            localData.forEach(e => b.innerHTML += `<tr><td><b>${e.nom||''}</b></td><td>${e.cam||''}</td><td>${e.sed||''}</td><td>${getBotonesMaestro(e.id)}</td></tr>`);
+            h.innerHTML = `<tr><th>Nombre PC</th><th>Inventario</th><th>Responsable</th><th>Acciones</th></tr>`;
+            localData.forEach(e => b.innerHTML += `<tr><td><b>${e.pc||''}</b></td><td>${e.pla||''}</td><td>${e.res||''}</td><td><button class="btn-acc bg-v-gray"><i class="fas fa-eye"></i></button></td></tr>`);
         }
     }
-    function getBotonesMaestro(id) {
-        return `<button class="btn-acc bg-v-gray" title="Ver"><i class="fas fa-eye"></i></button><button class="btn-acc bg-b-blue" title="Mante"><i class="fas fa-tools"></i></button><button class="btn-acc bg-r-purple" title="Copiar"><i class="fas fa-copy"></i></button><button class="btn-acc bg-info-e" title="Editar"><i class="fas fa-edit"></i></button><button class="btn-acc bg-d-red" onclick="eliminar('${id}','${currentColl}')" title="Eliminar"><i class="fas fa-trash"></i></button>`;
+    function abrirModalRegistro() {
+        const f = document.getElementById('form_dinamico'); f.innerHTML = "";
+        const c = currentColl.includes('inventario') ? [["Nombre PC","i_pc"],["Tipo","i_tip","select",["Portátil","Torre"]],["Modelo","i_mod"],["Placa Inv","i_pla"],["S.O","i_so","select",["Win 10","Win 11"]],["Procesador","i_pro"],["RAM","i_ram","select",["8 GB","16 GB"]],["Disco","i_dis"],["IP","i_ip"],["Terminal","i_ter"],["Responsable","i_res"],["Dependencia","i_dep","select",["Sistemas"]],["Correo","i_cor"],["Campus","i_cam","select",["BGA"]],["Sede","i_sed","select",["Sede A"]],["Ext","i_ext"],["Fecha","i_fec","date"],["Obs","i_obs"]] : [["Nombre","e_nom"],["Campus","e_cam","select",["BGA"]],["Sede","e_sed","select",["Sede A"]],["Ubicación","e_ubi"]];
+        c.forEach(x => {
+            let i = `<input type="${x[2]||'text'}" id="${x[1]}">`;
+            if(x[2]==="select") i = `<select id="${x[1]}">${x[3].map(o=>`<option>${o}</option>`).join('')}</select>`;
+            f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${i}</div>`;
+        });
+        document.getElementById('modalRegistro').style.display='block';
     }
-    async function eliminar(id, coll) { if(confirm("¿Eliminar?")) await db.collection(coll).doc(id).delete(); }
+    async function guardarDatoMaestro() {
+        let obj = {}; document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => obj[i.id.split('_')[1]] = i.value);
+        await db.collection(currentColl).add(obj); cerrarModales();
+    }
+
+    // CALENDARIO
+    function initCalendar() {
+        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+            locale: 'es', events: async function(info, success) {
+                let evs = []; const snap = await db.collectionGroup("mantenimientos").get();
+                snap.forEach(doc => { evs.push({ title: "Mante", start: doc.data().fecha }); });
+                success(evs);
+            }
+        }); calendar.render();
+    }
 </script>
 </body>
 </html>
