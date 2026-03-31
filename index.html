@@ -12,6 +12,7 @@
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -63,11 +64,7 @@
         .btn-blue { background: var(--primary); color: white; border-radius: 10px; padding: 12px 25px; cursor: pointer; border: none; font-weight: 600; }
         .btn-gray { background: #e2e8f0; color: #475569; border-radius: 10px; padding: 12px 25px; cursor: pointer; border: none; font-weight: 600; }
         
-        /* Calendario Styles */
         #calendar { max-width: 100%; margin-top: 20px; background: white; padding: 15px; border-radius: 15px; border: 1px solid #e2e8f0; }
-        .fc-toolbar-title { font-size: 1.2rem !important; color: var(--dark); font-weight: bold; text-transform: capitalize; }
-        .fc-button-primary { background-color: var(--primary) !important; border-color: var(--primary) !important; }
-
         .loader-puntos { display: inline-block; position: relative; width: 25px; height: 25px; }
         .loader-puntos div { position: absolute; width: 5px; height: 5px; background: var(--warning); border-radius: 50%; animation: loader-puntos 1.2s linear infinite; }
         .loader-puntos div:nth-child(1) { top: 2px; left: 10px; animation-delay: 0s; }
@@ -79,6 +76,9 @@
         .loader-puntos div:nth-child(7) { top: 10px; left: 2px; animation-delay: -0.9s; }
         .loader-puntos div:nth-child(8) { top: 5px; left: 5px; animation-delay: -1.05s; }
         @keyframes loader-puntos { 0%, 20%, 80%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.3; } }
+
+        /* Estilos Extra Estadísticas */
+        .chart-container { position: relative; margin: auto; height: 400px; width: 100%; margin-top: 30px; }
     </style>
 </head>
 <body>
@@ -111,6 +111,7 @@
         <div class="card" id="card_salas" onclick="abrir_maestro('salas_sistemas', 'Salas Sistemas')"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
         <div class="card" id="card_impresoras" onclick="abrir_maestro('impresoras', 'Impresoras')"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
         <div class="card" id="card_usuarios" onclick="abrir_maestro('usuarios', 'Usuarios')"><i class="fas fa-users-cog"></i><h3>Usuarios</h3></div>
+        <div class="card" id="card_stats" onclick="abrir('mod_stats')"><i class="fas fa-chart-bar"></i><h3>Estadísticas</h3></div>
     </div>
 
     <div id="mod_maestro" class="modulo">
@@ -152,10 +153,22 @@
     </div>
 
     <div id="mod_mis_tickets" class="modulo"><button onclick="volver()" class="btn-gray">⬅ Volver</button><div id="mis_tk_container" style="margin-top:20px"></div></div>
-    
-    <div id="mod_calendario" class="modulo">
-        <button onclick="volver()" class="btn-gray">Volver</button>
-        <div id="calendar"></div>
+    <div id="mod_calendario" class="modulo"><button onclick="volver()" class="btn-gray">Volver</button><div id="calendar"></div></div>
+
+    <div id="mod_stats" class="modulo">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 25px;">
+            <button onclick="volver()" class="btn-gray">⬅ Volver</button>
+            <h2 style="color:var(--primary); margin:0;">Estadísticas del Sistema</h2>
+            <select id="filtro_stats" onchange="cargarGraficaActualizada()" style="padding:10px; border-radius:10px; border:2px solid var(--primary); font-weight:bold;">
+                <option value="gestor">Tickets por Gestor</option>
+                <option value="tipo">Tickets por Requerimiento</option>
+                <option value="usuario">Usuarios que envían más Tickets</option>
+                <option value="equipos">Usuarios con más Equipos</option>
+            </select>
+        </div>
+        <div class="chart-container">
+            <canvas id="miGrafica"></canvas>
+        </div>
     </div>
 </div>
 
@@ -163,9 +176,7 @@
     <div class="modal-content">
         <h2 style="color:var(--primary); margin-bottom:20px;">Detalles del Registro</h2>
         <div id="detalle_ticket_content" class="grid-bonito"></div>
-        <div style="margin-top:30px; text-align:right;">
-            <button class="btn-blue" onclick="cerrarModales()" style="min-width: 150px; font-weight: bold;">Cerrar Ventana</button>
-        </div>
+        <div style="margin-top:30px; text-align:right;"><button class="btn-blue" onclick="cerrarModales()">Cerrar Ventana</button></div>
     </div>
 </div>
 
@@ -188,7 +199,7 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
     
-    let user, userRole, currentColl, localData = [], selectedId, modoModal = "nuevo", unsubMaestro = null, listaGestoresGlobal = [];
+    let user, userRole, currentColl, localData = [], selectedId, modoModal = "nuevo", unsubMaestro = null, listaGestoresGlobal = [], miChart = null;
 
     auth.onAuthStateChanged(async (u) => { 
         if(u){ 
@@ -212,8 +223,8 @@
             userRole = !q.empty ? q.docs[0].data().rol : "Usuario";
         }
         document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
-        const c = ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_calendario", "card_aulas", "card_salas", "card_impresoras", "card_usuarios"];
-        const v = { "Admin": c, "Gestor": c.filter(x => x !== "card_usuarios"), "Usuario": ["card_mis_tickets", "card_enviar_ticket"] };
+        const c = ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_calendario", "card_aulas", "card_salas", "card_impresoras", "card_usuarios", "card_stats"];
+        const v = { "Admin": c, "Gestor": c.filter(x => x !== "card_usuarios" && x !== "card_stats"), "Usuario": ["card_mis_tickets", "card_enviar_ticket"] };
         document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
         (v[userRole] || v["Usuario"]).forEach(id => document.getElementById(id).style.display = 'block');
     }
@@ -229,10 +240,74 @@
         document.getElementById('panel-principal').style.display='none';
         document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
         document.getElementById(id).style.display='block';
-        
-        // Lógica de carga específica por módulo
         if(id === 'mod_admin_tickets') cargarTicketsAdmin();
         if(id === 'mod_calendario') inicializarCalendario();
+        if(id === 'mod_stats') cargarGraficaActualizada();
+    }
+
+    // LOGICA DE ESTADISTICAS
+    async function cargarGraficaActualizada() {
+        const tipo = document.getElementById('filtro_stats').value;
+        let etiquetas = [], valores = [], titulo = "";
+
+        if (miChart) miChart.destroy();
+
+        if (tipo === 'gestor') {
+            const snap = await db.collection("tickets").get();
+            let conteo = {};
+            snap.forEach(d => { let g = d.data().asignado; conteo[g] = (conteo[g] || 0) + 1; });
+            etiquetas = Object.keys(conteo); valores = Object.values(conteo);
+            titulo = "Total Tickets por Gestor";
+        } else if (tipo === 'tipo') {
+            const snap = await db.collection("tickets").get();
+            let conteo = {};
+            snap.forEach(d => { let t = d.data().tipo; conteo[t] = (conteo[t] || 0) + 1; });
+            etiquetas = Object.keys(conteo); valores = Object.values(conteo);
+            titulo = "Tickets por Tipo de Requerimiento";
+        } else if (tipo === 'usuario') {
+            const snap = await db.collection("tickets").get();
+            let conteo = {};
+            snap.forEach(d => { let u = d.data().usuario.split('@')[0]; conteo[u] = (conteo[u] || 0) + 1; });
+            // Solo top 5
+            let sorted = Object.entries(conteo).sort((a,b) => b[1]-a[1]).slice(0,5);
+            etiquetas = sorted.map(x => x[0]); valores = sorted.map(x => x[1]);
+            titulo = "Usuarios que más radican Solicitudes";
+        } else if (tipo === 'equipos') {
+            const snap = await db.collection("inventario").get();
+            let conteo = {};
+            snap.forEach(d => { let u = d.data().nom || "Sin Asignar"; conteo[u] = (conteo[u] || 0) + 1; });
+            let sorted = Object.entries(conteo).sort((a,b) => b[1]-a[1]).slice(0,5);
+            etiquetas = sorted.map(x => x[0]); valores = sorted.map(x => x[1]);
+            titulo = "Usuarios con más Equipos Asignados";
+        }
+
+        const ctx = document.getElementById('miGrafica').getContext('2d');
+        miChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: etiquetas,
+                datasets: [{
+                    label: 'Cantidad',
+                    data: valores,
+                    backgroundColor: 'rgba(37, 99, 235, 0.7)',
+                    borderColor: '#2563eb',
+                    borderWidth: 2,
+                    borderRadius: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false },
+                    tooltip: { enabled: true }
+                },
+                scales: { 
+                    y: { beginAtZero: true, grid: { display: false } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
     }
 
     function volver() { localStorage.removeItem("ultimoModulo"); document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
@@ -286,27 +361,18 @@
         });
     }
 
-    // FUNCIÓN PARA CALENDARIO
     function inicializarCalendario() {
         const calendarEl = document.getElementById('calendar');
         const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            locale: 'es',
+            initialView: 'dayGridMonth', locale: 'es',
             headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,listWeek' },
             events: async function(info, successCallback, failureCallback) {
                 try {
                     const snap = await db.collection("tickets").get();
                     const evs = [];
                     snap.forEach(doc => {
-                        const d = doc.data();
-                        // Se asume que d.fecha tiene formato compatible con Date()
-                        const f = d.fecha ? new Date(d.fecha) : new Date();
-                        evs.push({
-                            title: `${d.tipo} - ${d.usuario.split('@')[0]}`,
-                            start: f,
-                            backgroundColor: d.estado === 'Cerrado' ? '#22c55e' : (d.estado === 'En Proceso' ? '#f59e0b' : '#2563eb'),
-                            extendedProps: { id: doc.id }
-                        });
+                        const d = doc.data(); const f = d.fecha ? new Date(d.fecha) : new Date();
+                        evs.push({ title: `${d.tipo}`, start: f, backgroundColor: d.estado === 'Cerrado' ? '#22c55e' : '#2563eb', extendedProps: { id: doc.id } });
                     });
                     successCallback(evs);
                 } catch (e) { console.error(e); }
