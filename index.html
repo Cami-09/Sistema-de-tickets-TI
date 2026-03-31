@@ -19,9 +19,11 @@
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #334155; overflow-x: hidden; }
         header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: sticky; top: 0; z-index: 1000; }
 
+        /* Estilo para evitar el flash del login */
+        #login { display: none; height: 80vh; justify-content: center; align-items: center; }
         #dashboard { display: none; padding: 25px; }
-        .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
         
+        .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
         .card { background: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
         .card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.08); border-color: var(--primary); }
         .card i { font-size: 40px; color: var(--primary); margin-bottom: 15px; }
@@ -33,20 +35,8 @@
         .btn-agregar-master { background: linear-gradient(135deg, #2563eb, #1e40af); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); text-transform: uppercase; font-size: 0.85rem; }
         .btn-agregar-master:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4); filter: brightness(1.1); }
 
-        .loader-puntos { display: inline-block; position: relative; width: 25px; height: 25px; }
-        .loader-puntos div { position: absolute; width: 5px; height: 5px; background: var(--warning); border-radius: 50%; animation: loader-puntos 1.2s linear infinite; }
-        .loader-puntos div:nth-child(1) { top: 2px; left: 10px; animation-delay: 0s; }
-        .loader-puntos div:nth-child(2) { top: 5px; left: 16px; animation-delay: -0.15s; }
-        .loader-puntos div:nth-child(3) { top: 10px; left: 19px; animation-delay: -0.3s; }
-        .loader-puntos div:nth-child(4) { top: 16px; left: 16px; animation-delay: -0.45s; }
-        .loader-puntos div:nth-child(5) { top: 19px; left: 10px; animation-delay: -0.6s; }
-        .loader-puntos div:nth-child(6) { top: 16px; left: 5px; animation-delay: -0.75s; }
-        .loader-puntos div:nth-child(7) { top: 10px; left: 2px; animation-delay: -0.9s; }
-        .loader-puntos div:nth-child(8) { top: 5px; left: 5px; animation-delay: -1.05s; }
-        @keyframes loader-puntos { 0%, 20%, 80%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.3; } }
-
         .btn-acc { width: 38px; height: 38px; border-radius: 10px; border: none; color: white; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; font-size: 1rem; margin-right: 5px; }
-        .btn-acc:hover { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+        .btn-acc:hover { transform: translateY(-3px); filter: brightness(1.1); }
         .bg-v-gray { background: var(--gray); }
         .bg-p-orange { background: var(--warning); }
         .bg-r-purple { background: var(--purple); }
@@ -59,12 +49,8 @@
         .grid-bonito { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px 35px; margin-top: 20px; }
         .campo-group { display: flex; flex-direction: column; gap: 8px; }
         .campo-group label { font-weight: 700; font-size: 0.8rem; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
-        .campo-group input, .campo-group select { padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 0.95rem; transition: 0.3s; }
-        .campo-group input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(37,99,235,0.1); }
-
-        .grid-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px; }
-        .stat-card { padding: 20px; border-radius: 15px; color: white; text-align: center; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .stat-card span { font-size: 2.5rem; display: block; margin-top: 5px; }
+        .campo-group input, .campo-group select, .campo-group textarea { padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 0.95rem; transition: 0.3s; }
+        .campo-group input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
 
         table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
         th { padding: 15px; text-align: left; color: var(--gray); font-size: 0.85rem; text-transform: uppercase; border-bottom: 2px solid #e2e8f0; }
@@ -76,7 +62,19 @@
         .btn-gray { background: #e2e8f0; color: #475569; border-radius: 10px; padding: 12px 25px; cursor: pointer; border: none; font-weight: 600; }
         
         .tk-user-card { background: white; border-radius: 15px; padding: 20px; border-left: 6px solid var(--gray); box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        .info-gestor { font-size: 0.8rem; color: var(--primary); font-weight: 600; margin-top: 5px; }
+        
+        /* Estilos Loader Puntos */
+        .loader-puntos { display: inline-block; position: relative; width: 25px; height: 25px; }
+        .loader-puntos div { position: absolute; width: 5px; height: 5px; background: var(--warning); border-radius: 50%; animation: loader-puntos 1.2s linear infinite; }
+        .loader-puntos div:nth-child(1) { top: 2px; left: 10px; animation-delay: 0s; }
+        .loader-puntos div:nth-child(2) { top: 5px; left: 16px; animation-delay: -0.15s; }
+        .loader-puntos div:nth-child(3) { top: 10px; left: 19px; animation-delay: -0.3s; }
+        .loader-puntos div:nth-child(4) { top: 16px; left: 16px; animation-delay: -0.45s; }
+        .loader-puntos div:nth-child(5) { top: 19px; left: 10px; animation-delay: -0.6s; }
+        .loader-puntos div:nth-child(6) { top: 16px; left: 5px; animation-delay: -0.75s; }
+        .loader-puntos div:nth-child(7) { top: 10px; left: 2px; animation-delay: -0.9s; }
+        .loader-puntos div:nth-child(8) { top: 5px; left: 5px; animation-delay: -1.05s; }
+        @keyframes loader-puntos { 0%, 20%, 80%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.3; } }
     </style>
 </head>
 <body>
@@ -89,7 +87,7 @@
     </div>
 </header>
 
-<div id="login" style="display:flex; height:80vh; justify-content:center; align-items:center;">
+<div id="login">
     <div style="text-align:center; background:white; padding:50px; border-radius:30px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);">
         <i class="fas fa-shield-alt fa-4x" style="color:var(--primary); margin-bottom:20px;"></i>
         <h1 style="margin-bottom:30px; color:var(--dark);">Portal TI Uniciencia</h1>
@@ -105,7 +103,7 @@
         <div class="card" id="card_inv_admin" onclick="abrir_maestro('inventario', 'Equipos Administrativos')"><i class="fas fa-laptop-medical"></i><h3>Inventario Admin</h3></div>
         <div class="card" id="card_inv_salas" onclick="abrir_maestro('inventario_salas', 'Equipos de Salas')"><i class="fas fa-desktop"></i><h3>Inventario Salas</h3></div>
         <div class="card" id="card_calendario" onclick="abrir('mod_calendario')"><i class="fas fa-calendar-check"></i><h3>Calendario</h3></div>
-        <div class="card" id="card_aulas" onclick="abrir_maestro('aulas_dti', 'Aulas DTI')"><i class="fas fa-chalkboard-teacher"></i><h3>Aulas DTI</h3></div>
+        <div class="card" id="card_aulas" onclick="abrir_maestro('aulas_dti', 'Aulas DTI')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
         <div class="card" id="card_salas" onclick="abrir_maestro('salas_sistemas', 'Salas Sistemas')"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
         <div class="card" id="card_impresoras" onclick="abrir_maestro('impresoras', 'Impresoras')"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
         <div class="card" id="card_usuarios" onclick="abrir_maestro('usuarios', 'Usuarios')"><i class="fas fa-users-cog"></i><h3>Usuarios</h3></div>
@@ -116,7 +114,7 @@
             <button onclick="volver()" class="btn-gray"><i class="fas fa-arrow-left"></i> Volver</button>
             <h2 id="m_titulo" style="color:var(--dark); margin:0; font-size:1.8rem;"></h2>
             <button class="btn-agregar-master" id="btn_maestro_agregar" onclick="abrirModalRegistro('nuevo')">
-                <i class="fas fa-plus-circle"></i> <span>Agregar Registro</span>
+                <i class="fas fa-plus-circle"></i> <span id="txt_btn_agregar">Agregar Registro</span>
             </button>
         </div>
         <div style="overflow-x:auto;">
@@ -142,25 +140,49 @@
                 <option value="Cerrado">Tickets Cerrados</option>
             </select>
         </div>
-        <div style="overflow-x:auto;">
-            <table>
-                <thead><tr><th>ID</th><th>Tipo</th><th>Estado</th><th>Gestor Asignado</th><th>Acciones</th></tr></thead>
-                <tbody id="tbody_admin_tickets"></tbody>
-            </table>
+        <table><thead><tr><th>ID</th><th>Tipo</th><th>Estado</th><th>Gestor</th><th>Acciones</th></tr></thead><tbody id="tbody_admin_tickets"></tbody></table>
+    </div>
+
+    <div id="mod_enviar_ticket" class="modulo">
+        <button onclick="volver()" class="btn-gray">⬅ Volver</button>
+        <div style="max-width:800px; margin:30px auto;">
+            <h2 style="text-align:center; color:var(--dark); margin-bottom:30px;">
+                <i class="fas fa-headset" style="color:var(--primary)"></i> Radicar Solicitud de Soporte
+            </h2>
+            <div class="grid-bonito">
+                <div class="campo-group">
+                    <label>Dependencia / Área</label>
+                    <select id="tk_dep">
+                        <option>Sistemas</option>
+                        <option>Tesorería</option>
+                        <option>Admisiones</option>
+                        <option>Académica</option>
+                    </select>
+                </div>
+                <div class="campo-group">
+                    <label>Tipo de Requerimiento</label>
+                    <select id="tk_tipo">
+                        <option>Soporte Técnico (Hardware/Software)</option>
+                        <option>Redes e Internet</option>
+                        <option>Cuentas de Correo / Plataformas</option>
+                        <option>Mantenimiento Preventivo</option>
+                    </select>
+                </div>
+                <div class="campo-group" style="grid-column: span 2;">
+                    <label>Descripción detallada del problema</label>
+                    <textarea id="tk_desc" rows="6" placeholder="Por favor describa lo que sucede..."></textarea>
+                </div>
+            </div>
+            <div style="text-align:center; margin-top:30px;">
+                <button class="btn-agregar-master" onclick="enviarTicket()" style="padding:18px 50px; font-size:1rem;">
+                    <i class="fas fa-paper-plane"></i> Enviar Solicitud de Soporte
+                </button>
+            </div>
         </div>
     </div>
 
-    <div id="mod_mis_tickets" class="modulo"><button onclick="volver()" class="btn-gray">⬅ Volver</button><div id="mis_tk_container" class="grid-tickets-user"></div></div>
+    <div id="mod_mis_tickets" class="modulo"><button onclick="volver()" class="btn-gray">⬅ Volver</button><div id="mis_tk_container" style="margin-top:20px"></div></div>
     <div id="mod_calendario" class="modulo"><button onclick="volver()" class="btn-gray">Volver</button><div id="calendar" style="margin-top:20px;"></div></div>
-    <div id="mod_enviar_ticket" class="modulo">
-        <button onclick="volver()" class="btn-gray">⬅ Volver</button>
-        <div style="max-width:600px; margin:40px auto; background:white; padding:40px; border-radius:25px; box-shadow:0 10px 30px rgba(0,0,0,0.05); border:1px solid #eee;">
-            <h2>Nueva Solicitud</h2>
-            <div class="campo-group"><label>Dependencia</label><select id="tk_dep"><option>Sistemas</option><option>Tesorería</option></select></div><br>
-            <div class="campo-group"><label>Descripción</label><textarea id="tk_desc" rows="5"></textarea></div><br>
-            <button class="btn-agregar-master" onclick="enviarTicket()" style="width:100%; justify-content:center;">Radicar Solicitud</button>
-        </div>
-    </div>
 </div>
 
 <div id="modalVerTicket" class="modal">
@@ -175,7 +197,7 @@
 
 <div id="modalRegistro" class="modal">
     <div class="modal-content">
-        <h2 id="modal_tit" style="color:var(--primary); margin-bottom:25px;">Registro de Datos</h2>
+        <h2 id="modal_tit" style="color:var(--primary); margin-bottom:25px;">Formulario de Equipo</h2>
         <div class="grid-bonito" id="form_dinamico"></div>
         <div style="margin-top:40px; text-align:right;">
             <button class="btn-gray" onclick="cerrarModales()">Cancelar</button>
@@ -195,9 +217,7 @@
     let user, userRole = "Usuario", userNom = "", currentColl = "", localData = [], selectedId = "", modoModal = "nuevo", calendar;
     let listaGestoresGlobal = [];
 
-    function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
-    function logout() { localStorage.clear(); auth.signOut().then(() => location.reload()); }
-
+    // LÓGICA DE PERSISTENCIA MEJORADA
     auth.onAuthStateChanged(async (u) => { 
         if(u){ 
             user = u; 
@@ -205,9 +225,15 @@
             document.getElementById('dashboard').style.display='block'; 
             await cargarGestores(); 
             await verificarRol(); 
-            restaurarSesion(); // <-- Nueva función de persistencia
-        } 
+            restaurarSesion();
+        } else {
+            document.getElementById('login').style.display='flex';
+            document.getElementById('dashboard').style.display='none';
+        }
     });
+
+    function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+    function logout() { localStorage.clear(); auth.signOut().then(() => location.reload()); }
 
     async function cargarGestores() {
         const q = await db.collection("usuarios").where("rol", "==", "Gestor").get();
@@ -232,7 +258,6 @@
         (visible[userRole] || visible["Usuario"]).forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
     }
 
-    // PERSISTENCIA: Recordar en qué módulo estaba el usuario
     function abrir(id, maestroColl = null, maestroTit = null) {
         localStorage.setItem("ultimoModulo", id);
         if(maestroColl) {
@@ -240,13 +265,13 @@
             localStorage.setItem("maestroTit", maestroTit);
             currentColl = maestroColl;
             document.getElementById('m_titulo').innerText = maestroTit;
+            // Cambiar texto de botón si es inventario
+            document.getElementById('txt_btn_agregar').innerText = (maestroColl.includes('inventario')) ? "Agregar Equipo" : "Agregar Registro";
             db.collection(currentColl).onSnapshot(snap => { localData = []; snap.forEach(doc => localData.push({id: doc.id, ...doc.data()})); renderTabla(); });
         }
-        
         document.getElementById('panel-principal').style.display='none';
         document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
         document.getElementById(id).style.display='block';
-        
         if(id === 'mod_admin_tickets') cargarTicketsAdmin();
         if(id === 'mod_mis_tickets') cargarMisTickets();
         if(id === 'mod_calendario') setTimeout(initCal, 300);
@@ -271,8 +296,71 @@
 
     function abrir_maestro(coll, tit) { abrir('mod_maestro', coll, tit); }
 
-    const getSpinner = () => `<div class="loader-puntos"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>`;
+    function renderTabla() {
+        const b = document.getElementById('m_tbody'); b.innerHTML = "";
+        const h = document.getElementById('m_thead');
+        const esU = currentColl === 'usuarios';
+        h.innerHTML = esU ? `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>` : `<tr><th>Equipo/Nombre</th><th>Campus</th><th>Sede</th><th>Acciones</th></tr>`;
+        
+        localData.forEach(e => {
+            b.innerHTML += `<tr><td><b>${e.nom||e.pc||'Registro'}</b></td><td>${esU ? e.cor : (e.cam || 'BGA')}</td><td>${esU ? e.rol : (e.sed || 'Sede A')}</td><td>
+                <button class="btn-acc bg-v-gray" onclick="verDetalleMaestro('${e.id}')"><i class="fas fa-eye"></i></button>
+                <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar', '${e.id}')"><i class="fas fa-edit"></i></button>
+                ${userRole === 'Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>` : ''}
+            </td></tr>`;
+        });
+    }
 
+    // FORMULARIO DINÁMICO (ESTRUCTURA DE IMAGEN)
+    function abrirModalRegistro(modo = 'nuevo', id = '') {
+        modoModal = modo; selectedId = id; const f = document.getElementById('form_dinamico'); f.innerHTML = "";
+        let c = [];
+        
+        if(currentColl === 'usuarios') {
+            c = [["Nombre","nom"],["Correo","cor"],["Rol","rol","select",["Admin","Gestor","Usuario"]]];
+        } else if(currentColl.includes('inventario')) {
+            // ESTRUCTURA SEGÚN IMAGEN ENVIADA
+            c = [
+                ["Campus","cam","select",["Bucaramanga"]],
+                ["Sede","sed","select",["Sede A","Sede B","Sede C"]],
+                ["Ubicación Específica","ubi"],
+                ["Piso","piso","select",["1","2","3","4","5","6"]],
+                ["Nombre del Equipo / PC","nom"],
+                ["Responsable","res"],
+                ["Marca","mar"],
+                ["Modelo","mod"],
+                ["Serial","ser"],
+                ["Procesador","proc"],
+                ["Memoria RAM","ram"],
+                ["Disco Duro","disco"],
+                ["Sistema Operativo","so"]
+            ];
+        } else {
+            c = [["Nombre","nom"],["Campus","cam"],["Sede","sed"],["Ubicación","ubi"]];
+        }
+
+        c.forEach(x => {
+            let inp = x[2]==="select" ? `<select id="${x[1]}">${x[3].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>` : `<input type="text" id="${x[1]}" placeholder="${x[0]}">`;
+            f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${inp}</div>`;
+        });
+
+        if(modo === 'editar') {
+            const d = localData.find(x => x.id === id);
+            document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => i.value = d[i.id] || "");
+        }
+        document.getElementById('modalRegistro').style.display='block';
+    }
+
+    async function guardarDatoMaestro() {
+        let obj = {}; 
+        document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => obj[i.id] = i.value);
+        if(modoModal === 'editar') await db.collection(currentColl).doc(selectedId).update(obj); 
+        else await db.collection(currentColl).add(obj);
+        cerrarModales(); 
+        alert("Información guardada correctamente");
+    }
+
+    // FUNCIONES RESTANTES (ADMIN TICKETS, MIS TICKETS, ETC.)
     function cargarTicketsAdmin() {
         const filt = document.getElementById('filtro_admin_status').value;
         db.collection("tickets").onSnapshot(snap => {
@@ -281,8 +369,7 @@
                 const t = doc.data(); if(t.estado === "Abierto") o++; if(t.estado === "En Proceso") p++; if(t.estado === "Cerrado") c++;
                 if (userRole === "Gestor" && t.asignado !== userNom) return;
                 if(t.estado === filt) {
-                    const statusVisual = t.estado === "En Proceso" ? getSpinner() : `<span style="background:var(--primary); color:white; padding:5px 12px; border-radius:20px; font-size:0.7rem; font-weight:bold;">${t.estado}</span>`;
-                    const gInfo = listaGestoresGlobal.find(g => g.nom === t.asignado);
+                    const statusVisual = t.estado === "En Proceso" ? `<div class="loader-puntos"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>` : `<span style="background:var(--primary); color:white; padding:5px 12px; border-radius:20px; font-size:0.7rem;">${t.estado}</span>`;
                     tbody.innerHTML += `<tr>
                         <td><b>#${doc.id.substring(0,5).toUpperCase()}</b></td>
                         <td>${t.tipo || 'Soporte'}</td><td>${statusVisual}</td><td>${t.asignado || 'Sin asignar'}</td>
@@ -302,37 +389,21 @@
     async function verDetalleTicket(id) {
         const doc = await db.collection("tickets").doc(id).get();
         const t = doc.data();
-        const gInfo = listaGestoresGlobal.find(g => g.nom === t.asignado);
         const cont = document.getElementById('detalle_ticket_content');
         cont.innerHTML = `
-            <div class="campo-group"><label>ID</label><p>#${id.toUpperCase()}</p></div>
+            <div class="campo-group"><label>ID Ticket</label><p>#${id.toUpperCase()}</p></div>
             <div class="campo-group"><label>Usuario</label><p>${t.usuario}</p></div>
-            <div class="campo-group"><label>Estado</label><p>${t.estado}</p></div>
-            <div class="campo-group"><label>Gestor</label><p>${t.asignado || 'Ninguno'} (${gInfo ? gInfo.cor : 'N/A'})</p></div>
-            <div class="campo-group" style="grid-column: span 2;"><label>Descripción</label><p style="background:#f1f5f9; padding:15px; border-radius:10px;">${t.desc}</p></div>
+            <div class="campo-group"><label>Categoría</label><p>${t.tipo}</p></div>
+            <div class="campo-group"><label>Asignado a</label><p>${t.asignado || 'Ninguno'}</p></div>
+            <div class="campo-group" style="grid-column: span 2;"><label>Descripción</label><p style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0;">${t.desc}</p></div>
         `;
         document.getElementById('modalVerTicket').style.display = 'block';
-    }
-
-    function renderTabla() {
-        const b = document.getElementById('m_tbody'); b.innerHTML = "";
-        const h = document.getElementById('m_thead');
-        const esU = currentColl === 'usuarios';
-        h.innerHTML = esU ? `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>` : `<tr><th>Nombre</th><th>Campus</th><th>Sede</th><th>Acciones</th></tr>`;
-        
-        localData.forEach(e => {
-            b.innerHTML += `<tr><td><b>${e.nom||e.pc||'Registro'}</b></td><td>${esU ? e.cor : (e.cam || 'BGA')}</td><td>${esU ? e.rol : (e.sed || 'Sede A')}</td><td>
-                <button class="btn-acc bg-v-gray" onclick="verDetalleMaestro('${e.id}')"><i class="fas fa-eye"></i></button>
-                <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar', '${e.id}')"><i class="fas fa-edit"></i></button>
-                ${userRole === 'Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>` : ''}
-            </td></tr>`;
-        });
     }
 
     function verDetalleMaestro(id) {
         const e = localData.find(x => x.id === id);
         let html = "";
-        for (const key in e) { if(key !== 'id') html += `<div class="campo-group"><label>${key}</label><p>${e[key]}</p></div>`; }
+        for (const key in e) { if(key !== 'id') html += `<div class="campo-group"><label>${key.replace('_',' ')}</label><p>${e[key]}</p></div>`; }
         document.getElementById('detalle_ticket_content').innerHTML = html;
         document.getElementById('modalVerTicket').style.display = 'block';
     }
@@ -341,44 +412,23 @@
         db.collection("tickets").where("usuario","==",user.email).onSnapshot(s => {
             const c = document.getElementById('mis_tk_container'); c.innerHTML = "";
             s.forEach(doc => {
-                const t = doc.data(); const est = t.estado.toLowerCase().replace(" ","");
-                const visual = t.estado === "En Proceso" ? getSpinner() : `<i class="fas fa-ticket-alt"></i>`;
-                const gInfo = listaGestoresGlobal.find(g => g.nom === t.asignado);
-                c.innerHTML += `
-                <div class="tk-user-card" style="border-left: 6px solid ${t.estado==='Abierto'?'var(--success)':t.estado==='Cerrado'?'var(--danger)':'var(--warning)'}">
-                    <h4>#${doc.id.substring(0,5).toUpperCase()} ${visual}</h4>
+                const t = doc.data();
+                c.innerHTML += `<div class="tk-user-card" style="border-left: 6px solid ${t.estado==='Abierto'?'var(--success)':t.estado==='Cerrado'?'var(--danger)':'var(--warning)'}">
+                    <h4>#${doc.id.substring(0,5).toUpperCase()} - ${t.tipo}</h4>
                     <p>${t.desc}</p>
-                    <div class="info-gestor">Gestor: ${t.asignado || 'Pendiente'} ${gInfo ? '('+gInfo.cor+')' : ''}</div>
+                    <small>Estado: ${t.estado} | Asignado: ${t.asignado || 'Pendiente'}</small>
                 </div>`;
             });
         });
     }
 
-    function abrirModalRegistro(modo = 'nuevo', id = '') {
-        modoModal = modo; selectedId = id; const f = document.getElementById('form_dinamico'); f.innerHTML = "";
-        let c = currentColl === 'usuarios' ? [["Nombre","nom"],["Correo","cor"],["Rol","rol","select",["Admin","Gestor","Usuario"]]] : [["Nombre","nom"],["Campus","cam","select",["Bucaramanga"]],["Sede","sed","select",["Sede A","Sede B"]],["Ubicación","ubi"]];
-        c.forEach(x => {
-            let inp = x[2]==="select" ? `<select id="${x[1]}">${x[3].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>` : `<input type="text" id="${x[1]}" placeholder="${x[0]}">`;
-            f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${inp}</div>`;
-        });
-        if(modo === 'editar') { const d = localData.find(x => x.id === id); document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => i.value = d[i.id] || ""); }
-        document.getElementById('modalRegistro').style.display='block';
-    }
-
-    async function guardarDatoMaestro() {
-        let obj = {}; document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => obj[i.id] = i.value);
-        if(modoModal === 'editar') await db.collection(currentColl).doc(selectedId).update(obj); else await db.collection(currentColl).add(obj);
-        cerrarModales(); alert("Éxito");
-    }
-
     async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
-    async function eliminar(id, coll) { if(confirm("¿Eliminar?")) await db.collection(coll).doc(id).delete(); }
+    async function eliminar(id, coll) { if(confirm("¿Seguro que desea eliminar este registro?")) await db.collection(coll).doc(id).delete(); }
     
     async function abrirRe(id) { 
         selectedId = id;
-        const select = document.getElementById('re_gestor_new'); 
-        select.innerHTML = '<option value="">Seleccione...</option>';
+        const select = document.getElementById('re_gestor_new'); select.innerHTML = '<option value="">Seleccione...</option>';
         listaGestoresGlobal.forEach(g => select.innerHTML += `<option value="${g.nom}">${g.nom}</option>`);
         document.getElementById('modalReasignar').style.display = 'block'; 
     }
@@ -390,8 +440,38 @@
         cerrarModales();
     }
 
-    function initCal() { if(calendar) calendar.destroy(); calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { locale: 'es', events: async (i, s) => { let evs = []; const snap = await db.collectionGroup("mantenimientos").get(); snap.forEach(d => evs.push({ title: d.data().responsable, start: d.data().fecha })); s(evs); } }); calendar.render(); }
-    async function enviarTicket() { const q = await db.collection("usuarios").where("rol", "==", "Gestor").get(); let asig = "Sin asignar"; if(!q.empty) { const g = []; q.forEach(d => g.push(d.data().nom)); asig = g[Math.floor(Math.random() * g.length)]; } await db.collection("tickets").add({ usuario: user.email, tipo: 'Soporte', desc: tk_desc.value, estado: "Abierto", asignado: asig, fecha: new Date().toLocaleString() }); alert("Ticket Radicado"); volver(); }
+    async function enviarTicket() {
+        const q = await db.collection("usuarios").where("rol", "==", "Gestor").get();
+        let asig = "Sin asignar";
+        if(!q.empty) {
+            const g = []; q.forEach(d => g.push(d.data().nom));
+            asig = g[Math.floor(Math.random() * g.length)];
+        }
+        await db.collection("tickets").add({
+            usuario: user.email,
+            dep: document.getElementById('tk_dep').value,
+            tipo: document.getElementById('tk_tipo').value,
+            desc: document.getElementById('tk_desc').value,
+            estado: "Abierto",
+            asignado: asig,
+            fecha: new Date().toLocaleString()
+        });
+        alert("Su solicitud ha sido enviada al departamento de TI.");
+        volver();
+    }
+
+    function initCal() { 
+        if(calendar) calendar.destroy(); 
+        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { 
+            locale: 'es', 
+            events: async (i, s) => { 
+                let evs = []; 
+                const snap = await db.collectionGroup("mantenimientos").get(); 
+                snap.forEach(d => evs.push({ title: d.data().responsable, start: d.data().fecha })); s(evs); 
+            } 
+        }); 
+        calendar.render(); 
+    }
 </script>
 </body>
 </html>
