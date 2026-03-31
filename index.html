@@ -130,13 +130,11 @@
             <h2 style="color:var(--primary); margin:0;">Gestión de Requerimientos</h2>
             <h2 style="color:red; margin:0; font-size:2rem;" id="count_admin_total">0</h2>
         </div>
-        
         <div class="grid-stats">
             <div class="stat-card" style="background:var(--success);">ABIERTOS <span id="s_open">0</span></div>
             <div class="stat-card" style="background:var(--warning);">EN PROCESO <span id="s_proc">0</span></div>
             <div class="stat-card" style="background:var(--danger);">CERRADOS <span id="s_close">0</span></div>
         </div>
-
         <div style="text-align:right; margin-bottom:20px;">
             <select id="filtro_admin_status" onchange="cargarTicketsAdmin()" style="padding:12px; border-radius:10px; border:2px solid #e2e8f0; font-weight:600;">
                 <option value="Abierto">Tickets Abiertos</option>
@@ -154,7 +152,7 @@
             <div class="grid-bonito">
                 <div class="campo-group"><label>Dependencia / Área</label><select id="tk_dep"><option>Sistemas</option><option>Tesorería</option><option>Admisiones</option><option>Académica</option></select></div>
                 <div class="campo-group"><label>Tipo de Requerimiento</label><select id="tk_tipo"><option>Soporte Técnico</option><option>Redes e Internet</option></select></div>
-                <div class="campo-group" style="grid-column: span 2;"><label>Descripción</label><textarea id="tk_desc" rows="6" placeholder="Describa el problema..."></textarea></div>
+                <div class="campo-group" style="grid-column: span 2;"><label>Descripción</label><textarea id="tk_desc" rows="6" placeholder="Describa detalladamente el problema..."></textarea></div>
             </div>
             <div style="text-align:center; margin-top:30px;"><button class="btn-agregar-master" onclick="enviarTicket()">Enviar Solicitud</button></div>
         </div>
@@ -169,14 +167,14 @@
         <h2 style="color:var(--primary); margin-bottom:20px;">Detalles del Registro</h2>
         <div id="detalle_ticket_content" class="grid-bonito"></div>
         <div style="margin-top:30px; text-align:right;">
-            <button class="btn-blue" onclick="cerrarModales()">Cerrar Ventana</button>
+            <button class="btn-blue" onclick="cerrarModales()" style="min-width: 150px; font-weight: bold;">Cerrar Ventana</button>
         </div>
     </div>
 </div>
 
 <div id="modalRegistro" class="modal">
     <div class="modal-content">
-        <h2 id="modal_tit" style="color:var(--primary); margin-bottom:25px;">Formulario de Equipo</h2>
+        <h2 id="modal_tit" style="color:var(--primary); margin-bottom:25px;">Formulario de Registro</h2>
         <div class="grid-bonito" id="form_dinamico"></div>
         <div style="margin-top:40px; text-align:right;">
             <button class="btn-gray" onclick="cerrarModales()">Cancelar</button>
@@ -193,17 +191,17 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
     
-    let user, userRole = "Usuario", userNom = "", currentColl = "", localData = [], selectedId = "", modoModal = "nuevo", calendar;
+    let user, userRole = "Usuario", userNom = "", currentColl = "", localData = [], selectedId = "", modoModal = "nuevo", calendar, unsubMaestro = null;
     let listaGestoresGlobal = [];
 
-    // LÓGICA DE PERSISTENCIA
+    // LÓGICA DE PERSISTENCIA Y CARGA RÁPIDA
     auth.onAuthStateChanged(async (u) => { 
         if(u){ 
             user = u; 
             document.getElementById('login').style.display='none'; 
             document.getElementById('dashboard').style.display='block'; 
-            await cargarGestores(); 
             await verificarRol(); 
+            cargarGestores(); // Se carga en segundo plano
             restaurarSesion();
         } else {
             document.getElementById('login').style.display='flex';
@@ -239,13 +237,21 @@
 
     function abrir(id, maestroColl = null, maestroTit = null) {
         localStorage.setItem("ultimoModulo", id);
+        // Desuscribirse del anterior para evitar lag
+        if(unsubMaestro) unsubMaestro();
+
         if(maestroColl) {
             localStorage.setItem("maestroColl", maestroColl);
             localStorage.setItem("maestroTit", maestroTit);
             currentColl = maestroColl;
             document.getElementById('m_titulo').innerText = maestroTit;
             document.getElementById('txt_btn_agregar').innerText = (maestroColl.includes('inventario')) ? "Agregar Equipo" : "Agregar Registro";
-            db.collection(currentColl).onSnapshot(snap => { localData = []; snap.forEach(doc => localData.push({id: doc.id, ...doc.data()})); renderTabla(); });
+            
+            unsubMaestro = db.collection(currentColl).onSnapshot(snap => { 
+                localData = []; 
+                snap.forEach(doc => localData.push({id: doc.id, ...doc.data()})); 
+                renderTabla(); 
+            });
         }
         document.getElementById('panel-principal').style.display='none';
         document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
@@ -258,6 +264,7 @@
     function volver() {
         localStorage.removeItem("ultimoModulo");
         localStorage.removeItem("maestroColl");
+        if(unsubMaestro) unsubMaestro();
         document.getElementById('panel-principal').style.display='grid';
         document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
     }
@@ -280,30 +287,21 @@
         const esU = currentColl === 'usuarios';
         h.innerHTML = esU ? `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>` : `<tr><th>Equipo/Nombre</th><th>Campus</th><th>Sede</th><th>Acciones</th></tr>`;
         
+        let html = "";
         localData.forEach(e => {
-            b.innerHTML += `<tr><td><b>${e.nom||e.pc||'Registro'}</b></td><td>${esU ? e.cor : (e.cam || 'BGA')}</td><td>${esU ? e.rol : (e.sed || 'Sede A')}</td><td>
-                <button class="btn-acc bg-v-gray" onclick="verDetalleMaestro('${e.id}')"><i class="fas fa-eye"></i></button>
-                <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar', '${e.id}')"><i class="fas fa-edit"></i></button>
+            html += `<tr><td><b>${e.nom||e.pc||'Registro'}</b></td><td>${esU ? e.cor : (e.cam || 'BGA')}</td><td>${esU ? e.rol : (e.sed || 'Sede A')}</td><td>
+                <button class="btn-acc bg-v-gray" onclick="verDetalleMaestro('${e.id}')" title="Ver"><i class="fas fa-eye"></i></button>
+                <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar', '${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>
                 ${userRole === 'Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')" title="Eliminar"><i class="fas fa-trash"></i></button>` : ''}
             </td></tr>`;
         });
+        b.innerHTML = html;
     }
 
     function abrirModalRegistro(modo = 'nuevo', id = '') {
         modoModal = modo; selectedId = id; const f = document.getElementById('form_dinamico'); f.innerHTML = "";
-        let c = [];
-        if(currentColl === 'usuarios') {
-            c = [["Nombre","nom"],["Correo","cor"],["Rol","rol","select",["Admin","Gestor","Usuario"]]];
-        } else if(currentColl.includes('inventario')) {
-            c = [
-                ["Campus","cam","select",["Bucaramanga"]], ["Sede","sed","select",["Sede A","Sede B","Sede C"]],
-                ["Ubicación Específica","ubi"], ["Piso","piso","select",["1","2","3","4","5","6"]],
-                ["Nombre Equipo","nom"], ["Responsable","res"], ["Marca","mar"], ["Modelo","mod"],
-                ["Serial","ser"], ["Procesador","proc"], ["Memoria RAM","ram"], ["Disco","disco"], ["SO","so"]
-            ];
-        } else {
-            c = [["Nombre","nom"],["Campus","cam"],["Sede","sed"],["Ubicación","ubi"]];
-        }
+        let c = currentColl === 'usuarios' ? [["Nombre","nom"],["Correo","cor"],["Rol","rol","select",["Admin","Gestor","Usuario"]]] : [["Campus","cam","select",["Bucaramanga"]], ["Sede","sed","select",["Sede A","Sede B","Sede C"]], ["Ubicación","ubi"], ["Nombre Equipo","nom"], ["Responsable","res"], ["Marca","mar"], ["Serial","ser"], ["RAM","ram"], ["Disco","disco"]];
+        
         c.forEach(x => {
             let inp = x[2]==="select" ? `<select id="${x[1]}">${x[3].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>` : `<input type="text" id="${x[1]}" placeholder="${x[0]}">`;
             f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${inp}</div>`;
@@ -321,108 +319,61 @@
         if(modoModal === 'editar') await db.collection(currentColl).doc(selectedId).update(obj); 
         else await db.collection(currentColl).add(obj);
         cerrarModales(); 
-        alert("Información guardada correctamente");
     }
 
     function cargarTicketsAdmin() {
         const filt = document.getElementById('filtro_admin_status').value;
         db.collection("tickets").onSnapshot(snap => {
             let o=0, p=0, c=0; const tbody = document.getElementById('tbody_admin_tickets'); tbody.innerHTML = "";
+            let html = "";
             snap.forEach(doc => {
                 const t = doc.data(); if(t.estado === "Abierto") o++; if(t.estado === "En Proceso") p++; if(t.estado === "Cerrado") c++;
                 if (userRole === "Gestor" && t.asignado !== userNom) return;
                 if(t.estado === filt) {
                     const statusVisual = t.estado === "En Proceso" ? `<div class="loader-puntos"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>` : `<span style="background:var(--primary); color:white; padding:5px 12px; border-radius:20px; font-size:0.7rem;">${t.estado}</span>`;
-                    tbody.innerHTML += `<tr>
-                        <td><b>#${doc.id.substring(0,5).toUpperCase()}</b></td>
-                        <td>${t.tipo || 'Soporte'}</td><td>${statusVisual}</td><td>${t.asignado || 'Sin asignar'}</td>
-                        <td>
-                            <button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>
-                            <button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>
-                            ${userRole==='Admin' ? `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : ''}
-                            <button class="btn-acc bg-c-green" onclick="actEstado('${doc.id}','Cerrado')"><i class="fas fa-check-circle"></i></button>
-                            ${userRole==='Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}','tickets')"><i class="fas fa-trash"></i></button>` : ''}
-                        </td></tr>`;
+                    html += `<tr><td><b>#${doc.id.substring(0,5).toUpperCase()}</b></td><td>${t.tipo}</td><td>${statusVisual}</td><td>${t.asignado || 'Sin asignar'}</td><td>
+                        <button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>
+                        <button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>
+                        <button class="btn-acc bg-c-green" onclick="actEstado('${doc.id}','Cerrado')"><i class="fas fa-check-circle"></i></button>
+                    </td></tr>`;
                 }
             });
+            tbody.innerHTML = html;
             s_open.innerText=o; s_proc.innerText=p; s_close.innerText=c; count_admin_total.innerText=snap.size;
         });
-    }
-
-    async function verDetalleTicket(id) {
-        const doc = await db.collection("tickets").doc(id).get();
-        const t = doc.data();
-        const cont = document.getElementById('detalle_ticket_content');
-        cont.innerHTML = `<div class="campo-group"><label>ID</label><p>#${id.toUpperCase()}</p></div><div class="campo-group"><label>Usuario</label><p>${t.usuario}</p></div><div class="campo-group"><label>Categoría</label><p>${t.tipo}</p></div><div class="campo-group"><label>Asignado</label><p>${t.asignado || 'Ninguno'}</p></div><div class="campo-group" style="grid-column: span 2;"><label>Descripción</label><p style="background:#f8fafc; padding:15px; border-radius:10px;">${t.desc}</p></div>`;
-        document.getElementById('modalVerTicket').style.display = 'block';
     }
 
     function verDetalleMaestro(id) {
         const e = localData.find(x => x.id === id);
         let html = "";
-        for (const key in e) { if(key !== 'id') html += `<div class="campo-group"><label>${key.replace('_',' ')}</label><p>${e[key]}</p></div>`; }
+        for (const key in e) { if(key !== 'id') html += `<div class="campo-group"><label>${key.toUpperCase()}</label><p style="padding:10px; background:#f1f5f9; border-radius:8px; margin:0;">${e[key]}</p></div>`; }
         document.getElementById('detalle_ticket_content').innerHTML = html;
         document.getElementById('modalVerTicket').style.display = 'block';
     }
 
-    function cargarMisTickets() {
-        db.collection("tickets").where("usuario","==",user.email).onSnapshot(s => {
-            const c = document.getElementById('mis_tk_container'); c.innerHTML = "";
-            s.forEach(doc => {
-                const t = doc.data();
-                c.innerHTML += `<div class="tk-user-card" style="border-left: 6px solid ${t.estado==='Abierto'?'var(--success)':t.estado==='Cerrado'?'var(--danger)':'var(--warning)'}"><h4>#${doc.id.substring(0,5).toUpperCase()} - ${t.tipo}</h4><p>${t.desc}</p></div>`;
-            });
-        });
+    async function verDetalleTicket(id) {
+        const doc = await db.collection("tickets").doc(id).get();
+        const t = doc.data();
+        document.getElementById('detalle_ticket_content').innerHTML = `<div class="campo-group"><label>USUARIO</label><p>${t.usuario}</p></div><div class="campo-group"><label>CATEGORÍA</label><p>${t.tipo}</p></div><div class="campo-group" style="grid-column: span 2;"><label>DESCRIPCIÓN</label><p style="background:#f1f5f9; padding:15px; border-radius:10px;">${t.desc}</p></div>`;
+        document.getElementById('modalVerTicket').style.display = 'block';
     }
 
     async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
     async function eliminar(id, coll) { if(confirm("¿Eliminar?")) await db.collection(coll).doc(id).delete(); }
-    
-    async function abrirRe(id) { 
-        selectedId = id;
-        const select = document.getElementById('re_gestor_new'); select.innerHTML = '<option value="">Seleccione...</option>';
-        listaGestoresGlobal.forEach(g => select.innerHTML += `<option value="${g.nom}">${g.nom}</option>`);
-        document.getElementById('modalReasignar').style.display = 'block'; 
-    }
-
-    async function ejecutarReasignar() { 
-        const g = document.getElementById('re_gestor_new').value;
-        if(!g) return;
-        await db.collection("tickets").doc(selectedId).update({ asignado: g }); 
-        cerrarModales();
-    }
 
     async function enviarTicket() {
-        const q = await db.collection("usuarios").where("rol", "==", "Gestor").get();
-        let asig = "Sin asignar";
-        if(!q.empty) {
-            const g = []; q.forEach(d => g.push(d.data().nom));
-            asig = g[Math.floor(Math.random() * g.length)];
-        }
-        await db.collection("tickets").add({
-            usuario: user.email,
-            dep: document.getElementById('tk_dep').value,
-            tipo: document.getElementById('tk_tipo').value,
-            desc: document.getElementById('tk_desc').value,
-            estado: "Abierto",
-            asignado: asig,
-            fecha: new Date().toLocaleString()
-        });
-        alert("Solicitud enviada.");
+        await db.collection("tickets").add({ usuario: user.email, dep: tk_dep.value, tipo: tk_tipo.value, desc: tk_desc.value, estado: "Abierto", asignado: "Pendiente", fecha: new Date().toLocaleString() });
+        alert("Enviado correctamente");
         volver();
     }
 
     function initCal() { 
         if(calendar) calendar.destroy(); 
-        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { 
-            locale: 'es', 
-            events: async (i, s) => { 
-                let evs = []; 
-                const snap = await db.collectionGroup("mantenimientos").get(); 
-                snap.forEach(d => evs.push({ title: d.data().responsable, start: d.data().fecha })); s(evs); 
-            } 
-        }); 
+        calendar = new FullCalendar.Calendar(document.getElementById('calendar'), { locale: 'es', events: async (i, s) => { 
+            let evs = []; const snap = await db.collectionGroup("mantenimientos").get(); 
+            snap.forEach(d => evs.push({ title: d.data().responsable, start: d.data().fecha })); s(evs); 
+        } }); 
         calendar.render(); 
     }
 </script>
