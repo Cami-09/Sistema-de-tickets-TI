@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL</title>
+    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL V3</title>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
@@ -19,7 +19,6 @@
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #334155; }
         header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
-        /* DASHBOARD */
         #dashboard { display: none; padding: 25px; }
         .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
         .card { background: white; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; }
@@ -38,30 +37,23 @@
         th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
         td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 
-        /* BOTONES ACCIONES */
+        /* ACCIONES ICONOS */
         .btn-acc { width: 32px; height: 32px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; }
         .bg-edit { background: var(--warning); }
         .bg-tools { background: var(--primary); }
-        .bg-copy { background: #06b6d4; }
         .bg-view { background: var(--info); }
         .bg-delete { background: var(--danger); }
         .bg-historial { background: var(--gray); }
 
         /* MODALES */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
-        .modal-content { background: white; margin: 1% auto; padding: 25px; width: 90%; max-width: 900px; border-radius: 12px; position: relative; max-height: 95vh; overflow-y: auto; }
+        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 85%; max-width: 850px; border-radius: 12px; position: relative; max-height: 90vh; overflow-y: auto; }
         .grid-modal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
         .close-modal { position: absolute; right: 20px; top: 15px; font-size: 24px; cursor: pointer; }
 
-        /* ICONOS DE PERIFÉRICOS SELECCIONABLES */
-        .perifericos-container { display: flex; gap: 20px; justify-content: center; margin-top: 20px; padding: 15px; background: #f8fafc; border-radius: 8px; }
-        .icon-select { font-size: 1.8rem; color: #cbd5e1; cursor: pointer; transition: 0.3s; padding: 10px; border-radius: 50%; border: 2px solid transparent; }
-        .icon-select.active { color: var(--primary); border-color: var(--primary); background: #eff6ff; }
-        .icon-select:hover { transform: scale(1.1); }
-
         .btn { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .btn-blue { background: var(--primary); color: white; }
-        .btn-gray { background: #64748b; color: white; }
+        .btn-gray { background: var(--gray); color: white; }
     </style>
 </head>
 <body>
@@ -77,42 +69,40 @@
 
 <div id="dashboard">
     <div id="panel-principal" class="grid-main">
-        <div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Consultar Tickets</h3></div>
-        <div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Enviar un Ticket</h3></div>
-        <div class="card" onclick="abrir('admin_tickets')"><i class="fas fa-clipboard-list"></i><h3>Administrar Tickets</h3></div>
+        <div class="card" onclick="abrir('consultar')"><i class="fas fa-search"></i><h3>Tickets</h3></div>
         <div class="card" onclick="abrir('inv_admin')"><i class="fas fa-desktop"></i><h3>Equipos Administrativos</h3></div>
         <div class="card" onclick="abrir('inv_salas')"><i class="fas fa-laptop"></i><h3>Equipos de Salas</h3></div>
         <div class="card" onclick="abrir('mod_calendario')"><i class="fas fa-calendar-alt"></i><h3>Calendario</h3></div>
         <div class="card" onclick="abrir('mod_aulas')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
         <div class="card" onclick="abrir('mod_salas_sistemas')"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
-        <div class="card"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
+        <div class="card" onclick="abrir('mod_impresoras')"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
     </div>
 
-    <div id="mod_salas_sistemas" class="modulo">
+    <div id="mod_impresoras" class="modulo">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px;">
             <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-            <h2 style="color:var(--primary); margin:0;">Salas Sistemas</h2>
-            <h2 style="color:red; margin:0;" id="totalSalasSistemas">0</h2>
+            <h2 style="color:var(--primary); margin:0;">Impresoras</h2>
+            <h2 style="color:red; margin:0;" id="totalImpresoras">0</h2>
         </div>
 
         <div class="filtros-box">
             <h3 style="margin-top:0;">Filtros de Búsqueda</h3>
             <div class="grid-filtros">
-                <div><label>Nombre Sala</label><input type="text" id="fs_nombre" onkeyup="filtrarSalasSistemas()"></div>
-                <div><label>Campus</label><select id="fs_campus_f" onchange="filtrarSalasSistemas()"><option value="">Todos</option><option>Bucaramanga</option><option>Bogotá</option><option>Tunja</option></select></div>
-                <div><label>Sede</label><select id="fs_sede_f" onchange="filtrarSalasSistemas()"><option value="">Todas</option><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select></div>
+                <div><label>Nombre Impresora</label><input type="text" id="fi_nombre" onkeyup="filtrarImpresoras()"></div>
+                <div><label>Campus</label><select id="fi_campus_f" onchange="filtrarImpresoras()"><option value="">Todos</option><option>Bucaramanga</option><option>Bogotá</option></select></div>
+                <div><label>Sede</label><select id="fi_sede_f" onchange="filtrarImpresoras()"><option value="">Todas</option><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select></div>
             </div>
             <div style="margin-top:15px; text-align:right; display:flex; justify-content:flex-end; gap:10px;">
-                <button class="btn btn-blue" onclick="filtrarSalasSistemas()">Filtrar</button>
-                <button class="btn btn-gray" onclick="limpiarFiltrosSalasSistemas()">Limpiar</button>
-                <button class="btn btn-blue" style="background:var(--success);" onclick="abrirModalSalaSistemasRegistro()">+ Agregar Sala</button>
+                <button class="btn btn-blue" onclick="filtrarImpresoras()"><i class="fas fa-filter"></i> Filtrar</button>
+                <button class="btn btn-gray" onclick="limpiarFiltrosImpresoras()"><i class="fas fa-eraser"></i> Limpiar</button>
+                <button class="btn btn-blue" style="background:var(--success);" onclick="abrirModalImpresoraRegistro()">+ Agregar Impresora</button>
             </div>
         </div>
 
-        <div class="header-blue">Listado de Salas de Sistemas</div>
+        <div class="header-blue">Listado de Impresoras</div>
         <table>
-            <thead><tr><th>Nombre</th><th>Campus</th><th>Sede</th><th>Ubicación</th><th>Acciones</th></tr></thead>
-            <tbody id="tablaSalasSistemas"></tbody>
+            <thead><tr><th>Nombre</th><th>Marca</th><th>Modelo</th><th>IP</th><th>Campus</th><th>Sede</th><th>Acciones</th></tr></thead>
+            <tbody id="tablaImpresoras"></tbody>
         </table>
     </div>
 
@@ -122,58 +112,43 @@
             <h2 id="titulo_inv" style="color:var(--primary); margin:0;"></h2>
             <button class="btn btn-blue" onclick="abrirModalRegistroInv()">+ Registrar equipo</button>
         </div>
-        <table>
-            <thead><tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Inventario</th><th>Responsable</th><th>Acciones</th></tr></thead>
-            <tbody id="tablaInvData"></tbody>
-        </table>
+        <tbody id="tablaInvData"></tbody>
     </div>
 
-    <div id="mod_aulas" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Aulas DTI</h2><tbody id="tablaAulas"></tbody></div>
+    <div id="mod_aulas" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><tbody id="tablaAulas"></tbody></div>
+    <div id="mod_salas_sistemas" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><tbody id="tablaSalasSistemas"></tbody></div>
     <div id="mod_calendario" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><div id="calendar"></div></div>
-    <div id="crear" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Tickets</h2></div>
 </div>
 
-<div id="modalSalaSistemas" class="modal">
+<div id="modalImpresora" class="modal">
     <div class="modal-content">
         <span class="close-modal" onclick="cerrarModales()">&times;</span>
-        <h2 id="modalSalaSistemasTitle">Registrar Sala de Sistemas</h2>
+        <h2 id="modalImpresoraTitle">Registrar Impresora</h2>
         <div class="grid-modal">
-            <div><label>Nombre de la Sala</label><input type="text" id="ns_nombre" placeholder="Ej: Sala 1"></div>
-            <div><label>Cantidad Equipos</label><input type="number" id="ns_cant" placeholder="0"></div>
-            <div><label>Tipo Equipos</label><select id="ns_tipo_e"><option>Escritorio</option><option>Portátil</option></select></div>
-            <div><label>Marca</label><input type="text" id="ns_marca" placeholder="Ej: Lenovo"></div>
-            <div><label>Modelo</label><input type="text" id="ns_mod" placeholder="Ej: ThinkCenter"></div>
-            <div><label>Procesador</label><input type="text" id="ns_proc" placeholder="Ej: Core i5"></div>
-            <div><label>RAM</label><select id="ns_ram"><option>8 GB</option><option>16 GB</option><option>32 GB</option></select></div>
-            <div><label>Sistema Operativo</label><select id="ns_so"><option>Windows 10</option><option>Windows 11</option><option>Linux</option></select></div>
-            <div><label>Campus</label><select id="ns_cam"><option>Bucaramanga</option><option>Bogotá</option></select></div>
-            <div><label>Sede</label><select id="ns_sed"><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select></div>
-            <div style="grid-column: span 2;"><label>Ubicación Detallada</label><input type="text" id="ns_ubi" placeholder="Torre / Piso / Aula"></div>
+            <div><label>Nombre de la Impresora</label><input type="text" id="ni_nombre" placeholder="Ej: Impresora Tesorería"></div>
+            <div><label>Marca</label><input type="text" id="ni_marca" placeholder="Ej: HP"></div>
+            <div><label>Modelo</label><input type="text" id="ni_modelo" placeholder="Ej: LaserJet Pro"></div>
+            <div><label>Tipo de Tinta</label><select id="ni_tinta"><option>Toner</option><option>Inyección</option><option>Cinta</option></select></div>
+            <div><label>Dirección IP</label><input type="text" id="ni_ip" placeholder="192.168.x.x"></div>
+            <div><label>Campus</label><select id="ni_cam"><option>Bucaramanga</option><option>Bogotá</option></select></div>
+            <div><label>Sede</label><select id="ni_sed"><option>Sede A</option><option>Sede B</option><option>Sede C</option><option>Sede D</option></select></div>
+            <div><label>Ubicación Detallada</label><input type="text" id="ni_ubi" placeholder="Ej: Piso 1 Oficina 102"></div>
         </div>
-
-        <div class="perifericos-container">
-            <i class="fas fa-desktop icon-select" onclick="toggleIcon(this)" title="Monitor"></i>
-            <i class="fas fa-tv icon-select" onclick="toggleIcon(this)" title="Televisor"></i>
-            <i class="fas fa-fan icon-select" onclick="toggleIcon(this)" title="Aire Acondicionado"></i>
-            <i class="fas fa-video icon-select" onclick="toggleIcon(this)" title="Cámara"></i>
-            <i class="fas fa-network-wired icon-select" onclick="toggleIcon(this)" title="Red LAN"></i>
-            <i class="fas fa-plug icon-select" onclick="toggleIcon(this)" title="HDMI/VGA"></i>
-        </div>
-
         <div style="margin-top:25px; text-align:right; display:flex; gap:10px; justify-content:flex-end;">
-            <button class="btn btn-blue" onclick="ejecutarGuardarSalaSistemas()"><i class="fas fa-save"></i> Guardar Sala</button>
+            <button class="btn btn-blue" onclick="ejecutarGuardarImpresora()"><i class="fas fa-save"></i> Guardar Impresora</button>
             <button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button>
         </div>
     </div>
 </div>
 
 <script>
+    // CONFIG FIREBASE
     const firebaseConfig = { apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw", authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com", projectId: "sistema-de-tickets-ti-b12f5" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
     
-    let user, localSalasSistemas = [], modoModal = "registro", selectedId = "";
+    let user, localImpresoras = [], modoModal = "registro", selectedId = "";
 
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { auth.signOut().then(() => location.reload()); }
@@ -182,90 +157,59 @@
     function abrir(id) {
         document.getElementById('panel-principal').style.display='none';
         document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
-        if(id === 'inv_admin' || id === 'inv_salas') {
-            document.getElementById('modulo_inv').style.display='block';
-            currentColl = (id === 'inv_admin') ? "inventario" : "inventario_salas";
-            cargarInventario();
-        } else {
-            document.getElementById(id).style.display='block';
-            if(id === 'mod_salas_sistemas') cargarSalasSistemas();
-        }
+        document.getElementById(id).style.display='block';
+        if(id === 'mod_impresoras') cargarImpresoras();
     }
     function volver() { document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
 
-    // SELECCIÓN DE ICONOS
-    function toggleIcon(el) { el.classList.toggle('active'); }
-
-    // SALAS SISTEMAS
-    function cargarSalasSistemas() {
-        db.collection("salas_sistemas").onSnapshot(snap => {
-            localSalasSistemas = [];
-            snap.forEach(doc => localSalasSistemas.push({id: doc.id, ...doc.data()}));
-            filtrarSalasSistemas();
+    // --- LÓGICA IMPRESORAS ---
+    function cargarImpresoras() {
+        db.collection("impresoras").orderBy("nombre").onSnapshot(snap => {
+            localImpresoras = [];
+            snap.forEach(doc => localImpresoras.push({id: doc.id, ...doc.data()}));
+            filtrarImpresoras();
         });
     }
 
-    function filtrarSalasSistemas() {
-        const nom = fs_nombre.value.toLowerCase();
-        const res = localSalasSistemas.filter(s => (s.nombre||"").toLowerCase().includes(nom));
-        document.getElementById('totalSalasSistemas').innerText = res.length;
-        const b = document.getElementById('tablaSalasSistemas'); b.innerHTML = "";
-        res.forEach(s => {
-            b.innerHTML += `<tr><td><b>${s.nombre}</b></td><td>${s.campus}</td><td>${s.sede}</td><td>${s.ubicacion}</td>
+    function filtrarImpresoras() {
+        const nom = fi_nombre.value.toLowerCase();
+        const cam = fi_campus_f.value;
+        const sed = fi_sede_f.value;
+        const filtrados = localImpresoras.filter(i => (i.nombre||"").toLowerCase().includes(nom) && (cam==="" || i.campus===cam) && (sed==="" || i.sede===sed));
+        
+        document.getElementById('totalImpresoras').innerText = filtrados.length;
+        const b = document.getElementById('tablaImpresoras'); b.innerHTML = "";
+        filtrados.forEach(i => {
+            b.innerHTML += `<tr><td><b>${i.nombre}</b></td><td>${i.marca}</td><td>${i.modelo}</td><td>${i.ip}</td><td>${i.campus}</td><td>${i.sede}</td>
             <td>
-                <button class="btn-acc bg-view"><i class="fas fa-check-square"></i></button>
-                <button class="btn-acc bg-historial"><i class="fas fa-history"></i></button>
-                <button class="btn-acc bg-edit" onclick="abrirEditSalaSistemas('${s.id}')"><i class="fas fa-edit"></i></button>
-                <button class="btn-acc bg-delete" onclick="eliminarSalaSistemas('${s.id}')"><i class="fas fa-trash"></i></button>
+                <button class="btn-acc bg-view" title="Chequeo"><i class="fas fa-check-square"></i></button>
+                <button class="btn-acc bg-historial" title="Historial"><i class="fas fa-history"></i></button>
+                <button class="btn-acc bg-edit" onclick="abrirEditImpresora('${i.id}')" title="Modificar"><i class="fas fa-edit"></i></button>
+                <button class="btn-acc bg-delete" onclick="eliminarImpresora('${i.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
             </td></tr>`;
         });
     }
 
-    function abrirModalSalaSistemasRegistro() { 
-        modoModal="registro"; 
-        document.getElementById('modalSalaSistemasTitle').innerText="Registrar Sala de Sistemas"; 
-        document.querySelectorAll('.icon-select').forEach(i => i.classList.remove('active'));
-        document.getElementById('modalSalaSistemas').style.display='block'; 
-    }
+    function limpiarFiltrosImpresoras() { fi_nombre.value=""; fi_campus_f.value=""; fi_sede_f.value=""; filtrarImpresoras(); }
+    function abrirModalImpresoraRegistro() { modoModal="registro"; document.getElementById('modalImpresoraTitle').innerText="Registrar Impresora"; document.getElementById('modalImpresora').style.display='block'; }
 
-    async function ejecutarGuardarSalaSistemas() {
-        // Capturar iconos activos
-        let perifericos = [];
-        document.querySelectorAll('.icon-select.active').forEach(i => perifericos.push(i.title));
-
-        const obj = { 
-            nombre: ns_nombre.value, cant: ns_cant.value, tipo: ns_tipo_e.value, 
-            marca: ns_marca.value, modelo: ns_mod.value, proc: ns_proc.value, 
-            ram: ns_ram.value, so: ns_so.value, campus: ns_cam.value, 
-            sede: ns_sed.value, ubicacion: ns_ubi.value, perifericos: perifericos
-        };
-        if(modoModal === "editar") await db.collection("salas_sistemas").doc(selectedId).update(obj);
-        else await db.collection("salas_sistemas").add(obj);
+    async function ejecutarGuardarImpresora() {
+        const obj = { nombre: ni_nombre.value, marca: ni_marca.value, modelo: ni_modelo.value, tinta: ni_tinta.value, ip: ni_ip.value, campus: ni_cam.value, sede: ni_sed.value, ubicacion: ni_ubi.value };
+        if(modoModal === "editar") await db.collection("impresoras").doc(selectedId).update(obj);
+        else await db.collection("impresoras").add(obj);
         cerrarModales();
     }
 
-    function abrirEditSalaSistemas(id) {
+    function abrirEditImpresora(id) {
         modoModal = "editar"; selectedId = id;
-        const s = localSalasSistemas.find(x => x.id === id);
-        ns_nombre.value = s.nombre; ns_cant.value = s.cant; ns_proc.value = s.proc; ns_ubi.value = s.ubicacion;
-        document.getElementById('modalSalaSistemas').style.display = 'block';
+        const i = localImpresoras.find(x => x.id === id);
+        ni_nombre.value = i.nombre; ni_marca.value = i.marca; ni_modelo.value = i.modelo; ni_ip.value = i.ip; ni_ubi.value = i.ubicacion;
+        document.getElementById('modalImpresoraTitle').innerText = "Modificar Impresora";
+        document.getElementById('modalImpresora').style.display = 'block';
     }
 
-    async function eliminarSalaSistemas(id) { if(confirm("¿Eliminar?")) await db.collection("salas_sistemas").doc(id).delete(); }
-    function limpiarFiltrosSalasSistemas() { fs_nombre.value=""; filtrarSalasSistemas(); }
-
-    // INVENTARIO SIMPLE (Para demostración de que no se borró)
-    function cargarInventario() {
-        db.collection(currentColl).onSnapshot(snap => {
-            const b = document.getElementById('tablaInvData'); b.innerHTML = "";
-            snap.forEach(doc => {
-                const e = doc.data();
-                b.innerHTML += `<tr><td>${e.pc}</td><td>Laptop</td><td>Dell</td><td>${e.inv}</td><td>${e.res}</td>
-                <td><button class="btn-acc bg-edit"><i class="fas fa-edit"></i></button></td></tr>`;
-            });
-        });
-    }
+    async function eliminarImpresora(id) { if(confirm("¿Eliminar impresora definitivamente?")) await db.collection("impresoras").doc(id).delete(); }
 </script>
 </body>
 </html>
