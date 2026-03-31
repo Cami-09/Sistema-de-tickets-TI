@@ -58,11 +58,9 @@
         .btn-gray { background: #e2e8f0; color: #475569; }
         .badge { padding: 4px 10px; border-radius: 12px; color: white; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; }
 
-        /* Iconos Periféricos */
         .icon-box { font-size: 1.8rem; color: #94a3b8; cursor: pointer; transition: 0.3s; padding: 10px; border-radius: 50%; }
         .icon-box.active { color: var(--primary); background: #eff6ff; border: 1px solid var(--primary); transform: scale(1.1); }
 
-        /* Estilo Enviar Ticket */
         .form-ticket { max-width: 600px; margin-top: 25px; }
         .form-row { display: flex; align-items: center; margin-bottom: 15px; }
         .form-row label { width: 180px; font-weight: 600; color: #475569; font-size: 0.9rem; }
@@ -91,6 +89,7 @@
         <div class="card" onclick="abrir_maestro('aulas_dti', 'Aulas DTI')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
         <div class="card" onclick="abrir_maestro('salas_sistemas', 'Salas Sistemas')"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
         <div class="card" onclick="abrir_maestro('impresoras', 'Impresoras')"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
+        <div class="card" onclick="abrir_maestro('usuarios', 'Administrar Usuarios')"><i class="fas fa-users-cog"></i><h3>Usuarios</h3></div>
     </div>
 
     <div id="mod_admin_tickets" class="modulo">
@@ -121,7 +120,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
             <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
             <h2 id="m_titulo" style="color:var(--dark); margin:0;"></h2>
-            <button class="btn btn-blue" onclick="abrirModalRegistro('nuevo')">+ Agregar Registro</button>
+            <button class="btn btn-blue" id="btn_maestro_agregar" onclick="abrirModalRegistro('nuevo')">+ Agregar Registro</button>
         </div>
         <div class="header-blue">Listado General</div>
         <table><thead id="m_thead"></thead><tbody id="m_tbody"></tbody></table>
@@ -268,9 +267,12 @@
         });
     }
 
-    // --- MAESTROS (GUARDADO UNIVERSAL CORREGIDO) ---
+    // --- MAESTROS ---
     function abrir_maestro(coll, tit) {
-        currentColl = coll; document.getElementById('m_titulo').innerText = tit; abrir('mod_maestro');
+        currentColl = coll; 
+        document.getElementById('m_titulo').innerText = tit; 
+        document.getElementById('btn_maestro_agregar').innerText = coll === 'usuarios' ? "+ Agregar Usuario" : "+ Agregar Registro";
+        abrir('mod_maestro');
         db.collection(currentColl).onSnapshot(snap => {
             localData = []; snap.forEach(doc => localData.push({id: doc.id, ...doc.data()})); renderTabla();
         });
@@ -278,7 +280,11 @@
 
     function renderTabla() {
         const h = document.getElementById('m_thead'); const b = document.getElementById('m_tbody'); b.innerHTML = "";
-        if(currentColl.includes('inventario')) {
+        
+        if(currentColl === 'usuarios') {
+            h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
+            localData.forEach(e => b.innerHTML += `<tr><td><b>${e.nom||''}</b></td><td>${e.cor||''}</td><td>${e.rol||''}</td><td>${getBotonesMaestro(e.id)}</td></tr>`);
+        } else if(currentColl.includes('inventario')) {
             h.innerHTML = `<tr><th>Nombre PC</th><th>Tipo</th><th>Placa</th><th>Responsable</th><th>Acciones</th></tr>`;
             localData.forEach(e => b.innerHTML += `<tr><td><b>${e.pc||''}</b></td><td>${e.tipo||''}</td><td>${e.pla||''}</td><td>${e.res||''}</td><td>${getBotonesMaestro(e.id)}</td></tr>`);
         } else {
@@ -288,17 +294,31 @@
     }
 
     function getBotonesMaestro(id) {
-        return `<button class="btn-acc bg-v-gray" title="Ver"><i class="fas fa-eye"></i></button><button class="btn-acc bg-b-blue" onclick="abrirMante('${id}')" title="Mante"><i class="fas fa-tools"></i></button><button class="btn-acc bg-r-purple" onclick="abrirModalRegistro('copiar', '${id}')" title="Copiar"><i class="fas fa-copy"></i></button><button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar', '${id}')" title="Editar"><i class="fas fa-edit"></i></button><button class="btn-acc bg-d-red" onclick="eliminar('${id}','${currentColl}')" title="Eliminar"><i class="fas fa-trash"></i></button>`;
+        let btn_mante = currentColl === 'usuarios' ? '' : `<button class="btn-acc bg-b-blue" onclick="abrirMante('${id}')" title="Mante"><i class="fas fa-tools"></i></button>`;
+        let btn_copy = currentColl === 'usuarios' ? '' : `<button class="btn-acc bg-r-purple" onclick="abrirModalRegistro('copiar', '${id}')" title="Copiar"><i class="fas fa-copy"></i></button>`;
+        
+        return `
+            <button class="btn-acc bg-v-gray" title="Ver"><i class="fas fa-eye"></i></button>
+            ${btn_mante}
+            ${btn_copy}
+            <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar', '${id}')" title="Editar"><i class="fas fa-edit"></i></button>
+            <button class="btn-acc bg-d-red" onclick="eliminar('${id}','${currentColl}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+        `;
     }
 
     function abrirModalRegistro(modo = 'nuevo', id = '') {
         modoModal = modo; selectedId = id;
         const f = document.getElementById('form_dinamico'); f.innerHTML = "";
-        document.getElementById('seccion_perifericos').style.display = currentColl.includes('inventario') ? "none" : "block";
+        document.getElementById('seccion_perifericos').style.display = (currentColl.includes('inventario') || currentColl === 'usuarios') ? "none" : "block";
 
-        let campos = currentColl.includes('inventario') ? 
-            [["Nombre PC","i_pc"],["Tipo","i_tipo","select",["Portátil","Torre"]],["Modelo","i_mod"],["Placa Inv","i_pla"],["S.O","i_so","select",["Win 10","Win 11"]],["Procesador","i_pro"],["RAM","i_ram","select",["8 GB","16 GB"]],["Disco","i_dis"],["IP","i_ip"],["Terminal","i_ter"],["Responsable","i_res"],["Dependencia","i_dep","select",["Sistemas"]],["Campus","i_cam","select",["BGA"]],["Sede","i_sed","select",["Sede A"]],["Fecha","i_fec","date"]] : 
-            [["Nombre","e_nom"],["Campus","e_cam","select",["BGA"]],["Sede","e_sed","select",["Sede A"]],["Ubicación","e_ubi"]];
+        let campos = [];
+        if(currentColl === 'usuarios') {
+            campos = [["Nombre","u_nom"],["Correo","u_cor"],["Rol","u_rol","select",["Admin","Gestor","Usuario"]]];
+        } else if(currentColl.includes('inventario')) {
+            campos = [["Nombre PC","i_pc"],["Tipo","i_tipo","select",["Portátil","Torre"]],["Modelo","i_mod"],["Placa Inv","i_pla"],["S.O","i_so","select",["Win 10","Win 11"]],["Procesador","i_pro"],["RAM","i_ram","select",["8 GB","16 GB"]],["Disco","i_dis"],["IP","i_ip"],["Terminal","i_ter"],["Responsable","i_res"],["Dependencia","i_dep","select",["Sistemas"]],["Campus","i_cam","select",["BGA"]],["Sede","i_sed","select",["Sede A"]],["Fecha","i_fec","date"]];
+        } else {
+            campos = [["Nombre","e_nom"],["Campus","e_cam","select",["BGA"]],["Sede","e_sed","select",["Sede A"]],["Ubicación","e_ubi"]];
+        }
         
         campos.forEach(x => {
             let inp = `<input type="${x[2]||'text'}" id="${x[1]}">`;
@@ -326,7 +346,7 @@
         if(modoModal === 'editar') await db.collection(currentColl).doc(selectedId).update(obj);
         else await db.collection(currentColl).add(obj);
         
-        cerrarModales(); alert("Guardado");
+        cerrarModales(); alert("Guardado con éxito");
     }
 
     function abrirMante(id) { selectedId = id; document.getElementById('modalMante').style.display = 'block'; }
@@ -336,7 +356,7 @@
         cerrarModales(); alert("Mantenimiento guardado");
     }
 
-    async function eliminar(id, coll) { if(confirm("¿Eliminar?")) await db.collection(coll).doc(id).delete(); }
+    async function eliminar(id, coll) { if(confirm("¿Eliminar este registro definitivamente?")) await db.collection(coll).doc(id).delete(); }
 
     function initCalendar() {
         calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
@@ -346,6 +366,19 @@
                 success(evs);
             }
         }); calendar.render();
+    }
+
+    async function enviarTicket() {
+        if(!tk_desc.value) return alert("Escriba descripción");
+        await db.collection("tickets").add({ usuario: user.email, dep: tk_dep.value, tipo: tk_tipo.value, desc: tk_desc.value, estado: "Abierto", fecha: new Date().toLocaleString() });
+        alert("Enviado"); tk_desc.value = ""; volver();
+    }
+
+    function cargarMisTickets() {
+        db.collection("tickets").where("usuario","==",user.email).onSnapshot(s => {
+            const c = document.getElementById('mis_tk_container'); c.innerHTML = "";
+            s.forEach(doc => { const t = doc.data(); c.innerHTML += `<div style="padding:10px; border-bottom:1px solid #ddd;"><b>${t.estado}</b> - ${t.desc}</div>`; });
+        });
     }
 </script>
 </body>
