@@ -3,19 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL V5</title>
+    <title>SISTEMA TIC UNICIENCIA - MASTER FINAL V6</title>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
-    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        :root { --primary: #2563eb; --purple: #8b5cf6; --dark: #0f172a; --bg: #f1f5f9; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --info: #00bcd4; --gray: #64748b; }
+        :root { --primary: #2563eb; --dark: #0f172a; --bg: #f1f5f9; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --info: #00bcd4; --gray: #64748b; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #334155; }
         header { background: var(--dark); color: white; padding: 12px 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
@@ -27,31 +24,35 @@
 
         .modulo { display: none; background: white; padding: 25px; border-radius: 12px; min-height: 500px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
 
-        /* Filtros y Tablas */
+        /* --- DISEÑO ENVIAR TICKET (SEGÚN IMAGEN) --- */
+        .form-ticket { max-width: 600px; margin: 20px 0; }
+        .form-group { display: flex; align-items: center; margin-bottom: 15px; }
+        .form-group label { width: 180px; font-weight: 600; color: #475569; }
+        .form-group input, .form-group select, .form-group textarea { flex: 1; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: inherit; }
+        
+        /* --- ESTILOS GENERALES --- */
         .filtros-box { background: #fff; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
         .grid-filtros { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
         .header-blue { background: var(--primary); color: white; padding: 10px 15px; border-radius: 5px 5px 0 0; font-weight: bold; }
-
-        input, select, textarea { padding: 9px; border: 1px solid #cbd5e1; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 0.9rem; margin-top: 5px; }
+        
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         th { background: #f8fafc; padding: 12px; text-align: left; border-bottom: 2px solid #e2e8f0; }
         td { padding: 8px; border-bottom: 1px solid #f1f5f9; }
 
-        /* Botones de Acción */
-        .btn-acc { width: 32px; height: 32px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; }
+        .btn-acc { width: 32px; height: 32px; border-radius: 4px; border: none; color: white; cursor: pointer; margin-right: 2px; display: inline-flex; align-items: center; justify-content: center; }
         .bg-view { background: var(--info); }
         .bg-delete { background: var(--danger); }
-        .bg-success { background: var(--success); }
-
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
-        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 85%; max-width: 900px; border-radius: 12px; position: relative; max-height: 90vh; overflow-y: auto; }
+        
         .btn { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-gray { background: var(--gray); color: white; }
-        
+
         .badge { padding: 4px 10px; border-radius: 12px; color: white; font-weight: bold; font-size: 0.7rem; }
         .abierto { background: var(--success); }
         .cerrado { background: var(--danger); }
+
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
+        .modal-content { background: white; margin: 5% auto; padding: 25px; width: 80%; max-width: 500px; border-radius: 12px; position: relative; }
     </style>
 </head>
 <body>
@@ -71,83 +72,104 @@
         <div class="card" onclick="abrir('crear')"><i class="fas fa-paper-plane"></i><h3>Enviar un Ticket</h3></div>
         <div class="card" onclick="abrir('admin_tickets')"><i class="fas fa-clipboard-list"></i><h3>Administrar Tickets</h3></div>
         <div class="card" onclick="abrir('inv_admin')"><i class="fas fa-desktop"></i><h3>Equipos Administrativos</h3></div>
-        <div class="card" onclick="abrir('inv_salas')"><i class="fas fa-laptop"></i><h3>Equipos de Salas</h3></div>
-        <div class="card" onclick="abrir('mod_calendario')"><i class="fas fa-calendar-alt"></i><h3>Calendario</h3></div>
         <div class="card" onclick="abrir('mod_aulas')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
         <div class="card" onclick="abrir('mod_salas_sistemas')"><i class="fas fa-server"></i><h3>Salas Sistemas</h3></div>
         <div class="card" onclick="abrir('mod_impresoras')"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
+    </div>
+
+    <div id="crear" class="modulo">
+        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
+        <h2 style="color:var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 10px;">Enviar un Ticket</h2>
+        
+        <div class="form-ticket">
+            <div class="form-group">
+                <label>Seleccione Dependencia</label>
+                <select id="tk_dep">
+                    <option>Sistemas</option>
+                    <option>Tesorería</option>
+                    <option>Rectoría</option>
+                    <option>Secretaría General</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Tipo de Requerimiento</label>
+                <select id="tk_tipo">
+                    <option>Soporte Técnico</option>
+                    <option>Mantenimiento</option>
+                    <option>Redes / Internet</option>
+                    <option>Software / Aplicativos</option>
+                </select>
+            </div>
+            <div class="form-group" style="align-items: flex-start;">
+                <label>Descripción</label>
+                <textarea id="tk_desc" rows="6" placeholder="Describa detalladamente su solicitud o problema..."></textarea>
+            </div>
+            <div style="text-align: left; margin-left: 180px;">
+                <button class="btn btn-blue" onclick="enviarTicket()">Enviar Ticket</button>
+            </div>
+        </div>
     </div>
 
     <div id="admin_tickets" class="modulo">
         <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--primary); padding-bottom: 10px; margin-bottom: 20px;">
             <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
             <h2 style="color:var(--primary); margin:0;">Administración de Tickets</h2>
-            <h2 style="color:red; margin:0;" id="totalAdminTickets">0</h2>
+            <h2 style="color:red; margin:0;" id="countAdmin">0</h2>
         </div>
 
         <div class="filtros-box">
-            <h3 style="margin-top:0;">Filtros de Búsqueda</h3>
             <div class="grid-filtros">
-                <div><label>Estado del Ticket</label>
-                    <select id="fa_estado" onchange="cargarTicketsAdmin()">
+                <div><label>Estado</label>
+                    <select id="adm_estado" onchange="cargarTicketsAdmin()">
                         <option value="Abierto">Abiertos</option>
                         <option value="Cerrado">Cerrados</option>
                     </select>
                 </div>
-                <div><label>Usuario</label><input type="text" id="fa_usuario" placeholder="Correo usuario..." onkeyup="cargarTicketsAdmin()"></div>
             </div>
-            <div style="margin-top:15px; text-align:right; display:flex; justify-content:flex-end; gap:10px;">
-                <button class="btn btn-blue" onclick="cargarTicketsAdmin()"><i class="fas fa-filter"></i> Filtrar</button>
-                <button class="btn btn-gray" onclick="limpiarFiltrosTickets()"><i class="fas fa-eraser"></i> Limpiar</button>
-                <button class="btn btn-gray" style="background:#475569;" onclick="verTicketsCerrados()">Cerrados</button>
+            <div style="margin-top:15px; text-align:right;">
+                <button class="btn btn-gray" onclick="verTicketsCerradosAdmin()">Cerrados</button>
+                <button class="btn btn-blue" onclick="cargarTicketsAdmin()">Filtrar</button>
             </div>
         </div>
 
-        <div class="header-blue">Listado de Tickets</div>
-        <div style="overflow-x:auto;">
-            <table>
-                <thead>
-                    <tr><th>ID</th><th>Tipo</th><th>Estado</th><th>Usuario</th><th>Acciones</th></tr>
-                </thead>
-                <tbody id="tbodyAdminTickets"></tbody>
-            </table>
-        </div>
+        <div class="header-blue">Listado General de Tickets</div>
+        <table>
+            <thead>
+                <tr><th>ID</th><th>Tipo</th><th>Estado</th><th>Usuario</th><th>Acciones</th></tr>
+            </thead>
+            <tbody id="tbodyAdmin"></tbody>
+        </table>
     </div>
 
-    <div id="modulo_seccion" class="modulo">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
-            <h2 id="sec_titulo"></h2>
-        </div>
-        <div id="sec_contenido"></div>
+    <div id="consultar" class="modulo">
+        <button onclick="volver()" class="btn btn-gray">⬅ Volver</button>
+        <h2>Mis Tickets Enviados</h2>
+        <div id="mis_tickets_container" style="margin-top:20px;"></div>
     </div>
 
-    <div id="mod_calendario" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><div id="calendar"></div></div>
-    <div id="crear" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Crear Ticket</h2><textarea id="tk_desc" rows="4"></textarea><button class="btn btn-blue" onclick="enviarTicket()">Enviar</button></div>
-    <div id="consultar" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Mis Tickets</h2><div id="tk_lista"></div></div>
+    <div id="inv_admin" class="modulo"><button onclick="volver()" class="btn btn-gray">Volver</button><h2>Inventario</h2></div>
 </div>
 
-<div id="modalTicketDetalle" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
-        <h2 id="det_titulo">Detalle del Ticket</h2>
-        <p id="det_desc"></p>
-        <p><strong>Usuario:</strong> <span id="det_user"></span></p>
-        <p><strong>Fecha:</strong> <span id="det_fecha"></span></p>
+<div id="modalDetalle" class="modal">
+    <div class="modal-content">
+        <h2 id="m_tit">Detalles del Ticket</h2>
+        <p id="m_desc"></p>
+        <hr>
+        <p><strong>Usuario:</strong> <span id="m_user"></span></p>
         <div style="text-align:right; margin-top:20px;">
-            <button class="btn btn-blue" id="btnCerrarTicket" onclick="ejecutarCerrarTicket()">Cerrar Ticket</button>
-            <button class="btn btn-gray" onclick="cerrarModales()">Volver</button>
+            <button class="btn btn-blue" id="btnCerrarTicket" onclick="cerrarTicketAccion()">Cerrar Ticket</button>
+            <button class="btn btn-gray" onclick="cerrarModales()">Cerrar</button>
         </div>
     </div>
 </div>
 
 <script>
-    // CONFIG
     const firebaseConfig = { apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw", authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com", projectId: "sistema-de-tickets-ti-b12f5" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
     
-    let user, selectedTicketId = "";
+    let user, selectedId = "";
 
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { auth.signOut().then(() => location.reload()); }
@@ -158,122 +180,99 @@
         document.querySelectorAll('.modulo').forEach(m => m.style.display='none');
         document.getElementById(id).style.display='block';
         if(id === 'admin_tickets') cargarTicketsAdmin();
-        if(id === 'mod_calendario') initCalendar();
         if(id === 'consultar') cargarMisTickets();
     }
     function volver() { document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
 
-    // --- LOGICA ADMINISTRAR TICKETS ---
-    function verTicketsCerrados() {
-        document.getElementById('fa_estado').value = "Cerrado";
+    // --- ENVIAR TICKET ---
+    async function enviarTicket() {
+        const desc = document.getElementById('tk_desc').value;
+        if(!desc) return alert("Por favor escriba una descripción");
+
+        await db.collection("tickets").add({
+            usuario: user.email,
+            dependencia: document.getElementById('tk_dep').value,
+            tipo: document.getElementById('tk_tipo').value,
+            desc: desc,
+            estado: "Abierto",
+            fecha: new Date().toLocaleString()
+        });
+
+        alert("¡Ticket enviado con éxito!");
+        document.getElementById('tk_desc').value = "";
+        volver();
+    }
+
+    // --- MIS TICKETS (USUARIO) ---
+    function cargarMisTickets() {
+        db.collection("tickets").where("usuario", "==", user.email).onSnapshot(snap => {
+            const container = document.getElementById('mis_tickets_container');
+            container.innerHTML = "";
+            snap.forEach(doc => {
+                const t = doc.data();
+                container.innerHTML += `
+                    <div style="background:white; padding:15px; border-radius:8px; border-left:5px solid ${t.estado === 'Abierto' ? '#22c55e' : '#ef4444'}; margin-bottom:10px; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                        <strong>${t.tipo}</strong> - <small>${t.fecha}</small> <span class="badge ${t.estado.toLowerCase()}">${t.estado}</span><br>
+                        <p style="margin:5px 0; color:#64748b;">${t.desc}</p>
+                    </div>`;
+            });
+        });
+    }
+
+    // --- ADMIN TICKETS ---
+    function verTicketsCerradosAdmin() {
+        document.getElementById('adm_estado').value = "Cerrado";
         cargarTicketsAdmin();
     }
 
     function cargarTicketsAdmin() {
-        const estado = document.getElementById('fa_estado').value;
-        const busquedaUser = document.getElementById('fa_usuario').value.toLowerCase();
-
-        db.collection("tickets").where("estado", "==", estado).onSnapshot(snap => {
-            const tbody = document.getElementById('tbodyAdminTickets');
+        const est = document.getElementById('adm_estado').value;
+        db.collection("tickets").where("estado", "==", est).onSnapshot(snap => {
+            const tbody = document.getElementById('tbodyAdmin');
             tbody.innerHTML = "";
             let count = 0;
-
             snap.forEach(doc => {
+                count++;
                 const t = doc.data();
-                if(t.usuario.toLowerCase().includes(busquedaUser)) {
-                    count++;
-                    const idShort = doc.id.substring(0,6);
-                    tbody.innerHTML += `
-                        <tr>
-                            <td><b>#${idShort}</b></td>
-                            <td>Soporte Técnico</td>
-                            <td><span class="badge ${t.estado.toLowerCase()}">${t.estado}</span></td>
-                            <td>${t.usuario}</td>
-                            <td>
-                                <button class="btn-acc bg-view" onclick="verDetalleTicket('${doc.id}')" title="Ver Detalle"><i class="fas fa-eye"></i></button>
-                                <button class="btn-acc bg-delete" onclick="eliminarTicket('${doc.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    `;
-                }
+                tbody.innerHTML += `
+                    <tr>
+                        <td><b>#${doc.id.substring(0,5).toUpperCase()}</b></td>
+                        <td>${t.tipo}</td>
+                        <td><span class="badge ${t.estado.toLowerCase()}">${t.estado}</span></td>
+                        <td>${t.usuario}</td>
+                        <td>
+                            <button class="btn-acc bg-view" onclick="verDetalle('${doc.id}')"><i class="fas fa-eye"></i></button>
+                            <button class="btn-acc bg-delete" onclick="eliminarTicket('${doc.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
             });
-            document.getElementById('totalAdminTickets').innerText = count;
+            document.getElementById('countAdmin').innerText = count;
         });
     }
 
-    function verDetalleTicket(id) {
-        selectedTicketId = id;
+    function verDetalle(id) {
+        selectedId = id;
         db.collection("tickets").doc(id).get().then(doc => {
             const t = doc.data();
-            document.getElementById('det_desc').innerText = t.desc;
-            document.getElementById('det_user').innerText = t.usuario;
-            document.getElementById('det_fecha').innerText = t.fecha;
+            document.getElementById('m_desc').innerText = t.desc;
+            document.getElementById('m_user').innerText = t.usuario;
             document.getElementById('btnCerrarTicket').style.display = t.estado === "Cerrado" ? "none" : "inline-block";
-            document.getElementById('modalTicketDetalle').style.display = 'block';
+            document.getElementById('modalDetalle').style.display = 'block';
         });
     }
 
-    async function ejecutarCerrarTicket() {
-        if(confirm("¿Deseas marcar este ticket como Cerrado?")) {
-            await db.collection("tickets").doc(selectedTicketId).update({ estado: "Cerrado" });
+    async function cerrarTicketAccion() {
+        if(confirm("¿Marcar como solucionado/cerrado?")) {
+            await db.collection("tickets").doc(selectedId).update({ estado: "Cerrado" });
             cerrarModales();
         }
     }
 
     async function eliminarTicket(id) {
-        if(confirm("¿Estás seguro de eliminar este ticket permanentemente?")) {
+        if(confirm("¿Eliminar este ticket permanentemente?")) {
             await db.collection("tickets").doc(id).delete();
         }
-    }
-
-    function limpiarFiltrosTickets() {
-        document.getElementById('fa_estado').value = "Abierto";
-        document.getElementById('fa_usuario').value = "";
-        cargarTicketsAdmin();
-    }
-
-    // --- LOGICA USUARIO ---
-    async function enviarTicket() {
-        await db.collection("tickets").add({
-            usuario: user.email,
-            desc: document.getElementById('tk_desc').value,
-            estado: "Abierto",
-            fecha: new Date().toLocaleString()
-        });
-        alert("Ticket enviado correctamente");
-        document.getElementById('tk_desc').value = "";
-        volver();
-    }
-
-    function cargarMisTickets() {
-        db.collection("tickets").where("usuario", "==", user.email).onSnapshot(snap => {
-            const div = document.getElementById('tk_lista');
-            div.innerHTML = "";
-            snap.forEach(doc => {
-                const t = doc.data();
-                div.innerHTML += `<div style="padding:10px; border:1px solid #ddd; margin-bottom:5px; border-radius:8px; background:white;">
-                    <strong>${t.fecha}</strong> - ${t.estado}<br>${t.desc}</div>`;
-            });
-        });
-    }
-
-    // --- CALENDARIO ---
-    function initCalendar() {
-        const calEl = document.getElementById('calendar');
-        calendar = new FullCalendar.Calendar(calEl, {
-            locale: 'es',
-            events: async function(info, success) {
-                let evs = [];
-                const snap = await db.collectionGroup("mantenimientos").get();
-                snap.forEach(doc => {
-                    const m = doc.data();
-                    evs.push({ title: m.responsable || 'Mante', start: m.fecha });
-                });
-                success(evs);
-            }
-        });
-        calendar.render();
     }
 </script>
 </body>
