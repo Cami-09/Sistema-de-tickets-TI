@@ -29,18 +29,14 @@
         .card i { font-size: 40px; color: var(--primary); margin-bottom: 15px; }
         .card h3 { margin: 0; font-size: 1.1rem; color: var(--dark); }
 
-        /* Contadores estilo imagen */
         .container-stats-header { display: flex; gap: 15px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
         .stat-box { background: white; border-radius: 10px; padding: 15px; min-width: 120px; text-align: center; border: 1.5px solid #ddd; cursor: pointer; transition: 0.2s; }
         .stat-box:hover { transform: scale(1.05); }
-        .stat-box.abierto { border-color: var(--success); color: var(--success); }
+        .stat-box.abierto { border-color: var(--primary); color: var(--primary); }
         .stat-box.proceso { border-color: var(--warning); color: var(--warning); }
-        .stat-box.cerrado { border-color: var(--danger); color: var(--danger); }
+        .stat-box.cerrado { border-color: var(--success); color: var(--success); }
         .stat-box i { font-size: 20px; display: block; margin-bottom: 5px; }
         .stat-box span { font-weight: bold; font-size: 18px; }
-
-        .tk-card { text-align: left !important; border-left: 5px solid var(--primary); position: relative; display: block !important; }
-        .tk-status { position: absolute; top: 15px; right: 15px; padding: 4px 10px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; color: white; }
 
         .modulo { display: none; background: white; padding: 30px; border-radius: 20px; min-height: 550px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -62,7 +58,8 @@
         th { text-align: left; padding: 12px; border-bottom: 2px solid #eee; color: var(--gray); font-size: 0.8rem; text-transform: uppercase; }
         td { padding: 12px; border-bottom: 1px solid #f8f8f8; font-size: 0.85rem; }
 
-        .chart-container { position: relative; height: 350px; width: 100%; margin-top: 20px; }
+        .tk-card { text-align: left !important; border-left: 5px solid var(--primary); position: relative; display: block !important; }
+        .tk-status { position: absolute; top: 15px; right: 15px; padding: 4px 10px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; color: white; }
     </style>
 </head>
 <body>
@@ -85,18 +82,9 @@
 
 <div id="dashboard">
     <div class="container-stats-header" id="stats_contadores_visibles" style="display:none;">
-        <div class="stat-box abierto">
-            <i class="fas fa-folder-open"></i>
-            <small>Abiertos</small><br><span id="count_abiertos">0</span>
-        </div>
-        <div class="stat-box proceso">
-            <i class="fas fa-spinner"></i>
-            <small>En Proceso</small><br><span id="count_proceso">0</span>
-        </div>
-        <div class="stat-box cerrado" onclick="abrir('mod_tickets_cerrados')">
-            <i class="fas fa-check-circle"></i>
-            <small>Cerrados</small><br><span id="count_cerrados">0</span>
-        </div>
+        <div class="stat-box abierto" onclick="abrir('mod_admin_tickets')"><i class="fas fa-folder-open"></i><small>Abiertos</small><br><span id="count_abiertos">0</span></div>
+        <div class="stat-box proceso" onclick="abrir('mod_admin_tickets')"><i class="fas fa-spinner"></i><small>En Proceso</small><br><span id="count_proceso">0</span></div>
+        <div class="stat-box cerrado" onclick="abrir('mod_tickets_cerrados')"><i class="fas fa-check-circle"></i><small>Cerrados</small><br><span id="count_cerrados">0</span></div>
     </div>
 
     <div id="panel-principal" class="grid-main">
@@ -104,10 +92,10 @@
         <div class="card" id="card_enviar_ticket" onclick="abrir('mod_enviar_ticket')"><i class="fas fa-paper-plane"></i><h3>Enviar Ticket</h3></div>
         <div class="card" id="card_admin_tickets" onclick="abrir('mod_admin_tickets')"><i class="fas fa-tasks"></i><h3>Administrar Tickets</h3></div>
         <div class="card" id="card_inv_admin" onclick="abrir_maestro('inventario', 'Equipos Administrativos')"><i class="fas fa-laptop"></i><h3>Equipos Administrativos</h3></div>
-        <div class="card" id="card_inv_salas" onclick="abrir_maestro('inventario_salas', 'Equipos Salas')"><i class="fas fa-desktop"></i><h3>Equipos Salas de Sistemas</h3></div>
-        <div class="card" id="card_calendario" onclick="abrir('mod_calendario')"><i class="fas fa-calendar-alt"></i><h3>Calendario de Mantenimientos</h3></div>
+        <div class="card" id="card_inv_salas" onclick="abrir_maestro('inventario_salas', 'Equipos Salas')"><i class="fas fa-desktop"></i><h3>Equipos Salas</h3></div>
+        <div class="card" id="card_calendario" onclick="abrir('mod_calendario')"><i class="fas fa-calendar-alt"></i><h3>Calendario</h3></div>
         <div class="card" id="card_stats" onclick="abrir('mod_stats')"><i class="fas fa-chart-pie"></i><h3>Estadísticas</h3></div>
-        <div class="card" id="card_usuarios" onclick="abrir_maestro('usuarios', 'Usuarios')"><i class="fas fa-users-cog"></i><h3>Gestion de Usuarios</h3></div>
+        <div class="card" id="card_usuarios" onclick="abrir_maestro('usuarios', 'Usuarios')"><i class="fas fa-users-cog"></i><h3>Usuarios</h3></div>
         <div class="card" id="card_aulas" onclick="abrir_maestro('aulas_dti', 'Aulas DTI')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
         <div class="card" id="card_impresoras" onclick="abrir_maestro('impresoras', 'Impresoras')"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
     </div>
@@ -133,40 +121,22 @@
     <div id="mod_admin_tickets" class="modulo">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <button onclick="volver()" class="btn-gray">Volver</button>
-            <h2 id="admin_tit_dinamico">Gestión de Tickets</h2>
+            <h2>Gestión de Tickets</h2>
             <button onclick="cargarTicketsAdmin()" class="btn-acc bg-v-gray"><i class="fas fa-sync"></i></button>
         </div>
-        <div style="overflow-x:auto;">
-            <table>
-                <thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Estado</th><th>Gestor</th><th>Acciones</th></tr></thead>
-                <tbody id="tbody_admin_tickets"></tbody>
-            </table>
-        </div>
+        <div style="overflow-x:auto;"><table><thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Estado</th><th>Gestor</th><th>Acciones</th></tr></thead><tbody id="tbody_admin_tickets"></tbody></table></div>
     </div>
 
     <div id="mod_tickets_cerrados" class="modulo">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <button onclick="volver()" class="btn-gray">Volver</button>
-            <h2>Tickets Finalizados</h2>
+            <h2>Historial Cerrados</h2>
         </div>
-        <div style="overflow-x:auto;">
-            <table>
-                <thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Gestor</th><th>Cerrado el</th><th>Acciones</th></tr></thead>
-                <tbody id="tbody_cerrados"></tbody>
-            </table>
-        </div>
+        <div style="overflow-x:auto;"><table><thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Gestor</th><th>Cerrado el</th><th>Acciones</th></tr></thead><tbody id="tbody_cerrados"></tbody></table></div>
     </div>
 
     <div id="mod_stats" class="modulo">
         <button onclick="volver()" class="btn-gray">Volver</button>
-        <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:center;">
-            <h2>Estadísticas</h2>
-            <select id="filtro_stats" onchange="cargarGraficaActualizada()" style="padding:10px; border-radius:10px; border:2px solid var(--primary); font-weight:bold;">
-                <option value="estado">Por Estado</option>
-                <option value="tipo">Por Requerimiento</option>
-                <option value="gestor">Por Gestor</option>
-            </select>
-        </div>
         <div class="chart-container"><canvas id="miGrafica"></canvas></div>
     </div>
 
@@ -174,21 +144,14 @@
         <button onclick="volver()" class="btn-gray">Volver</button>
         <div id="calendar" style="margin-top:20px;"></div>
     </div>
-    
+
     <div id="mod_enviar_ticket" class="modulo">
         <button onclick="volver()" class="btn-gray">⬅ Volver</button>
-        <div style="max-width:600px; margin:auto;">
-            <h2 style="text-align:center;"><i class="fas fa-paper-plane"></i> Nueva Solicitud</h2>
+        <div style="max-width:500px; margin:auto;">
+            <h2 style="text-align:center;">Nueva Solicitud</h2>
             <div class="grid-bonito" style="grid-template-columns:1fr;">
-                <div class="campo-group"><label>Tipo</label>
-                    <select id="tk_tipo">
-                        <option>Soporte Técnico</option><option>Redes e Internet</option>
-                        <option>Software / Licencias</option><option>Mantenimiento Físico</option>
-                    </select>
-                </div>
-                <div class="campo-group"><label>Descripción</label>
-                    <textarea id="tk_desc" rows="5" placeholder="Escriba aquí los detalles..."></textarea>
-                </div>
+                <div class="campo-group"><label>Tipo</label><select id="tk_tipo"><option>Soporte Técnico</option><option>Redes e Internet</option><option>Software</option></select></div>
+                <div class="campo-group"><label>Descripción</label><textarea id="tk_desc" rows="5"></textarea></div>
                 <button class="btn-agregar-master" onclick="enviarTicket()" style="justify-content:center;">Enviar Ahora</button>
             </div>
         </div>
@@ -198,46 +161,28 @@
 <div id="modalCerrarTicket" class="modal">
     <div class="modal-content" style="max-width:450px;">
         <h3>Finalizar Ticket</h3>
-        <p>Escribe una respuesta o comentario sobre la solución:</p>
         <textarea id="tk_respuesta_cierre" rows="4" style="width:100%; padding:10px; border-radius:10px; border:1.5px solid #ccc;"></textarea>
         <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
-            <button onclick="cerrarModales()" style="background:none; border:none; cursor:pointer;">Cancelar</button>
+            <button onclick="cerrarModales()">Cancelar</button>
             <button class="btn-agregar-master" onclick="ejecutarCierreConComentario()">Cerrar Ticket</button>
-        </div>
-    </div>
-</div>
-
-<div id="modalReasignar" class="modal">
-    <div class="modal-content" style="max-width:400px;">
-        <h2>Reasignar Gestor</h2>
-        <div class="campo-group">
-            <label>Seleccionar Nuevo Gestor</label>
-            <select id="re_gestor_new" style="width:100%;"></select>
-        </div>
-        <div style="margin-top:30px; display:flex; flex-direction:column; gap:10px;">
-            <button class="btn-agregar-master" onclick="ejecutarReasignar()" style="justify-content:center;">Confirmar</button>
-            <button onclick="cerrarModales()" style="background:none; border:none; cursor:pointer;">Cancelar</button>
-        </div>
-    </div>
-</div>
-
-<div id="modalRegistro" class="modal">
-    <div class="modal-content">
-        <h3 id="modal_tit">Formulario</h3>
-        <div id="form_dinamico" class="grid-bonito"></div>
-        <div style="margin-top:30px; text-align:right;">
-            <button onclick="cerrarModales()" style="background:none; border:none; margin-right:20px; cursor:pointer;">Cancelar</button>
-            <button class="btn-agregar-master" onclick="guardarDatoMaestro()">Guardar Cambios</button>
         </div>
     </div>
 </div>
 
 <div id="modalVerTicket" class="modal">
     <div class="modal-content">
-        <h3>Detalles del Ticket</h3>
+        <h3>Detalle del Ticket</h3>
         <div id="detalle_content"></div>
         <div style="margin-top:20px; text-align:right;"><button class="btn-agregar-master" onclick="cerrarModales()">Cerrar</button></div>
     </div>
+</div>
+
+<div id="modalRegistro" class="modal">
+    <div class="modal-content"><h3 id="modal_tit">Formulario</h3><div id="form_dinamico" class="grid-bonito"></div><div style="margin-top:30px; text-align:right;"><button onclick="cerrarModales()">Cancelar</button><button class="btn-agregar-master" onclick="guardarDatoMaestro()">Guardar</button></div></div>
+</div>
+
+<div id="modalReasignar" class="modal">
+    <div class="modal-content" style="max-width:400px;"><h2>Reasignar</h2><select id="re_gestor_new" style="width:100%; padding:10px;"></select><button class="btn-agregar-master" onclick="ejecutarReasignar()" style="margin-top:20px; width:100%; justify-content:center;">Confirmar</button></div>
 </div>
 
 <script>
@@ -267,9 +212,7 @@
             let ab = 0, pr = 0, ce = 0;
             snap.forEach(doc => {
                 const s = doc.data().estado;
-                if(s === "Abierto") ab++;
-                else if(s === "En Proceso") pr++;
-                else if(s === "Cerrado") ce++;
+                if(s === "Abierto") ab++; else if(s === "En Proceso") pr++; else if(s === "Cerrado") ce++;
             });
             document.getElementById('count_abiertos').innerText = ab;
             document.getElementById('count_proceso').innerText = pr;
@@ -279,24 +222,19 @@
 
     async function cargarGestores() {
         const q = await db.collection("usuarios").where("rol", "==", "Gestor").get();
-        listaGestoresGlobal = [];
-        q.forEach(doc => listaGestoresGlobal.push(doc.data()));
+        listaGestoresGlobal = []; q.forEach(doc => listaGestoresGlobal.push(doc.data()));
     }
 
     async function verificarRol() {
         document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
         const q = await db.collection("usuarios").where("cor", "==", user.email).get();
         if(!q.empty) {
-            const userData = q.docs[0].data();
-            userRole = userData.rol;
-            nombreRealUsuario = userData.nom;
+            const d = q.docs[0].data(); userRole = d.rol; nombreRealUsuario = d.nom;
         } else {
-            userRole = (user.email === "camicarmona1212@gmail.com") ? "Admin" : "Usuario";
-            nombreRealUsuario = "Admin";
+            userRole = user.email === "camicarmona1212@gmail.com" ? "Admin" : "Usuario"; nombreRealUsuario = "Admin";
         }
         document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
-        if(userRole === "Admin" || userRole === "Gestor") document.getElementById('stats_contadores_visibles').style.display = 'flex';
-        
+        if(userRole !== "Usuario") document.getElementById('stats_contadores_visibles').style.display = 'flex';
         const c = ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_calendario", "card_stats", "card_usuarios", "card_aulas", "card_impresoras"];
         const v = { "Admin": c, "Gestor": c.filter(x => x !== "card_usuarios" && x !== "card_stats"), "Usuario": ["card_mis_tickets", "card_enviar_ticket"] };
         (v[userRole] || v["Usuario"]).forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
@@ -308,20 +246,33 @@
         document.getElementById(id).style.display = 'block';
         if(mColl) {
             currentColl = mColl; document.getElementById('m_titulo').innerText = mTit;
-            db.collection(currentColl).onSnapshot(s => {
-                localData = []; s.forEach(d => localData.push({id: d.id, ...d.data()}));
-                renderTablaMaestra();
-            });
+            db.collection(currentColl).onSnapshot(s => { localData = []; s.forEach(d => localData.push({id: d.id, ...d.data()})); renderTablaMaestra(); });
         }
         if(id === 'mod_mis_tickets') cargarMisTickets();
         if(id === 'mod_admin_tickets') cargarTicketsAdmin();
         if(id === 'mod_tickets_cerrados') cargarTicketsCerrados();
         if(id === 'mod_stats') cargarGraficaActualizada();
+        if(id === 'mod_calendario') setTimeout(inicializarCalendario, 300);
     }
 
-    function volver() {
-        document.getElementById('panel-principal').style.display = 'grid';
-        document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none');
+    function volver() { document.getElementById('panel-principal').style.display = 'grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none'); }
+
+    function renderTablaMaestra() {
+        const b = document.getElementById('m_tbody'); b.innerHTML = "";
+        const h = document.getElementById('m_thead');
+        if(currentColl === 'usuarios') {
+            h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
+            localData.forEach(e => { b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td><td>
+                <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>
+                ${userRole === 'Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>` : ''}
+            </td></tr>`; });
+        } else {
+            h.innerHTML = `<tr><th>Equipo</th><th>Serial</th><th>Sede</th><th>Acciones</th></tr>`;
+            localData.forEach(e => { b.innerHTML += `<tr><td>${e.nom || e.pc}</td><td>${e.ser || 'N/A'}</td><td>${e.sed || 'N/A'}</td><td>
+                <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>
+                ${userRole === 'Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>` : ''}
+            </td></tr>`; });
+        }
     }
 
     function cargarTicketsAdmin() {
@@ -329,8 +280,7 @@
         db.collection("tickets").where("estado", "!=", "Cerrado").onSnapshot(snap => {
             tb.innerHTML = "";
             snap.forEach(doc => {
-                const t = doc.data();
-                if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
+                const t = doc.data(); if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
                 tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.usuario.split('@')[0]}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado || 'Pend.'}</td><td>
                     <button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>
                     <button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>
@@ -347,9 +297,8 @@
         db.collection("tickets").where("estado", "==", "Cerrado").onSnapshot(snap => {
             tb.innerHTML = "";
             snap.forEach(doc => {
-                const t = doc.data();
-                if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
-                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.usuario}</td><td>${t.tipo}</td><td>${t.asignado}</td><td>${t.fecha_cierre || 'N/A'}</td><td>
+                const t = doc.data(); if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
+                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.usuario.split('@')[0]}</td><td>${t.tipo}</td><td>${t.asignado}</td><td>${t.fecha_cierre}</td><td>
                     <button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>
                     ${userRole==='Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : ''}
                 </td></tr>`;
@@ -357,74 +306,41 @@
         });
     }
 
-    function abrirModalCierre(id) {
-        selectedId = id;
-        document.getElementById('tk_respuesta_cierre').value = "";
-        document.getElementById('modalCerrarTicket').style.display = 'block';
-    }
-
-    async function ejecutarCierreConComentario() {
-        const resp = document.getElementById('tk_respuesta_cierre').value;
-        if(!resp) return alert("Por favor, ingresa un comentario de solución.");
-        await db.collection("tickets").doc(selectedId).update({
-            estado: "Cerrado",
-            respuesta: resp,
-            fecha_cierre: new Date().toLocaleString()
+    function inicializarCalendario() {
+        const calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth', locale: 'es',
+            events: async function(info, success) {
+                const snap = await db.collection("tickets").get();
+                const evs = [];
+                snap.forEach(doc => {
+                    const t = doc.data();
+                    evs.push({ title: t.tipo, start: new Date(), backgroundColor: t.estado === 'Cerrado' ? '#22c55e' : '#2563eb' });
+                });
+                success(evs);
+            }
         });
-        cerrarModales();
-        alert("Ticket cerrado correctamente.");
-    }
-
-    async function verDetalleTicket(id) {
-        const doc = await db.collection("tickets").doc(id).get();
-        const t = doc.data();
-        document.getElementById('detalle_content').innerHTML = `
-            <div class="grid-bonito" style="grid-template-columns:1fr">
-                <div class="campo-group"><label>Tipo</label><p>${t.tipo}</p></div>
-                <div class="campo-group"><label>Estado</label><p>${t.estado}</p></div>
-                <div class="campo-group"><label>Descripción</label><p style="background:#f9f9f9; padding:10px; border-radius:10px;">${t.desc}</p></div>
-                ${t.respuesta ? `<div class="campo-group"><label>Respuesta del Gestor</label><p style="background:#e7f3ff; padding:10px; border-radius:10px; border:1px solid #cce5ff;">${t.respuesta}</p></div>` : ''}
-            </div>
-        `;
-        document.getElementById('modalVerTicket').style.display='block';
-    }
-
-    function renderTablaMaestra() {
-        const b = document.getElementById('m_tbody'); b.innerHTML = "";
-        const h = document.getElementById('m_thead');
-        if(currentColl === 'usuarios') {
-            h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
-            localData.forEach(e => {
-                b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td><td>
-                    <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>
-                </td></tr>`;
-            });
-        } else {
-            h.innerHTML = `<tr><th>Equipo</th><th>Serial</th><th>Sede</th><th>Acciones</th></tr>`;
-            localData.forEach(e => {
-                b.innerHTML += `<tr><td>${e.nom || e.pc}</td><td>${e.ser || 'N/A'}</td><td>${e.sed || 'N/A'}</td><td>
-                    <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>
-                </td></tr>`;
-            });
-        }
+        calendar.render();
     }
 
     // Funciones Base Reutilizadas
-    function abrirModalRegistro(modo, id = null) { modoModal = modo; selectedId = id; const f = document.getElementById('form_dinamico'); f.innerHTML = ""; let c = currentColl === 'usuarios' ? [["Nombre","nom"],["Correo","cor"],["Rol","rol","select",["Admin","Gestor","Usuario"]]] : [["Nombre/Equipo","nom"],["Serial/Ref","ser"],["Sede","sed"],["Marca","mar"]]; c.forEach(x => { let inp = x[2]==="select" ? `<select id="${x[1]}">${x[3].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>` : `<input type="text" id="${x[1]}">`; f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${inp}</div>`; }); if(modo === 'editar' && id) { const d = localData.find(x => x.id === id); if(d) setTimeout(() => Object.keys(d).forEach(k => { if(document.getElementById(k)) document.getElementById(k).value = d[k]; }), 50); } document.getElementById('modalRegistro').style.display='block'; }
-    async function guardarDatoMaestro() { let o = {}; document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => o[i.id] = i.value); if(modoModal === 'editar' && selectedId) await db.collection(currentColl).doc(selectedId).update(o); else await db.collection(currentColl).add(o); cerrarModales(); }
+    function abrirModalCierre(id) { selectedId = id; document.getElementById('tk_respuesta_cierre').value = ""; document.getElementById('modalCerrarTicket').style.display = 'block'; }
+    async function ejecutarCierreConComentario() { const r = document.getElementById('tk_respuesta_cierre').value; if(!r) return alert("Escribe la solución"); await db.collection("tickets").doc(selectedId).update({ estado: "Cerrado", respuesta: r, fecha_cierre: new Date().toLocaleString() }); cerrarModales(); }
+    async function verDetalleTicket(id) { const doc = await db.collection("tickets").doc(id).get(); const t = doc.data(); document.getElementById('detalle_content').innerHTML = `<div class="grid-bonito" style="grid-template-columns:1fr"><p><b>Estado:</b> ${t.estado}</p><p><b>Descripción:</b> ${t.desc}</p>${t.respuesta ? `<p style="background:#e7f3ff; padding:10px; border-radius:10px;"><b>Solución:</b> ${t.respuesta}</p>` : ''}</div>`; document.getElementById('modalVerTicket').style.display = 'block'; }
+    function abrirModalRegistro(modo, id = null) { modoModal = modo; selectedId = id; const f = document.getElementById('form_dinamico'); f.innerHTML = ""; let c = currentColl === 'usuarios' ? [["Nombre","nom"],["Correo","cor"],["Rol","rol","select",["Admin","Gestor","Usuario"]]] : [["Nombre","nom"],["Serial","ser"],["Sede","sed"]]; c.forEach(x => { let inp = x[2]==="select" ? `<select id="${x[1]}">${x[3].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>` : `<input type="text" id="${x[1]}">`; f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${inp}</div>`; }); if(modo==='editar') { const d = localData.find(x=>x.id===id); setTimeout(()=>Object.keys(d).forEach(k=>{if(document.getElementById(k)) document.getElementById(k).value=d[k]}),50); } document.getElementById('modalRegistro').style.display='block'; }
+    async function guardarDatoMaestro() { let o = {}; document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => o[i.id] = i.value); if(modoModal === 'editar') await db.collection(currentColl).doc(selectedId).update(o); else await db.collection(currentColl).add(o); cerrarModales(); }
+    function cargarMisTickets() { const c = document.getElementById('mis_tk_container'); c.innerHTML = "Cargando..."; db.collection("tickets").where("usuario", "==", user.email).onSnapshot(s => { c.innerHTML = ""; s.forEach(doc => { const t = doc.data(); const col = t.estado === 'Cerrado' ? 'var(--success)' : (t.estado === 'En Proceso' ? 'var(--warning)' : 'var(--primary)'); c.innerHTML += `<div class="card tk-card" style="border-left-color: ${col}"><div class="tk-status" style="background:${col}">${t.estado}</div><h4>${t.tipo}</h4><p>${t.desc.substring(0,60)}...</p><button class="btn-acc bg-v-gray" style="margin-top:10px" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button></div>`; }); }); }
+    async function enviarTicket() { const d = document.getElementById('tk_desc').value; if(!d) return alert("Escribe el problema"); await db.collection("tickets").add({ usuario: user.email, tipo: tk_tipo.value, desc: d, estado: "Abierto", asignado: "Pendiente", fecha: new Date().toLocaleString() }); alert("Enviado"); volver(); }
+    async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
+    async function eliminar(id, coll) { if(confirm("¿Eliminar?")) await db.collection(coll || currentColl).doc(id).delete(); }
     async function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); document.getElementById('modalReasignar').style.display = 'block'; }
     async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); }
-    async function cargarGraficaActualizada() { const f = document.getElementById('filtro_stats').value; const snap = await db.collection("tickets").get(); let conteo = {}; snap.forEach(doc => { let val = f === 'estado' ? doc.data().estado : f === 'tipo' ? doc.data().tipo : (doc.data().asignado || "Sin Asignar"); conteo[val] = (conteo[val] || 0) + 1; }); if(miChart) miChart.destroy(); miChart = new Chart(document.getElementById('miGrafica'), { type: 'doughnut', data: { labels: Object.keys(conteo), datasets: [{ data: Object.values(conteo), backgroundColor: ['#2563eb','#22c55e','#f59e0b','#ef4444','#8b5cf6','#00bcd4'] }] }, options: { responsive: true, maintainAspectRatio: false } }); }
-    function cargarMisTickets() { const c = document.getElementById('mis_tk_container'); c.innerHTML = "Cargando..."; db.collection("tickets").where("usuario", "==", user.email).onSnapshot(s => { c.innerHTML = ""; s.forEach(doc => { const t = doc.data(); const col = t.estado === 'Cerrado' ? 'var(--success)' : (t.estado === 'En Proceso' ? 'var(--warning)' : 'var(--primary)'); c.innerHTML += `<div class="card tk-card" style="border-left-color: ${col}"><div class="tk-status" style="background:${col}">${t.estado}</div><h4>${t.tipo}</h4><p>${t.desc.substring(0,80)}...</p><small><b>Gestor:</b> ${t.asignado || 'Pend.'}</small><br><button class="btn-acc bg-v-gray" style="margin-top:10px" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button></div>`; }); }); }
-    async function enviarTicket() { const d = document.getElementById('tk_desc').value; if(!d) return alert("Escribe el problema"); await db.collection("tickets").add({ usuario: user.email, tipo: tk_tipo.value, desc: d, estado: "Abierto", asignado: "Pendiente", fecha: new Date().toLocaleString() }); alert("Ticket enviado"); volver(); }
-    async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
-    async function eliminar(id, coll) { if(confirm("¿Eliminar definitivamente?")) await db.collection(coll || currentColl).doc(id).delete(); }
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { auth.signOut().then(() => location.reload()); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
     function abrir_maestro(c, t) { abrir('mod_maestro', c, t); }
+    async function cargarGraficaActualizada() { const snap = await db.collection("tickets").get(); let conteo = {}; snap.forEach(doc => { let val = doc.data().estado; conteo[val] = (conteo[val] || 0) + 1; }); if(miChart) miChart.destroy(); miChart = new Chart(document.getElementById('miGrafica'), { type: 'doughnut', data: { labels: Object.keys(conteo), datasets: [{ data: Object.values(conteo), backgroundColor: ['#2563eb','#22c55e','#f59e0b'] }] }, options: { responsive: true, maintainAspectRatio: false } }); }
 </script>
 </body>
 </html>
