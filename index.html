@@ -24,8 +24,6 @@
         #dashboard { display: none; padding: 25px; }
         
         .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-        
-        /* Tarjetas con display none por defecto para evitar parpadeo */
         .card { background: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: none; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.08); border-color: var(--primary); }
         .card i { font-size: 40px; color: var(--primary); margin-bottom: 15px; }
@@ -40,13 +38,7 @@
         .btn-agregar-master { background: linear-gradient(135deg, #2563eb, #1e40af); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); text-transform: uppercase; font-size: 0.85rem; }
         .btn-acc { width: 34px; height: 34px; border-radius: 8px; border: none; color: white; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; margin-right: 5px; }
         
-        /* Colores de Botones de Acción */
-        .bg-v-gray { background: var(--gray); } 
-        .bg-p-orange { background: var(--warning); } 
-        .bg-r-purple { background: var(--purple); } 
-        .bg-c-green { background: var(--success); } 
-        .bg-d-red { background: var(--danger); } 
-        .bg-info-e { background: var(--info); }
+        .bg-v-gray { background: var(--gray); } .bg-p-orange { background: var(--warning); } .bg-r-purple { background: var(--purple); } .bg-c-green { background: var(--success); } .bg-d-red { background: var(--danger); } .bg-info-e { background: var(--info); }
 
         .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(5px); }
         .modal-content { background: white; margin: 2% auto; padding: 40px; width: 90%; max-width: 800px; border-radius: 25px; position: relative; }
@@ -116,7 +108,7 @@
     <div id="mod_admin_tickets" class="modulo">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <button onclick="volver()" class="btn-gray">Volver</button>
-            <h2>Gestión Central de Tickets</h2>
+            <h2 id="admin_tit_dinamico">Gestión de Tickets</h2>
         </div>
         <table>
             <thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Estado</th><th>Gestor</th><th>Acciones</th></tr></thead>
@@ -202,7 +194,7 @@
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    let user, userRole, currentColl, localData = [], selectedId, modoModal = "nuevo", miChart = null, listaGestoresGlobal = [];
+    let user, userRole, currentColl, localData = [], selectedId, modoModal = "nuevo", miChart = null, listaGestoresGlobal = [], nombreRealUsuario = "";
 
     auth.onAuthStateChanged(async (u) => {
         if(u) {
@@ -224,21 +216,22 @@
     }
 
     async function verificarRol() {
-        // Limpieza inmediata para evitar parpadeo
         document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
-
-        if(user.email === "camicarmona1212@gmail.com") userRole = "Admin";
-        else {
-            const q = await db.collection("usuarios").where("cor", "==", user.email).get();
-            userRole = !q.empty ? q.docs[0].data().rol : "Usuario";
-        }
         
+        const q = await db.collection("usuarios").where("cor", "==", user.email).get();
+        if(!q.empty) {
+            const userData = q.docs[0].data();
+            userRole = userData.rol;
+            nombreRealUsuario = userData.nom; // Guardamos el nombre para filtrar asignaciones
+        } else {
+            userRole = (user.email === "camicarmona1212@gmail.com") ? "Admin" : "Usuario";
+            nombreRealUsuario = "Admin";
+        }
+
         document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
         const c = ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_calendario", "card_stats", "card_usuarios", "card_aulas", "card_impresoras"];
         const v = { "Admin": c, "Gestor": c.filter(x => x !== "card_usuarios" && x !== "card_stats"), "Usuario": ["card_mis_tickets", "card_enviar_ticket"] };
-        (v[userRole] || v["Usuario"]).forEach(id => {
-            if(document.getElementById(id)) document.getElementById(id).style.display = 'block';
-        });
+        (v[userRole] || v["Usuario"]).forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
     }
 
     function abrir(id, mColl = null, mTit = null) {
@@ -263,15 +256,13 @@
         document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none');
     }
 
-    // --- TABLAS MAESTRAS CON EDICIÓN ---
     function renderTablaMaestra() {
         const b = document.getElementById('m_tbody'); b.innerHTML = "";
         const h = document.getElementById('m_thead');
         if(currentColl === 'usuarios') {
             h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
             localData.forEach(e => {
-                b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td>
-                <td>
+                b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td><td>
                     <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>
                     <button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>
                 </td></tr>`;
@@ -279,8 +270,7 @@
         } else {
             h.innerHTML = `<tr><th>Equipo</th><th>Serial</th><th>Sede</th><th>Acciones</th></tr>`;
             localData.forEach(e => {
-                b.innerHTML += `<tr><td>${e.nom || e.pc}</td><td>${e.ser || 'N/A'}</td><td>${e.sed || 'N/A'}</td>
-                <td>
+                b.innerHTML += `<tr><td>${e.nom || e.pc}</td><td>${e.ser || 'N/A'}</td><td>${e.sed || 'N/A'}</td><td>
                     <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>
                     <button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>
                 </td></tr>`;
@@ -310,19 +300,22 @@
         cerrarModales();
     }
 
-    // --- TICKETS Y GESTIÓN ---
     function cargarTicketsAdmin() {
         const tb = document.getElementById('tbody_admin_tickets');
         db.collection("tickets").onSnapshot(snap => {
             tb.innerHTML = "";
             snap.forEach(doc => {
                 const t = doc.data();
+                
+                // FILTRO: Si es Gestor, solo ve lo asignado a su NOMBRE REAL
+                if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
+
                 tb.innerHTML += `<tr><td>#${doc.id.substring(0,5).toUpperCase()}</td><td>${t.usuario.split('@')[0]}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado || 'Pendiente'}</td><td>
                     <button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>
                     <button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>
                     ${userRole==='Admin' ? `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : ''}
                     <button class="btn-acc bg-c-green" onclick="actEstado('${doc.id}','Cerrado')"><i class="fas fa-check-circle"></i></button>
-                    <button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>
+                    ${userRole==='Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : ''}
                 </td></tr>`;
             });
         });
@@ -331,7 +324,6 @@
     async function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); document.getElementById('modalReasignar').style.display = 'block'; }
     async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); }
     
-    // --- ESTADÍSTICAS ---
     async function cargarGraficaActualizada() {
         const f = document.getElementById('filtro_stats').value; const snap = await db.collection("tickets").get(); let conteo = {};
         snap.forEach(doc => { let val = f === 'estado' ? doc.data().estado : f === 'tipo' ? doc.data().tipo : f === 'gestor' ? (doc.data().asignado || "Sin Asignar") : doc.data().usuario.split('@')[0]; conteo[val] = (conteo[val] || 0) + 1; });
@@ -339,7 +331,6 @@
         miChart = new Chart(document.getElementById('miGrafica'), { type: f === 'usuario' ? 'bar' : 'doughnut', data: { labels: Object.keys(conteo), datasets: [{ data: Object.values(conteo), backgroundColor: ['#2563eb','#22c55e','#f59e0b','#ef4444','#8b5cf6','#00bcd4'] }] }, options: { responsive: true, maintainAspectRatio: false } });
     }
 
-    // --- OTROS ---
     function cargarMisTickets() {
         const c = document.getElementById('mis_tk_container'); c.innerHTML = "Cargando...";
         db.collection("tickets").where("usuario", "==", user.email).onSnapshot(s => {
