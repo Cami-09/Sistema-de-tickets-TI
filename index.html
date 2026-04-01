@@ -24,7 +24,9 @@
         #dashboard { display: none; padding: 25px; }
         
         .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-        .card { background: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        
+        /* Tarjetas con display none por defecto para evitar parpadeo */
+        .card { background: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: none; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.08); border-color: var(--primary); }
         .card i { font-size: 40px; color: var(--primary); margin-bottom: 15px; }
         .card h3 { margin: 0; font-size: 1.1rem; color: var(--dark); }
@@ -38,6 +40,7 @@
         .btn-agregar-master { background: linear-gradient(135deg, #2563eb, #1e40af); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); text-transform: uppercase; font-size: 0.85rem; }
         .btn-acc { width: 34px; height: 34px; border-radius: 8px; border: none; color: white; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; margin-right: 5px; }
         
+        /* Colores de Botones de Acción */
         .bg-v-gray { background: var(--gray); } 
         .bg-p-orange { background: var(--warning); } 
         .bg-r-purple { background: var(--purple); } 
@@ -110,25 +113,6 @@
         <div id="mis_tk_container" class="grid-main"></div>
     </div>
 
-    <div id="mod_enviar_ticket" class="modulo">
-        <button onclick="volver()" class="btn-gray">⬅ Volver</button>
-        <div style="max-width:600px; margin:auto;">
-            <h2 style="text-align:center;"><i class="fas fa-paper-plane"></i> Nueva Solicitud</h2>
-            <div class="grid-bonito" style="grid-template-columns:1fr;">
-                <div class="campo-group"><label>Tipo de Requerimiento</label>
-                    <select id="tk_tipo">
-                        <option>Soporte Técnico</option><option>Redes e Internet</option>
-                        <option>Software / Licencias</option><option>Mantenimiento Físico</option>
-                    </select>
-                </div>
-                <div class="campo-group"><label>Descripción del Problema</label>
-                    <textarea id="tk_desc" rows="5" placeholder="Escriba aquí los detalles..."></textarea>
-                </div>
-                <button class="btn-agregar-master" onclick="enviarTicket()" style="justify-content:center;">Enviar Ahora</button>
-            </div>
-        </div>
-    </div>
-
     <div id="mod_admin_tickets" class="modulo">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <button onclick="volver()" class="btn-gray">Volver</button>
@@ -143,12 +127,12 @@
     <div id="mod_stats" class="modulo">
         <button onclick="volver()" class="btn-gray">Volver</button>
         <div style="margin-top:20px; display:flex; justify-content:space-between; align-items:center;">
-            <h2>Estadísticas del Sistema</h2>
+            <h2>Estadísticas</h2>
             <select id="filtro_stats" onchange="cargarGraficaActualizada()" style="padding:10px; border-radius:10px; border:2px solid var(--primary); font-weight:bold;">
                 <option value="estado">Tickets por Estado</option>
                 <option value="tipo">Tickets por Requerimiento</option>
                 <option value="gestor">Tickets por Gestor</option>
-                <option value="usuario">Top Usuarios (Tickets)</option>
+                <option value="usuario">Top Usuarios</option>
             </select>
         </div>
         <div class="chart-container"><canvas id="miGrafica"></canvas></div>
@@ -158,19 +142,30 @@
         <button onclick="volver()" class="btn-gray">Volver</button>
         <div id="calendar" style="margin-top:20px;"></div>
     </div>
-</div>
-
-<div id="modalVerTicket" class="modal">
-    <div class="modal-content">
-        <h3 id="det_tit">Detalles del Registro</h3>
-        <div id="detalle_content" class="grid-bonito"></div>
-        <div style="margin-top:20px; text-align:right;"><button class="btn-agregar-master" onclick="cerrarModales()">Cerrar</button></div>
+    
+    <div id="mod_enviar_ticket" class="modulo">
+        <button onclick="volver()" class="btn-gray">⬅ Volver</button>
+        <div style="max-width:600px; margin:auto;">
+            <h2 style="text-align:center;"><i class="fas fa-paper-plane"></i> Nueva Solicitud</h2>
+            <div class="grid-bonito" style="grid-template-columns:1fr;">
+                <div class="campo-group"><label>Tipo</label>
+                    <select id="tk_tipo">
+                        <option>Soporte Técnico</option><option>Redes e Internet</option>
+                        <option>Software / Licencias</option><option>Mantenimiento Físico</option>
+                    </select>
+                </div>
+                <div class="campo-group"><label>Descripción</label>
+                    <textarea id="tk_desc" rows="5" placeholder="Escriba aquí los detalles..."></textarea>
+                </div>
+                <button class="btn-agregar-master" onclick="enviarTicket()" style="justify-content:center;">Enviar Ahora</button>
+            </div>
+        </div>
     </div>
 </div>
 
 <div id="modalRegistro" class="modal">
     <div class="modal-content">
-        <h3 id="modal_tit">Formulario de Registro</h3>
+        <h3 id="modal_tit">Formulario</h3>
         <div id="form_dinamico" class="grid-bonito"></div>
         <div style="margin-top:30px; text-align:right;">
             <button onclick="cerrarModales()" style="background:none; border:none; margin-right:20px; cursor:pointer;">Cancelar</button>
@@ -183,13 +178,21 @@
     <div class="modal-content" style="max-width:400px;">
         <h2>Reasignar Gestor</h2>
         <div class="campo-group">
-            <label>Seleccionar Nuevo Gestor</label>
+            <label>Nuevo Gestor</label>
             <select id="re_gestor_new" style="width:100%;"></select>
         </div>
         <div style="margin-top:30px; display:flex; flex-direction:column; gap:10px;">
-            <button class="btn-agregar-master" onclick="ejecutarReasignar()" style="justify-content:center;">Confirmar Reasignación</button>
-            <button onclick="cerrarModales()" style="background:none; border:none; cursor:pointer; color:var(--gray);">Cancelar</button>
+            <button class="btn-agregar-master" onclick="ejecutarReasignar()" style="justify-content:center;">Confirmar</button>
+            <button onclick="cerrarModales()" style="background:none; border:none; cursor:pointer;">Cancelar</button>
         </div>
+    </div>
+</div>
+
+<div id="modalVerTicket" class="modal">
+    <div class="modal-content">
+        <h3>Detalle</h3>
+        <div id="detalle_content" class="grid-bonito"></div>
+        <div style="margin-top:20px; text-align:right;"><button class="btn-agregar-master" onclick="cerrarModales()">Cerrar</button></div>
     </div>
 </div>
 
@@ -221,16 +224,21 @@
     }
 
     async function verificarRol() {
+        // Limpieza inmediata para evitar parpadeo
+        document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
+
         if(user.email === "camicarmona1212@gmail.com") userRole = "Admin";
         else {
             const q = await db.collection("usuarios").where("cor", "==", user.email).get();
             userRole = !q.empty ? q.docs[0].data().rol : "Usuario";
         }
+        
         document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
         const c = ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_calendario", "card_stats", "card_usuarios", "card_aulas", "card_impresoras"];
         const v = { "Admin": c, "Gestor": c.filter(x => x !== "card_usuarios" && x !== "card_stats"), "Usuario": ["card_mis_tickets", "card_enviar_ticket"] };
-        document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
-        (v[userRole] || v["Usuario"]).forEach(id => document.getElementById(id).style.display = 'block');
+        (v[userRole] || v["Usuario"]).forEach(id => {
+            if(document.getElementById(id)) document.getElementById(id).style.display = 'block';
+        });
     }
 
     function abrir(id, mColl = null, mTit = null) {
@@ -255,66 +263,7 @@
         document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none');
     }
 
-    // --- FUNCIONALIDAD TICKETS ---
-    function cargarMisTickets() {
-        const container = document.getElementById('mis_tk_container');
-        container.innerHTML = "Cargando...";
-        db.collection("tickets").where("usuario", "==", user.email).onSnapshot(snap => {
-            container.innerHTML = "";
-            document.getElementById('count_mis_tk').innerText = snap.size;
-            snap.forEach(doc => {
-                const t = doc.data();
-                const color = t.estado === 'Cerrado' ? 'var(--success)' : (t.estado === 'En Proceso' ? 'var(--warning)' : 'var(--primary)');
-                container.innerHTML += `
-                    <div class="card tk-card" style="border-left-color: ${color}">
-                        <div class="tk-status" style="background:${color}">${t.estado}</div>
-                        <h4 style="margin:0 0 10px 0;">${t.tipo}</h4>
-                        <p style="font-size:0.85rem; color:gray;">${t.desc.substring(0,80)}...</p>
-                        <small><b>Gestor:</b> ${t.asignado || 'Pendiente'}</small><br>
-                        <button class="btn-acc bg-v-gray" style="margin-top:10px" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>
-                    </div>`;
-            });
-        });
-    }
-
-    function cargarTicketsAdmin() {
-        const tbody = document.getElementById('tbody_admin_tickets');
-        db.collection("tickets").onSnapshot(snap => {
-            tbody.innerHTML = "";
-            snap.forEach(doc => {
-                const t = doc.data();
-                tbody.innerHTML += `<tr>
-                    <td>#${doc.id.substring(0,5).toUpperCase()}</td>
-                    <td>${t.usuario.split('@')[0]}</td>
-                    <td>${t.tipo}</td>
-                    <td><span style="color:var(--primary);font-weight:bold">${t.estado}</span></td>
-                    <td>${t.asignado || 'Pendiente'}</td>
-                    <td>
-                        <button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')" title="Ver"><i class="fas fa-eye"></i></button>
-                        <button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')" title="En Proceso"><i class="fas fa-clock"></i></button>
-                        ${userRole==='Admin' ? `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>` : ''}
-                        <button class="btn-acc bg-c-green" onclick="actEstado('${doc.id}','Cerrado')" title="Cerrar"><i class="fas fa-check-circle"></i></button>
-                        <button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>`;
-            });
-        });
-    }
-
-    async function abrirRe(id) { 
-        selectedId = id; 
-        const s = document.getElementById('re_gestor_new'); 
-        s.innerHTML = ""; 
-        listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); 
-        document.getElementById('modalReasignar').style.display = 'block'; 
-    }
-    
-    async function ejecutarReasignar() { 
-        await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); 
-        cerrarModales(); 
-    }
-
-    // --- TABLAS MAESTRAS (CON CORRECCIÓN DE EDICIÓN) ---
+    // --- TABLAS MAESTRAS CON EDICIÓN ---
     function renderTablaMaestra() {
         const b = document.getElementById('m_tbody'); b.innerHTML = "";
         const h = document.getElementById('m_thead');
@@ -323,130 +272,92 @@
             localData.forEach(e => {
                 b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td>
                 <td>
-                    <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>
-                    <button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>
                 </td></tr>`;
             });
         } else {
-            h.innerHTML = `<tr><th>Nombre/Equipo</th><th>Serial/Referencia</th><th>Sede</th><th>Acciones</th></tr>`;
+            h.innerHTML = `<tr><th>Equipo</th><th>Serial</th><th>Sede</th><th>Acciones</th></tr>`;
             localData.forEach(e => {
                 b.innerHTML += `<tr><td>${e.nom || e.pc}</td><td>${e.ser || 'N/A'}</td><td>${e.sed || 'N/A'}</td>
                 <td>
-                    <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>
-                    <button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>
                 </td></tr>`;
             });
         }
     }
 
     function abrirModalRegistro(modo, id = null) {
-        modoModal = modo;
-        selectedId = id;
+        modoModal = modo; selectedId = id;
         const f = document.getElementById('form_dinamico'); f.innerHTML = "";
-        
-        let c = currentColl === 'usuarios' ? 
-            [["Nombre","nom"],["Correo","cor"],["Rol","rol","select",["Admin","Gestor","Usuario"]]] : 
-            [["Nombre/Equipo","nom"],["Serial/Ref","ser"],["Sede","sed"],["Marca","mar"]];
-        
+        let c = currentColl === 'usuarios' ? [["Nombre","nom"],["Correo","cor"],["Rol","rol","select",["Admin","Gestor","Usuario"]]] : [["Nombre/Equipo","nom"],["Serial/Ref","ser"],["Sede","sed"],["Marca","mar"]];
         c.forEach(x => {
             let inp = x[2]==="select" ? `<select id="${x[1]}">${x[3].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>` : `<input type="text" id="${x[1]}">`;
             f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${inp}</div>`;
         });
-
-        // Si es editar, cargar datos actuales
         if(modo === 'editar' && id) {
-            const data = localData.find(x => x.id === id);
-            if(data) {
-                setTimeout(() => {
-                    Object.keys(data).forEach(key => {
-                        const el = document.getElementById(key);
-                        if(el) el.value = data[key];
-                    });
-                }, 50);
-            }
-            document.getElementById('modal_tit').innerText = "Editar Registro";
-        } else {
-            document.getElementById('modal_tit').innerText = "Nuevo Registro";
+            const d = localData.find(x => x.id === id);
+            if(d) setTimeout(() => Object.keys(d).forEach(k => { if(document.getElementById(k)) document.getElementById(k).value = d[k]; }), 50);
         }
-        
         document.getElementById('modalRegistro').style.display='block';
     }
 
     async function guardarDatoMaestro() {
-        let o = {}; 
-        document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => o[i.id] = i.value);
-        
-        try {
-            if(modoModal === 'editar' && selectedId) {
-                await db.collection(currentColl).doc(selectedId).update(o);
-                alert("Cambios aplicados correctamente");
-            } else {
-                await db.collection(currentColl).add(o);
-                alert("Registro creado con éxito");
-            }
-            cerrarModales();
-        } catch (error) {
-            console.error("Error al guardar:", error);
-            alert("Error al procesar la solicitud");
-        }
+        let o = {}; document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => o[i.id] = i.value);
+        if(modoModal === 'editar' && selectedId) await db.collection(currentColl).doc(selectedId).update(o);
+        else await db.collection(currentColl).add(o);
+        cerrarModales();
     }
 
+    // --- TICKETS Y GESTIÓN ---
+    function cargarTicketsAdmin() {
+        const tb = document.getElementById('tbody_admin_tickets');
+        db.collection("tickets").onSnapshot(snap => {
+            tb.innerHTML = "";
+            snap.forEach(doc => {
+                const t = doc.data();
+                tb.innerHTML += `<tr><td>#${doc.id.substring(0,5).toUpperCase()}</td><td>${t.usuario.split('@')[0]}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado || 'Pendiente'}</td><td>
+                    <button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>
+                    <button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>
+                    ${userRole==='Admin' ? `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : ''}
+                    <button class="btn-acc bg-c-green" onclick="actEstado('${doc.id}','Cerrado')"><i class="fas fa-check-circle"></i></button>
+                    <button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>
+                </td></tr>`;
+            });
+        });
+    }
+
+    async function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); document.getElementById('modalReasignar').style.display = 'block'; }
+    async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); }
+    
     // --- ESTADÍSTICAS ---
     async function cargarGraficaActualizada() {
-        const filtro = document.getElementById('filtro_stats').value;
-        const snap = await db.collection("tickets").get();
-        let conteo = {};
-        snap.forEach(doc => {
-            let val = filtro === 'estado' ? doc.data().estado : filtro === 'tipo' ? doc.data().tipo : filtro === 'gestor' ? (doc.data().asignado || "Sin Asignar") : doc.data().usuario.split('@')[0];
-            conteo[val] = (conteo[val] || 0) + 1;
-        });
+        const f = document.getElementById('filtro_stats').value; const snap = await db.collection("tickets").get(); let conteo = {};
+        snap.forEach(doc => { let val = f === 'estado' ? doc.data().estado : f === 'tipo' ? doc.data().tipo : f === 'gestor' ? (doc.data().asignado || "Sin Asignar") : doc.data().usuario.split('@')[0]; conteo[val] = (conteo[val] || 0) + 1; });
         if(miChart) miChart.destroy();
-        const ctx = document.getElementById('miGrafica').getContext('2d');
-        miChart = new Chart(ctx, {
-            type: filtro === 'usuario' ? 'bar' : 'doughnut',
-            data: { labels: Object.keys(conteo), datasets: [{ data: Object.values(conteo), backgroundColor: ['#2563eb','#22c55e','#f59e0b','#ef4444','#8b5cf6','#00bcd4'] }] },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
+        miChart = new Chart(document.getElementById('miGrafica'), { type: f === 'usuario' ? 'bar' : 'doughnut', data: { labels: Object.keys(conteo), datasets: [{ data: Object.values(conteo), backgroundColor: ['#2563eb','#22c55e','#f59e0b','#ef4444','#8b5cf6','#00bcd4'] }] }, options: { responsive: true, maintainAspectRatio: false } });
     }
 
     // --- OTROS ---
-    function inicializarCalendario() {
-        const calendarEl = document.getElementById('calendar');
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth', locale: 'es',
-            events: async function(info, success) {
-                const snap = await db.collection("tickets").get();
-                const evs = [];
-                snap.forEach(doc => { evs.push({ title: doc.data().tipo, start: new Date(), backgroundColor: doc.data().estado === 'Cerrado' ? '#22c55e' : '#2563eb' }); });
-                success(evs);
-            }
+    function cargarMisTickets() {
+        const c = document.getElementById('mis_tk_container'); c.innerHTML = "Cargando...";
+        db.collection("tickets").where("usuario", "==", user.email).onSnapshot(s => {
+            c.innerHTML = ""; document.getElementById('count_mis_tk').innerText = s.size;
+            s.forEach(doc => { const t = doc.data(); const col = t.estado === 'Cerrado' ? 'var(--success)' : (t.estado === 'En Proceso' ? 'var(--warning)' : 'var(--primary)');
+            c.innerHTML += `<div class="card tk-card" style="border-left-color: ${col}"><div class="tk-status" style="background:${col}">${t.estado}</div><h4>${t.tipo}</h4><p>${t.desc.substring(0,80)}...</p><small><b>Gestor:</b> ${t.asignado || 'Pendiente'}</small><br><button class="btn-acc bg-v-gray" style="margin-top:10px" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button></div>`; });
         });
-        calendar.render();
     }
 
-    async function enviarTicket() {
-        const d = document.getElementById('tk_desc').value; if(!d) return alert("Escriba la descripción");
-        await db.collection("tickets").add({ usuario: user.email, tipo: tk_tipo.value, desc: d, estado: "Abierto", asignado: "Pendiente", fecha: new Date().toLocaleString() });
-        alert("Enviado"); volver();
-    }
-
-    async function verDetalleTicket(id) {
-        const doc = await db.collection("tickets").doc(id).get();
-        const t = doc.data();
-        document.getElementById('detalle_content').innerHTML = `
-            <div class="campo-group"><label>Tipo</label><p>${t.tipo}</p></div>
-            <div class="campo-group"><label>Estado</label><p>${t.estado}</p></div>
-            <div class="campo-group" style="grid-column:span 2"><label>Descripción</label><p style="background:#f1f5f9; padding:10px; border-radius:10px;">${t.desc}</p></div>
-        `;
-        document.getElementById('modalVerTicket').style.display='block';
-    }
-
+    async function enviarTicket() { const d = document.getElementById('tk_desc').value; if(!d) return alert("Describa el problema"); await db.collection("tickets").add({ usuario: user.email, tipo: tk_tipo.value, desc: d, estado: "Abierto", asignado: "Pendiente", fecha: new Date().toLocaleString() }); alert("Enviado"); volver(); }
+    async function verDetalleTicket(id) { const doc = await db.collection("tickets").doc(id).get(); const t = doc.data(); document.getElementById('detalle_content').innerHTML = `<div class="campo-group"><label>Tipo</label><p>${t.tipo}</p></div><div class="campo-group"><label>Estado</label><p>${t.estado}</p></div><div class="campo-group" style="grid-column:span 2"><label>Descripción</label><p style="background:#f1f5f9; padding:10px; border-radius:10px;">${t.desc}</p></div>`; document.getElementById('modalVerTicket').style.display='block'; }
     async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
     async function eliminar(id, coll) { if(confirm("¿Eliminar?")) await db.collection(coll || currentColl).doc(id).delete(); }
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { auth.signOut().then(() => location.reload()); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
     function abrir_maestro(c, t) { abrir('mod_maestro', c, t); }
+    function inicializarCalendario() { const calendarEl = document.getElementById('calendar'); const calendar = new FullCalendar.Calendar(calendarEl, { initialView: 'dayGridMonth', locale: 'es', events: async function(info, success) { const snap = await db.collection("tickets").get(); const evs = []; snap.forEach(doc => { evs.push({ title: doc.data().tipo, start: new Date(), backgroundColor: doc.data().estado === 'Cerrado' ? '#22c55e' : '#2563eb' }); }); success(evs); } }); calendar.render(); }
 </script>
 </body>
 </html>
