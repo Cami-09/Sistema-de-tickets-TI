@@ -162,7 +162,7 @@
 
 <div id="modalVerTicket" class="modal">
     <div class="modal-content">
-        <h3>Detalles del Registro</h3>
+        <h3 id="det_tit">Detalles del Registro</h3>
         <div id="detalle_content" class="grid-bonito"></div>
         <div style="margin-top:20px; text-align:right;"><button class="btn-agregar-master" onclick="cerrarModales()">Cerrar</button></div>
     </div>
@@ -170,11 +170,11 @@
 
 <div id="modalRegistro" class="modal">
     <div class="modal-content">
-        <h3 id="modal_tit">Formulario</h3>
+        <h3 id="modal_tit">Formulario de Registro</h3>
         <div id="form_dinamico" class="grid-bonito"></div>
         <div style="margin-top:30px; text-align:right;">
             <button onclick="cerrarModales()" style="background:none; border:none; margin-right:20px; cursor:pointer;">Cancelar</button>
-            <button class="btn-agregar-master" onclick="guardarDatoMaestro()">Guardar</button>
+            <button class="btn-agregar-master" onclick="guardarDatoMaestro()">Guardar Cambios</button>
         </div>
     </div>
 </div>
@@ -255,6 +255,7 @@
         document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none');
     }
 
+    // --- FUNCIONALIDAD TICKETS ---
     function cargarMisTickets() {
         const container = document.getElementById('mis_tk_container');
         container.innerHTML = "Cargando...";
@@ -313,37 +314,7 @@
         cerrarModales(); 
     }
 
-    async function cargarGraficaActualizada() {
-        const filtro = document.getElementById('filtro_stats').value;
-        const snap = await db.collection("tickets").get();
-        let conteo = {};
-        snap.forEach(doc => {
-            let val = filtro === 'estado' ? doc.data().estado : filtro === 'tipo' ? doc.data().tipo : filtro === 'gestor' ? (doc.data().asignado || "Sin Asignar") : doc.data().usuario.split('@')[0];
-            conteo[val] = (conteo[val] || 0) + 1;
-        });
-        if(miChart) miChart.destroy();
-        const ctx = document.getElementById('miGrafica').getContext('2d');
-        miChart = new Chart(ctx, {
-            type: filtro === 'usuario' ? 'bar' : 'doughnut',
-            data: { labels: Object.keys(conteo), datasets: [{ data: Object.values(conteo), backgroundColor: ['#2563eb','#22c55e','#f59e0b','#ef4444','#8b5cf6','#00bcd4'] }] },
-            options: { responsive: true, maintainAspectRatio: false }
-        });
-    }
-
-    function inicializarCalendario() {
-        const calendarEl = document.getElementById('calendar');
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth', locale: 'es',
-            events: async function(info, success) {
-                const snap = await db.collection("tickets").get();
-                const evs = [];
-                snap.forEach(doc => { evs.push({ title: doc.data().tipo, start: new Date(), backgroundColor: doc.data().estado === 'Cerrado' ? '#22c55e' : '#2563eb' }); });
-                success(evs);
-            }
-        });
-        calendar.render();
-    }
-
+    // --- TABLAS MAESTRAS (CON CORRECCIÓN DE EDICIÓN) ---
     function renderTablaMaestra() {
         const b = document.getElementById('m_tbody'); b.innerHTML = "";
         const h = document.getElementById('m_thead');
@@ -369,18 +340,88 @@
     }
 
     function abrirModalRegistro(modo, id = null) {
+        modoModal = modo;
+        selectedId = id;
         const f = document.getElementById('form_dinamico'); f.innerHTML = "";
-        let c = currentColl === 'usuarios' ? [["Nombre","nom"],["Correo","cor"],["Rol","rol","select",["Admin","Gestor","Usuario"]]] : [["Nombre/Equipo","nom"],["Serial/Ref","ser"],["Sede","sed"],["Marca","mar"]];
+        
+        let c = currentColl === 'usuarios' ? 
+            [["Nombre","nom"],["Correo","cor"],["Rol","rol","select",["Admin","Gestor","Usuario"]]] : 
+            [["Nombre/Equipo","nom"],["Serial/Ref","ser"],["Sede","sed"],["Marca","mar"]];
+        
         c.forEach(x => {
             let inp = x[2]==="select" ? `<select id="${x[1]}">${x[3].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>` : `<input type="text" id="${x[1]}">`;
             f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${inp}</div>`;
         });
+
+        // Si es editar, cargar datos actuales
+        if(modo === 'editar' && id) {
+            const data = localData.find(x => x.id === id);
+            if(data) {
+                setTimeout(() => {
+                    Object.keys(data).forEach(key => {
+                        const el = document.getElementById(key);
+                        if(el) el.value = data[key];
+                    });
+                }, 50);
+            }
+            document.getElementById('modal_tit').innerText = "Editar Registro";
+        } else {
+            document.getElementById('modal_tit').innerText = "Nuevo Registro";
+        }
+        
         document.getElementById('modalRegistro').style.display='block';
     }
 
     async function guardarDatoMaestro() {
-        let o = {}; document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => o[i.id] = i.value);
-        await db.collection(currentColl).add(o); cerrarModales();
+        let o = {}; 
+        document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => o[i.id] = i.value);
+        
+        try {
+            if(modoModal === 'editar' && selectedId) {
+                await db.collection(currentColl).doc(selectedId).update(o);
+                alert("Cambios aplicados correctamente");
+            } else {
+                await db.collection(currentColl).add(o);
+                alert("Registro creado con éxito");
+            }
+            cerrarModales();
+        } catch (error) {
+            console.error("Error al guardar:", error);
+            alert("Error al procesar la solicitud");
+        }
+    }
+
+    // --- ESTADÍSTICAS ---
+    async function cargarGraficaActualizada() {
+        const filtro = document.getElementById('filtro_stats').value;
+        const snap = await db.collection("tickets").get();
+        let conteo = {};
+        snap.forEach(doc => {
+            let val = filtro === 'estado' ? doc.data().estado : filtro === 'tipo' ? doc.data().tipo : filtro === 'gestor' ? (doc.data().asignado || "Sin Asignar") : doc.data().usuario.split('@')[0];
+            conteo[val] = (conteo[val] || 0) + 1;
+        });
+        if(miChart) miChart.destroy();
+        const ctx = document.getElementById('miGrafica').getContext('2d');
+        miChart = new Chart(ctx, {
+            type: filtro === 'usuario' ? 'bar' : 'doughnut',
+            data: { labels: Object.keys(conteo), datasets: [{ data: Object.values(conteo), backgroundColor: ['#2563eb','#22c55e','#f59e0b','#ef4444','#8b5cf6','#00bcd4'] }] },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    // --- OTROS ---
+    function inicializarCalendario() {
+        const calendarEl = document.getElementById('calendar');
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth', locale: 'es',
+            events: async function(info, success) {
+                const snap = await db.collection("tickets").get();
+                const evs = [];
+                snap.forEach(doc => { evs.push({ title: doc.data().tipo, start: new Date(), backgroundColor: doc.data().estado === 'Cerrado' ? '#22c55e' : '#2563eb' }); });
+                success(evs);
+            }
+        });
+        calendar.render();
     }
 
     async function enviarTicket() {
