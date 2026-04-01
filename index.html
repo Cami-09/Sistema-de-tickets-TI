@@ -29,7 +29,6 @@
         .card i { font-size: 40px; color: var(--primary); margin-bottom: 15px; }
         .card h3 { margin: 0; font-size: 1.1rem; color: var(--dark); }
 
-        /* Estilo Tarjetas Mis Tickets */
         .tk-card { text-align: left !important; border-left: 5px solid var(--primary); position: relative; display: block !important; }
         .tk-status { position: absolute; top: 15px; right: 15px; padding: 4px 10px; border-radius: 10px; font-size: 0.7rem; font-weight: bold; color: white; }
 
@@ -39,7 +38,6 @@
         .btn-agregar-master { background: linear-gradient(135deg, #2563eb, #1e40af); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3); text-transform: uppercase; font-size: 0.85rem; }
         .btn-acc { width: 34px; height: 34px; border-radius: 8px; border: none; color: white; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; justify-content: center; margin-right: 5px; }
         
-        /* Colores de Botones de Acción */
         .bg-v-gray { background: var(--gray); } 
         .bg-p-orange { background: var(--warning); } 
         .bg-r-purple { background: var(--purple); } 
@@ -137,7 +135,7 @@
             <h2>Gestión Central de Tickets</h2>
         </div>
         <table>
-            <thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Estado</th><th>Gestor</th><th>Acciones</th></tr></thead>
             <tbody id="tbody_admin_tickets"></tbody>
         </table>
     </div>
@@ -181,13 +179,27 @@
     </div>
 </div>
 
+<div id="modalReasignar" class="modal">
+    <div class="modal-content" style="max-width:400px;">
+        <h2>Reasignar Gestor</h2>
+        <div class="campo-group">
+            <label>Seleccionar Nuevo Gestor</label>
+            <select id="re_gestor_new" style="width:100%;"></select>
+        </div>
+        <div style="margin-top:30px; display:flex; flex-direction:column; gap:10px;">
+            <button class="btn-agregar-master" onclick="ejecutarReasignar()" style="justify-content:center;">Confirmar Reasignación</button>
+            <button onclick="cerrarModales()" style="background:none; border:none; cursor:pointer; color:var(--gray);">Cancelar</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const firebaseConfig = { apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw", authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com", projectId: "sistema-de-tickets-ti-b12f5" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
 
-    let user, userRole, currentColl, localData = [], selectedId, modoModal = "nuevo", miChart = null;
+    let user, userRole, currentColl, localData = [], selectedId, modoModal = "nuevo", miChart = null, listaGestoresGlobal = [];
 
     auth.onAuthStateChanged(async (u) => {
         if(u) {
@@ -195,11 +207,18 @@
             document.getElementById('login').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
             await verificarRol();
+            cargarGestores();
         } else {
             document.getElementById('login').style.display = 'flex';
             document.getElementById('dashboard').style.display = 'none';
         }
     });
+
+    async function cargarGestores() {
+        const q = await db.collection("usuarios").where("rol", "==", "Gestor").get();
+        listaGestoresGlobal = [];
+        q.forEach(doc => listaGestoresGlobal.push(doc.data()));
+    }
 
     async function verificarRol() {
         if(user.email === "camicarmona1212@gmail.com") userRole = "Admin";
@@ -268,15 +287,30 @@
                     <td>${t.usuario.split('@')[0]}</td>
                     <td>${t.tipo}</td>
                     <td><span style="color:var(--primary);font-weight:bold">${t.estado}</span></td>
+                    <td>${t.asignado || 'Pendiente'}</td>
                     <td>
                         <button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')" title="Ver"><i class="fas fa-eye"></i></button>
                         <button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')" title="En Proceso"><i class="fas fa-clock"></i></button>
+                        ${userRole==='Admin' ? `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>` : ''}
                         <button class="btn-acc bg-c-green" onclick="actEstado('${doc.id}','Cerrado')" title="Cerrar"><i class="fas fa-check-circle"></i></button>
                         <button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>
                     </td>
                 </tr>`;
             });
         });
+    }
+
+    async function abrirRe(id) { 
+        selectedId = id; 
+        const s = document.getElementById('re_gestor_new'); 
+        s.innerHTML = ""; 
+        listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); 
+        document.getElementById('modalReasignar').style.display = 'block'; 
+    }
+    
+    async function ejecutarReasignar() { 
+        await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); 
+        cerrarModales(); 
     }
 
     async function cargarGraficaActualizada() {
