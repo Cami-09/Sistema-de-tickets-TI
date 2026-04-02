@@ -102,6 +102,9 @@
         <div class="card" id="card_admin_tickets" onclick="abrir('mod_admin_tickets')"><i class="fas fa-tasks"></i><h3>Admin Tickets</h3></div>
         <div class="card" id="card_inv_admin" onclick="abrir_maestro('inventario', 'Equipos Administrativos')"><i class="fas fa-laptop"></i><h3>Equipos Administrativos</h3></div>
         <div class="card" id="card_inv_salas" onclick="abrir_maestro('inventario_salas', 'Equipos Salas')"><i class="fas fa-desktop"></i><h3>Equipos Salas</h3></div>
+        
+        <div class="card" id="card_extensiones" onclick="abrir_maestro('extensiones', 'Extensiones Administrativos')"><i class="fas fa-phone-volume"></i><h3>Extensiones Administrativos</h3></div>
+
         <div class="card" id="card_calendario" onclick="abrir('mod_calendario')"><i class="fas fa-calendar-alt"></i><h3>Calendario</h3></div>
         <div class="card" id="card_stats" onclick="abrir('mod_stats')"><i class="fas fa-chart-pie"></i><h3>Estadísticas</h3></div>
         <div class="card" id="card_usuarios" onclick="abrir_maestro('usuarios', 'Usuarios')"><i class="fas fa-users-cog"></i><h3>Usuarios</h3></div>
@@ -158,7 +161,7 @@
             <button class="btn-agregar-master" id="btn_maestro_nuevo" onclick="abrirModalRegistro('nuevo')"><i class="fas fa-plus"></i> Nuevo</button>
         </div>
         <div class="search-container" id="m_search_container" style="display:none;">
-            <input type="text" id="m_search" placeholder="Buscar por PC, Tipo, Modelo, Serial o Responsable..." style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;" onkeyup="filtrarMaestro()">
+            <input type="text" id="m_search" placeholder="Buscar..." style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;" onkeyup="filtrarMaestro()">
         </div>
         <div style="overflow-x:auto;"><table><thead id="m_thead"></thead><tbody id="m_tbody"></tbody></table></div>
     </div>
@@ -218,6 +221,14 @@
                 <button class="btn-agregar-master" onclick="enviarTicket()" style="justify-content:center; margin-top:10px; padding:15px;">Enviar Ticket</button>
             </div>
         </div>
+    </div>
+</div>
+
+<div id="modalVerGeneral" class="modal">
+    <div class="modal-content">
+        <h3 id="ver_gral_titulo">Detalle de Información</h3>
+        <div id="ver_gral_contenido"></div>
+        <div style="margin-top:20px; text-align:right;"><button class="btn-gray" onclick="cerrarModales()">Cerrar</button></div>
     </div>
 </div>
 
@@ -304,15 +315,16 @@
     let user, userRole, currentColl, localData = [], selectedId, modoModal = "nuevo", miChart = null, listaGestoresGlobal = [], nombreRealUsuario = "";
     let selectedMntId = null, selectedCollMnt = null, selectedEquipIdMnt = null;
     let listaRolesGlobal = [];
-    let currentPermissions = {}; // Almacena permisos del usuario logueado
+    let currentPermissions = {}; 
 
-    // PUNTO 3: Agregar Mantenimiento e Historial a Aulas e Impresoras
+    // MODULOS ACTUALIZADOS CON EXTENSIONES
     const MODULOS_SISTEMA = [
         {id: "card_mis_tickets", nom: "Mis Tickets", acts: ["Ver Detalle"]},
         {id: "card_enviar_ticket", nom: "Enviar Ticket", acts: ["Crear"]},
         {id: "card_admin_tickets", nom: "Admin Tickets", acts: ["Editar", "Reasignar", "Finalizar", "Eliminar", "Ver Detalle"]},
         {id: "card_inv_admin", nom: "Equipos Administrativos", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
         {id: "card_inv_salas", nom: "Equipos Salas", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
+        {id: "card_extensiones", nom: "Extensiones Administrativas", acts: ["Crear", "Editar", "Eliminar", "Ver Detalle"]},
         {id: "card_calendario", nom: "Calendario", acts: ["Ver"]},
         {id: "card_stats", nom: "Estadísticas", acts: ["Ver"]},
         {id: "card_usuarios", nom: "Usuarios", acts: ["Crear", "Editar", "Eliminar"]},
@@ -344,11 +356,11 @@
     });
 
     async function cargarRoles() {
-        const snap = await db.collection("roles").onSnapshot(snap => {
+        db.collection("roles").onSnapshot(snap => {
             listaRolesGlobal = [];
             snap.forEach(doc => listaRolesGlobal.push({id: doc.id, ...doc.data()}));
             renderTablaRoles();
-            if(user) verificarRol(); // Re-verificar permisos si cambian los roles
+            if(user) verificarRol();
         });
     }
 
@@ -383,16 +395,16 @@
         
         const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
         
-        // PUNTO 1: Configurar limitaciones por defecto para Gestor
         if(rolDB) {
             currentPermissions = rolDB.accionesPermitidas || {};
         } else if (userRole === "Gestor") {
             currentPermissions = {
                 "card_mis_tickets": ["Ver Detalle"],
                 "card_enviar_ticket": ["Crear"],
-                "card_admin_tickets": ["Editar", "Finalizar", "Ver Detalle"], // NO TIENE REASIGNAR NI ELIMINAR
+                "card_admin_tickets": ["Editar", "Finalizar", "Ver Detalle"],
                 "card_inv_admin": ["Crear", "Editar", "Mantenimiento", "Historial"],
                 "card_inv_salas": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_extensiones": ["Crear", "Editar", "Ver Detalle"],
                 "card_calendario": ["Ver"],
                 "card_aulas": ["Crear", "Editar", "Mantenimiento", "Historial"],
                 "card_impresoras": ["Crear", "Editar", "Mantenimiento", "Historial"],
@@ -409,7 +421,7 @@
             modulosPermitidos = rolDB.modulos;
         } else {
             const vDefault = { 
-                "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_calendario", "card_aulas", "card_impresoras", "card_gest_mantenimientos"],
+                "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_extensiones", "card_calendario", "card_aulas", "card_impresoras", "card_gest_mantenimientos"],
                 "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
             };
             modulosPermitidos = vDefault[userRole] || vDefault["Usuario"];
@@ -467,16 +479,13 @@
         const nombre = document.getElementById('rol_nombre').value;
         const modulos = Array.from(document.querySelectorAll('.chk-rol-mod:checked')).map(c => c.value);
         if(!nombre) return alert("Ingrese el nombre del rol");
-
         let accionesPermitidas = {};
         modulos.forEach(m => {
             accionesPermitidas[m] = Array.from(document.querySelectorAll(`.chk-act-rol[data-mod="${m}"]:checked`)).map(a => a.value);
         });
-
         const data = { nombre, modulos, accionesPermitidas };
         if(modoModal === 'nuevo') await db.collection("roles").add(data);
         else await db.collection("roles").doc(selectedId).update(data);
-
         cerrarModales(); alert("Rol actualizado con éxito");
     }
 
@@ -513,11 +522,7 @@
         if(mColl) {
             currentColl = mColl; document.getElementById('m_titulo').innerText = mTit;
             const searchBar = document.getElementById('m_search_container');
-            if(mColl === 'inventario' || mColl === 'inventario_salas') {
-                searchBar.style.display = 'flex';
-            } else {
-                searchBar.style.display = 'none';
-            }
+            searchBar.style.display = 'flex';
             db.collection(currentColl).onSnapshot(s => { localData = []; s.forEach(d => localData.push({id: d.id, ...d.data()})); renderTablaMaestra(); });
         }
         if(id === 'mod_mis_tickets') cargarMisTickets();
@@ -549,7 +554,16 @@
         
         document.getElementById('btn_maestro_nuevo').style.display = checkPermission(modId, "Crear") ? "block" : "none";
 
-        if(currentColl === 'usuarios') {
+        if(currentColl === 'extensiones') {
+            h.innerHTML = `<tr><th>Nombre</th><th>Dependencia</th><th>Extensión</th><th>Tipo</th><th>Acciones</th></tr>`;
+            displayData.forEach(e => {
+                let btns = "";
+                if(checkPermission("card_extensiones", "Ver Detalle")) btns += `<button class="btn-acc bg-v-gray" title="Ver" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
+                if(checkPermission("card_extensiones", "Editar")) btns += `<button class="btn-acc bg-info-e" title="Editar" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" title="Eliminar" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
+                b.innerHTML += `<tr><td><b>${e.nom}</b></td><td>${e.dep}</td><td>${e.ext}</td><td>${e.tipo_ext}</td><td>${btns}</td></tr>`;
+            });
+        } else if(currentColl === 'usuarios') {
             h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
             displayData.forEach(e => { 
                 let btns = "";
@@ -565,15 +579,33 @@
                 if(checkPermission(modId, "Mantenimiento")) btns += `<button class="btn-acc bg-r-purple" title="Mantenimiento" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
                 if(checkPermission(modId, "Historial")) btns += `<button class="btn-acc bg-v-gray" title="Historial" onclick="verHistorial('${e.id}')"><i class="fas fa-eye"></i></button>`;
                 if(checkPermission(modId, "Eliminar")) btns += `<button class="btn-acc bg-d-red" title="Eliminar" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
-                
                 b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${e.sed || ''}</td><td><div style="display:flex;">${btns}</div></td></tr>`;
             });
         }
     }
 
+    function verOjitoExtension(id) {
+        const d = localData.find(x => x.id === id);
+        document.getElementById('ver_gral_titulo').innerText = "Información de Extensión";
+        document.getElementById('ver_gral_contenido').innerHTML = `
+            <div style="text-align:left; line-height:1.8;">
+                <p><b>Nombre:</b> ${d.nom}</p>
+                <p><b>Dependencia:</b> ${d.dep}</p>
+                <p><b>Extensión:</b> ${d.ext}</p>
+                <p><b>Tipo de Extensión:</b> ${d.tipo_ext}</p>
+            </div>
+        `;
+        document.getElementById('modalVerGeneral').style.display = 'block';
+    }
+
     function filtrarMaestro() {
         const term = document.getElementById('m_search').value.toLowerCase();
-        const filtrados = localData.filter(e => (e.nom && e.nom.toLowerCase().includes(term)) || (e.ser && e.ser.toLowerCase().includes(term)) || (e.res && e.res.toLowerCase().includes(term)) || (e.mod && e.mod.toLowerCase().includes(term)) || (e.tip && e.tip.toLowerCase().includes(term)));
+        let filtrados = [];
+        if(currentColl === 'extensiones') {
+            filtrados = localData.filter(e => (e.nom && e.nom.toLowerCase().includes(term)) || (e.ext && e.ext.toLowerCase().includes(term)) || (e.dep && e.dep.toLowerCase().includes(term)));
+        } else {
+            filtrados = localData.filter(e => (e.nom && e.nom.toLowerCase().includes(term)) || (e.ser && e.ser.toLowerCase().includes(term)) || (e.res && e.res.toLowerCase().includes(term)) || (e.mod && e.mod.toLowerCase().includes(term)) || (e.tip && e.tip.toLowerCase().includes(term)));
+        }
         renderTablaMaestra(filtrados);
     }
 
@@ -582,17 +614,32 @@
         const f = document.getElementById('form_dinamico');
         f.innerHTML = "";
         let fields = [];
-        if(currentColl === 'usuarios') {
+        const dependenciasGlobal = ["Administrativa", "Docente", "Estudiante", "Bienestar", "Registro y Control", "Contabilidad", "Biblioteca", "Secretaría"];
+
+        if(currentColl === 'extensiones') {
+            fields = [
+                ["Nombre","nom"],
+                ["Dependencia","dep","select", dependenciasGlobal],
+                ["Extensión (4 dígitos)","ext"],
+                ["Tipo de Extensión","tipo_ext","select", ["Zoiper", "Telefono fijo"]]
+            ];
+        } else if(currentColl === 'usuarios') {
             const rolesDinamicos = ["Admin", "Gestor", "Usuario", ...listaRolesGlobal.map(r => r.nombre)].filter(r => r && !r.includes("Camilo") && r !== "undefined");
-            const uniqueRoles = [...new Set(rolesDinamicos)];
-            fields = [["Nombre","nom"],["Correo","cor"],["Rol","rol","select", uniqueRoles]];
+            fields = [["Nombre","nom"],["Correo","cor"],["Rol","rol","select", [...new Set(rolesDinamicos)]]];
         } else {
             fields = [["PC (Nombre Equipo)","nom"],["Tipo Equipo","tip"],["Modelo","mod"],["Serial","ser"],["Responsable","res"],["Dependencia","dep"],["Campus","cam","select",["Bucaramanga","Bogotá","Tunja"]],["Sede","sed"]];
         }
+
         fields.forEach(x => {
-            let inp = x[2]==="select" ? `<select id="${x[1]}">${x[3].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>` : `<input type="text" id="${x[1]}" placeholder="${x[0]}">`;
+            let inp = "";
+            if(x[2] === "select") {
+                inp = `<select id="${x[1]}">${x[3].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>`;
+            } else {
+                inp = `<input type="text" id="${x[1]}" placeholder="${x[0]}" ${x[1]==='ext' ? 'maxlength="4"' : ''}>`;
+            }
             f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${inp}</div>`;
         });
+
         if(modo==='editar') {
             const d = localData.find(x=>x.id===id);
             setTimeout(()=>Object.keys(d).forEach(k=>{if(document.getElementById(k)) document.getElementById(k).value=d[k]}),50);
@@ -603,9 +650,14 @@
     async function guardarDatoMaestro() {
         let o = {};
         document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => o[i.id] = i.value);
+        
+        if(currentColl === 'extensiones') {
+            if(!o.ext || o.ext.length !== 4) return alert("La extensión debe ser de 4 dígitos.");
+        }
+
         if(modoModal === 'editar') await db.collection(currentColl).doc(selectedId).update(o);
         else await db.collection(currentColl).add(o);
-        cerrarModales();
+        cerrarModales(); alert("Registro guardado con éxito");
     }
 
     async function inicializarCalendario() {
@@ -623,7 +675,7 @@
                         const mnts = await db.collection(coll).doc(docE.id).collection("mantenimientos").get();
                         mnts.forEach(m => {
                             const dataM = m.data();
-                            evs.push({ title: `${dataM.tipo}: ${docE.data().nom || 'Equipo'}`, start: dataM.fecha, backgroundColor: dataM.tipo === 'Preventivo' ? '#8b5cf6' : '#ef4444', extendedProps: { desc: dataM.desc } });
+                            evs.push({ title: `${dataM.tipo}: ${docE.data().nom || 'Equipo'}`, start: dataM.fecha, backgroundColor: dataM.tipo === 'Preventivo' ? '#8b5cf6' : '#ef4444' });
                         });
                     }
                 }
@@ -635,10 +687,9 @@
 
     async function cargarGestionMantenimientos() {
         const tb = document.getElementById('tbody_gest_mantenimientos');
-        tb.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando mantenimientos...</td></tr>";
+        tb.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando...</td></tr>";
         const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti"];
         let html = "";
-        
         for(let coll of colecciones) {
             const equipos = await db.collection(coll).get();
             for(let equip of equipos.docs) {
@@ -648,19 +699,11 @@
                     const mData = m.data();
                     let btnEdit = checkPermission("card_gest_mantenimientos", "Editar") ? `<button class="btn-acc bg-info-e" onclick="abrirEditarMnt('${coll}', '${equip.id}', '${m.id}', ${JSON.stringify(mData).replace(/"/g, '&quot;')})"><i class="fas fa-edit"></i></button>` : "";
                     let btnDel = checkPermission("card_gest_mantenimientos", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-trash"></i></button>` : "";
-                    
-                    html += `<tr>
-                        <td>${mData.fecha}</td>
-                        <td><b>${eData.nom || 'S/N'}</b></td>
-                        <td>${coll.replace('_', ' ').toUpperCase()}</td>
-                        <td><span style="color:${mData.tipo === 'Preventivo' ? 'var(--purple)' : 'var(--danger)'}; font-weight:bold;">${mData.tipo}</span></td>
-                        <td>${mData.desc}</td>
-                        <td>${btnEdit} ${btnDel}</td>
-                    </tr>`;
+                    html += `<tr><td>${mData.fecha}</td><td><b>${eData.nom || 'S/N'}</b></td><td>${coll.toUpperCase()}</td><td>${mData.tipo}</td><td>${mData.desc}</td><td>${btnEdit}${btnDel}</td></tr>`;
                 });
             }
         }
-        tb.innerHTML = html || "<tr><td colspan='6' style='text-align:center;'>No hay mantenimientos registrados</td></tr>";
+        tb.innerHTML = html || "<tr><td colspan='6' style='text-align:center;'>Sin registros</td></tr>";
     }
 
     function abrirEditarMnt(coll, equipId, mntId, data) {
@@ -678,33 +721,25 @@
         const fecha = document.getElementById('mnt_fecha').value;
         const tipo = document.getElementById('mnt_tipo').value;
         const desc = document.getElementById('mnt_desc').value;
-        if(!fecha || !desc) return alert("Complete los campos.");
         await db.collection(selectedCollMnt).doc(selectedEquipIdMnt).collection("mantenimientos").doc(selectedMntId).update({ fecha, tipo, desc });
-        cerrarModales(); alert("Mantenimiento actualizado");
-        cargarGestionMantenimientos();
+        cerrarModales(); alert("Actualizado"); cargarGestionMantenimientos();
     }
 
     async function eliminarMnt(coll, equipId, mntId) {
-        if(confirm("¿Estás seguro de eliminar este mantenimiento?")) {
-            await db.collection(coll).doc(equipId).collection("mantenimientos").doc(mid).delete();
+        if(confirm("¿Eliminar?")) {
+            await db.collection(coll).doc(equipId).collection("mantenimientos").doc(mntId).delete();
             cargarGestionMantenimientos();
         }
     }
 
-    // PUNTO 2: Asignación automática de tickets
     async function enviarTicket() {
         const nom = document.getElementById('tk_nom_user').value;
         const d = document.getElementById('tk_desc').value;
-        if(!nom || !d) return alert("Por favor complete su nombre y la descripción.");
-        
+        if(!nom || !d) return alert("Complete los campos.");
         let asig = "Pendiente";
-        if(listaGestoresGlobal.length > 0) {
-            // Selección aleatoria de gestor
-            asig = listaGestoresGlobal[Math.floor(Math.random() * listaGestoresGlobal.length)].nom;
-        }
-        
+        if(listaGestoresGlobal.length > 0) asig = listaGestoresGlobal[Math.floor(Math.random() * listaGestoresGlobal.length)].nom;
         await db.collection("tickets").add({ solicitante: nom, usuario: user.email, campus: document.getElementById('tk_campus').value, prioridad: document.getElementById('tk_prioridad').value, dependencia: document.getElementById('tk_dep').value, tipo: document.getElementById('tk_tipo').value, desc: d, estado: "Abierto", asignado: asig, fecha: new Date().toLocaleString() });
-        alert(`¡Ticket enviado con éxito! Asignado a: ${asig}`); volver();
+        alert("Enviado"); volver();
     }
 
     function cargarTicketsAdmin() {
@@ -715,14 +750,12 @@
                 const t = doc.data(); 
                 if(t.estado === "Cerrado") return;
                 if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
-                
                 let btnDet = checkPermission("card_admin_tickets", "Ver Detalle") ? `<button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>` : "";
                 let btnEdit = checkPermission("card_admin_tickets", "Editar") ? `<button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>` : "";
                 let btnRe = checkPermission("card_admin_tickets", "Reasignar") ? `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : "";
                 let btnFin = checkPermission("card_admin_tickets", "Finalizar") ? `<button class="btn-acc bg-c-green" onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>` : "";
                 let btnDel = checkPermission("card_admin_tickets", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : "";
-
-                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante || t.usuario.split('@')[0]}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado || 'Pend.'}</td><td>${btnDet}${btnEdit}${btnRe}${btnFin}${btnDel}</td></tr>`;
+                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado}</td><td>${btnDet}${btnEdit}${btnRe}${btnFin}${btnDel}</td></tr>`;
             });
         });
     }
@@ -732,20 +765,18 @@
         db.collection("tickets").where("estado", "==", "Cerrado").onSnapshot(snap => {
             tb.innerHTML = ""; snap.forEach(doc => {
                 const t = doc.data(); if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
-                let btnDet = checkPermission("card_admin_tickets", "Ver Detalle") ? `<button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>` : "";
-                let btnDel = checkPermission("card_admin_tickets", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}','tickets')"><i class="fas fa-trash"></i></button>` : "";
-                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante || t.usuario.split('@')[0]}</td><td>${t.tipo}</td><td>${t.asignado}</td><td>${t.fecha_cierre}</td><td>${btnDet}${btnDel}</td></tr>`;
+                let btnDet = `<button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>`;
+                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante}</td><td>${t.tipo}</td><td>${t.asignado}</td><td>${t.fecha_cierre}</td><td>${btnDet}</td></tr>`;
             });
         });
     }
 
     function cargarMisTickets() {
-        const c = document.getElementById('mis_tk_container'); c.innerHTML = "Cargando...";
+        const c = document.getElementById('mis_tk_container'); c.innerHTML = "";
         db.collection("tickets").where("usuario", "==", user.email).onSnapshot(s => {
             c.innerHTML = ""; s.forEach(doc => {
                 const t = doc.data(); const col = t.estado === 'Cerrado' ? 'var(--success)' : (t.estado === 'En Proceso' ? 'var(--warning)' : 'var(--primary)');
-                let btnDet = checkPermission("card_mis_tickets", "Ver Detalle") ? `<button class="btn-acc bg-v-gray" style="margin-top:10px" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i> Ver más</button>` : "";
-                c.innerHTML += `<div class="card tk-card" style="border-left-color: ${col}; display:block;"><div class="tk-status" style="background:${col}">${t.estado}</div><h4>${t.tipo}</h4><p style="font-size:12px; color:gray;">${t.desc.substring(0,60)}...</p><p><small><b>Gestor:</b> ${t.asignado}</small></p>${btnDet}</div>`;
+                c.innerHTML += `<div class="card tk-card" style="border-left-color: ${col}; display:block;"><div class="tk-status" style="background:${col}">${t.estado}</div><h4>${t.tipo}</h4><p><small><b>Gestor:</b> ${t.asignado}</small></p><button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')">Ver más</button></div>`;
             });
         });
     }
@@ -753,34 +784,31 @@
     function abrirMantenimiento(id) { 
         selectedId = id; 
         document.getElementById('mnt_modal_title').innerText = "Registrar Mantenimiento";
-        document.getElementById('mnt_fecha').value=""; 
-        document.getElementById('mnt_desc').value=""; 
         document.getElementById('btn_guardar_mnt').onclick = guardarMantenimiento;
         document.getElementById('modalMantenimiento').style.display='block'; 
     }
 
     async function guardarMantenimiento() {
         const fecha = document.getElementById('mnt_fecha').value; const tipo = document.getElementById('mnt_tipo').value; const desc = document.getElementById('mnt_desc').value;
-        if(!fecha || !desc) return alert("Complete los campos de fecha y descripción");
         await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ fecha, tipo, desc });
-        cerrarModales(); alert("Mantenimiento programado");
+        cerrarModales(); alert("Guardado");
     }
 
     async function verHistorial(id) {
-        const content = document.getElementById('historial_content'); content.innerHTML = "Cargando...";
+        const content = document.getElementById('historial_content');
         const snap = await db.collection(currentColl).doc(id).collection("mantenimientos").orderBy("fecha","desc").get();
-        content.innerHTML = snap.empty ? "<p>No hay registros</p>" : "";
+        content.innerHTML = snap.empty ? "<p>Sin registros</p>" : "";
         snap.forEach(doc => {
-            const d = doc.data(); content.innerHTML += `<div class="mantenimiento-item"><b>Fecha:</b> ${d.fecha} | <b>Tipo:</b> <span style="color:${d.tipo==='Preventivo'?'purple':'red'}">${d.tipo}</span><br><p style="margin:5px 0"><b>Descripción:</b> ${d.desc}</p></div>`;
+            const d = doc.data(); content.innerHTML += `<div class="mantenimiento-item"><b>${d.fecha}</b> - ${d.tipo}<br>${d.desc}</div>`;
         });
         document.getElementById('modalHistorial').style.display='block';
     }
 
-    function abrirModalCierre(id) { selectedId = id; document.getElementById('tk_respuesta_cierre').value = ""; document.getElementById('modalCerrarTicket').style.display = 'block'; }
-    async function ejecutarCierreConComentario() { const r = document.getElementById('tk_respuesta_cierre').value; if(!r) return alert("Escribe la solución"); await db.collection("tickets").doc(selectedId).update({ estado: "Cerrado", respuesta: r, fecha_cierre: new Date().toLocaleString() }); cerrarModales(); }
+    function abrirModalCierre(id) { selectedId = id; document.getElementById('modalCerrarTicket').style.display = 'block'; }
+    async function ejecutarCierreConComentario() { const r = document.getElementById('tk_respuesta_cierre').value; await db.collection("tickets").doc(selectedId).update({ estado: "Cerrado", respuesta: r, fecha_cierre: new Date().toLocaleString() }); cerrarModales(); }
     async function verDetalleTicket(id) { 
         const doc = await db.collection("tickets").doc(id).get(); const t = doc.data(); 
-        document.getElementById('detalle_content').innerHTML = `<div class="grid-bonito" style="grid-template-columns:1fr"><p><b>Solicitante:</b> ${t.solicitante}</p><p><b>Asignado a:</b> ${t.asignado}</p><p><b>Campus:</b> ${t.campus} | <b>Prioridad:</b> ${t.prioridad}</p><p><b>Descripción:</b> ${t.desc}</p>${t.respuesta ? `<div style="background:#f0fdf4; padding:15px; border-radius:10px; border:1px solid #bbf7d0; margin-top:10px;"><b>Solución:</b><br>${t.respuesta}</div>` : ''}</div>`; 
+        document.getElementById('detalle_content').innerHTML = `<p><b>Solicitante:</b> ${t.solicitante}</p><p><b>Descripción:</b> ${t.desc}</p><p><b>Solución:</b> ${t.respuesta || 'Pendiente'}</p>`; 
         document.getElementById('modalVerTicket').style.display = 'block'; 
     }
     async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
@@ -790,29 +818,12 @@
     
     async function cargarGraficaActualizada() {
         const f = document.getElementById('filtro_stats').value;
-        const canvas = document.getElementById('miGrafica');
-        const ctx = canvas.getContext('2d');
+        const ctx = document.getElementById('miGrafica').getContext('2d');
         if(miChart) miChart.destroy();
         const snap = await db.collection("tickets").get();
         let conteo = {};
-        if(snap.empty) return;
-        snap.forEach(doc => {
-            let val = doc.data()[f] || "Sin Datos";
-            conteo[val] = (conteo[val] || 0) + 1;
-        });
-        miChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(conteo),
-                datasets: [{
-                    label: 'Tickets',
-                    data: Object.values(conteo),
-                    backgroundColor: ['#2563eb', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#00bcd4', '#64748b', '#0f172a']
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-        });
-        miChart.resize(); miChart.update();
+        snap.forEach(doc => { let val = doc.data()[f] || "N/A"; conteo[val] = (conteo[val] || 0) + 1; });
+        miChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(conteo), datasets: [{ data: Object.values(conteo), backgroundColor: ['#2563eb', '#22c55e', '#f59e0b', '#ef4444'] }] } });
     }
 
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
