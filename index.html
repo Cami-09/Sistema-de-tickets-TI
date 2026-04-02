@@ -61,6 +61,9 @@
         .tk-status { position: absolute; top: 15px; right: 15px; padding: 3px 8px; border-radius: 8px; font-size: 0.65rem; font-weight: bold; color: white; }
         .search-container { display: flex; gap: 10px; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 10px; }
         .mantenimiento-item { border-bottom: 1px solid #eee; padding: 10px 0; }
+
+        /* Corrección para que la gráfica ocupe su contenedor */
+        #miGrafica { width: 100% !important; height: 100% !important; max-height: 400px; }
     </style>
 </head>
 <body>
@@ -141,7 +144,7 @@
                 </select>
             </div>
         </div>
-        <div style="position: relative; height:450px; width:100%; display:flex; justify-content:center;">
+        <div style="position: relative; height:400px; width:100%; display:flex; justify-content:center;">
             <canvas id="miGrafica"></canvas>
         </div>
     </div>
@@ -414,7 +417,7 @@
             tb.innerHTML = ""; 
             snap.forEach(doc => {
                 const t = doc.data(); 
-                if(t.estado === "Cerrado") return; // Filtramos cerrados manualmente para mantener tu lógica
+                if(t.estado === "Cerrado") return;
                 if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
                 tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante || t.usuario.split('@')[0]}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado || 'Pend.'}</td><td><button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button><button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>${userRole==='Admin' ? `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : ''}<button class="btn-acc bg-c-green" onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>${userRole==='Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`;
             });
@@ -474,7 +477,6 @@
         const f = document.getElementById('filtro_stats').value;
         const ctx = document.getElementById('miGrafica').getContext('2d');
         
-        // Limpiar instancia anterior si existe
         if(miChart) {
             miChart.destroy();
         }
@@ -501,14 +503,13 @@
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
+                maintainAspectRatio: false, // Importante para que use el tamaño del contenedor
                 plugins: {
                     legend: { position: 'bottom' }
                 }
             }
         });
         
-        // Forzar redimensionado para asegurar visibilidad
         miChart.resize();
     }
 
