@@ -24,7 +24,7 @@
         #dashboard { display: none; padding: 20px; }
         
         .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
-        .card { background: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; display: none; position: relative; }
+        .card { background: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; display: none; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.08); border-color: var(--primary); }
         .card i { font-size: 35px; color: var(--primary); margin-bottom: 12px; }
 
@@ -64,9 +64,10 @@
 
         #miGrafica { width: 100% !important; height: 100% !important; }
 
-        /* Estilos específicos para el nuevo módulo de roles */
-        .roles-checkbox-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; }
-        .role-check-item { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+        /* Estilos para el nuevo módulo de roles */
+        .roles-chk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1.5px solid #eee; margin-top: 10px; }
+        .role-option { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: var(--dark); cursor: pointer; }
+        .role-option input { width: 16px; height: 16px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -118,7 +119,11 @@
         <div style="overflow-x:auto;">
             <table>
                 <thead>
-                    <tr><th>Nombre del Rol</th><th>Módulos Visibles</th><th>Acciones</th></tr>
+                    <tr>
+                        <th>Nombre del Rol</th>
+                        <th>Módulos Visibles</th>
+                        <th>Acciones</th>
+                    </tr>
                 </thead>
                 <tbody id="tbody_roles"></tbody>
             </table>
@@ -219,15 +224,14 @@
     <div class="modal-content" style="max-width: 600px;">
         <h3 id="rol_modal_title">Configurar Rol</h3>
         <div class="grid-bonito" style="grid-template-columns: 1fr;">
-            <div class="campo-group"><label>Nombre del Rol</label><input type="text" id="rol_nombre" placeholder="Ej: Practicante, Jefe TI"></div>
+            <div class="campo-group"><label>Nombre del Rol</label><input type="text" id="rol_nombre" placeholder="Ej: Supervisor, Pasante..."></div>
             <div class="campo-group">
-                <label>Seleccionar Módulos Visibles</label>
-                <div class="roles-checkbox-grid" id="chk_modulos_container">
-                    </div>
+                <label>Seleccionar Módulos Permitidos</label>
+                <div class="roles-chk-grid" id="chk_modulos_container"></div>
             </div>
             <div style="display:flex; gap:10px; margin-top:20px;">
                 <button class="btn-gray" onclick="cerrarModales()" style="flex:1;">Cerrar</button>
-                <button class="btn-agregar-master" onclick="guardarRol()" style="flex:1; justify-content:center;">Guardar Rol</button>
+                <button class="btn-agregar-master" id="btn_guardar_rol" style="flex:1; justify-content:center;">Guardar Rol</button>
             </div>
         </div>
     </div>
@@ -300,7 +304,8 @@
     let selectedMntId = null, selectedCollMnt = null, selectedEquipIdMnt = null;
     let listaRolesGlobal = [];
 
-    const MODULOS_DISPONIBLES = [
+    // Definición de todos los módulos disponibles para la gestión de permisos
+    const MODULOS_SISTEMA = [
         {id: "card_mis_tickets", nom: "Mis Tickets"},
         {id: "card_enviar_ticket", nom: "Enviar Ticket"},
         {id: "card_admin_tickets", nom: "Admin Tickets"},
@@ -320,7 +325,7 @@
             user = u;
             document.getElementById('login').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
-            await cargarRoles();
+            await cargarRoles(); // Cargar roles antes de verificar
             await verificarRol();
             cargarGestores();
             observarContadores();
@@ -337,10 +342,11 @@
     });
 
     async function cargarRoles() {
-        const snap = await db.collection("roles").get();
-        listaRolesGlobal = [];
-        snap.forEach(doc => listaRolesGlobal.push({id: doc.id, ...doc.data()}));
-        renderTablaRoles();
+        const snap = await db.collection("roles").onSnapshot(snap => {
+            listaRolesGlobal = [];
+            snap.forEach(doc => listaRolesGlobal.push({id: doc.id, ...doc.data()}));
+            renderTablaRoles();
+        });
     }
 
     function observarContadores() {
@@ -373,22 +379,84 @@
         document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
         if(userRole !== "Usuario") document.getElementById('stats_contadores_visibles').style.display = 'flex';
         
-        // Lógica de visualización basada en roles de DB o estática para Admin
-        let modulosAMostrar = [];
-        const rolEncontrado = listaRolesGlobal.find(r => r.nombre === userRole);
+        // --- Lógica Dinámica de Visibilidad ---
+        let modulosPermitidos = [];
+        const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
 
         if(userRole === "Admin") {
-            modulosAMostrar = MODULOS_DISPONIBLES.map(m => m.id);
-        } else if(rolEncontrado) {
-            modulosAMostrar = rolEncontrado.modulos;
+            modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
+        } else if(rolDB) {
+            modulosPermitidos = rolDB.modulos;
         } else {
-            // Default para usuarios nuevos
-            modulosAMostrar = ["card_mis_tickets", "card_enviar_ticket"];
+            // Reglas por defecto si no hay rol en DB
+            const vDefault = { 
+                "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_calendario", "card_aulas", "card_impresoras"],
+                "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
+            };
+            modulosPermitidos = vDefault[userRole] || vDefault["Usuario"];
         }
 
-        modulosAMostrar.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
+        modulosPermitidos.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
     }
 
+    // --- Funciones Gestión Roles (Preferencias) ---
+    function abrirModalRol(modo, id = null) {
+        modoModal = modo; selectedId = id;
+        document.getElementById('rol_modal_title').innerText = modo === 'nuevo' ? "Crear Nuevo Rol" : "Editar Rol";
+        document.getElementById('rol_nombre').value = "";
+        const container = document.getElementById('chk_modulos_container');
+        container.innerHTML = "";
+        
+        MODULOS_SISTEMA.forEach(m => {
+            container.innerHTML += `<label class="role-option"><input type="checkbox" class="chk-rol-mod" value="${m.id}"> ${m.nom}</label>`;
+        });
+
+        if(modo === 'editar') {
+            const r = listaRolesGlobal.find(x => x.id === id);
+            document.getElementById('rol_nombre').value = r.nombre;
+            document.querySelectorAll('.chk-rol-mod').forEach(chk => {
+                if(r.modulos.includes(chk.value)) chk.checked = true;
+            });
+        }
+        document.getElementById('btn_guardar_rol').onclick = guardarRol;
+        document.getElementById('modalRol').style.display = 'block';
+    }
+
+    async function guardarRol() {
+        const nombre = document.getElementById('rol_nombre').value;
+        const seleccionados = Array.from(document.querySelectorAll('.chk-rol-mod:checked')).map(c => c.value);
+        if(!nombre) return alert("Ingrese el nombre del rol");
+
+        const data = { nombre, modulos: seleccionados };
+        if(modoModal === 'nuevo') await db.collection("roles").add(data);
+        else await db.collection("roles").doc(selectedId).update(data);
+
+        cerrarModales(); alert("Rol actualizado con éxito");
+    }
+
+    async function eliminarRol(id) {
+        if(confirm("¿Eliminar este rol? Los usuarios asociados perderán sus permisos.")) {
+            await db.collection("roles").doc(id).delete();
+        }
+    }
+
+    function renderTablaRoles() {
+        const tb = document.getElementById('tbody_roles');
+        if(!tb) return;
+        tb.innerHTML = "";
+        listaRolesGlobal.forEach(r => {
+            tb.innerHTML += `<tr>
+                <td><b>${r.nombre}</b></td>
+                <td>${r.modulos.length} módulos asignados</td>
+                <td>
+                    <button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn-acc bg-d-red" onclick="eliminarRol('${r.id}')"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`;
+        });
+    }
+
+    // --- Funciones Originales ---
     function abrir(id, mColl = null, mTit = null) {
         document.getElementById('panel-principal').style.display = 'none';
         document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none');
@@ -451,8 +519,9 @@
         f.innerHTML = "";
         let fields = [];
         if(currentColl === 'usuarios') {
-            const rolesOptions = ["Admin", "Gestor", "Usuario", ...listaRolesGlobal.map(r => r.nombre)];
-            const uniqueRoles = [...new Set(rolesOptions)];
+            // Sincronización de roles creados en el select de usuarios
+            const rolesDinamicos = ["Admin", "Gestor", "Usuario", ...listaRolesGlobal.map(r => r.nombre)];
+            const uniqueRoles = [...new Set(rolesDinamicos)];
             fields = [["Nombre","nom"],["Correo","cor"],["Rol","rol","select", uniqueRoles]];
         } else {
             fields = [["PC (Nombre Equipo)","nom"],["Tipo Equipo","tip"],["Modelo","mod"],["Serial","ser"],["Responsable","res"],["Dependencia","dep"],["Campus","cam","select",["Bucaramanga","Bogotá","Tunja"]],["Sede","sed"]];
@@ -466,56 +535,6 @@
             setTimeout(()=>Object.keys(d).forEach(k=>{if(document.getElementById(k)) document.getElementById(k).value=d[k]}),50);
         }
         document.getElementById('modalRegistro').style.display='block';
-    }
-
-    // --- FUNCIONES GESTION PREFERENCIAS (ROLES) ---
-    function abrirModalRol(modo, id = null) {
-        modoModal = modo; selectedId = id;
-        document.getElementById('rol_modal_title').innerText = modo === 'nuevo' ? "Crear Nuevo Rol" : "Editar Rol";
-        document.getElementById('rol_nombre').value = "";
-        const cont = document.getElementById('chk_modulos_container');
-        cont.innerHTML = "";
-        
-        MODULOS_DISPONIBLES.forEach(m => {
-            cont.innerHTML += `<div class="role-check-item"><input type="checkbox" class="chk-mod" value="${m.id}"> <label>${m.nom}</label></div>`;
-        });
-
-        if(modo === 'editar') {
-            const rol = listaRolesGlobal.find(r => r.id === id);
-            document.getElementById('rol_nombre').value = rol.nombre;
-            document.querySelectorAll('.chk-mod').forEach(chk => {
-                if(rol.modulos.includes(chk.value)) chk.checked = true;
-            });
-        }
-        document.getElementById('modalRol').style.display = 'block';
-    }
-
-    async function guardarRol() {
-        const nombre = document.getElementById('rol_nombre').value;
-        const seleccionados = Array.from(document.querySelectorAll('.chk-mod:checked')).map(c => c.value);
-        if(!nombre) return alert("Ingrese el nombre del rol");
-
-        const data = { nombre, modulos: seleccionados };
-        if(modoModal === 'nuevo') await db.collection("roles").add(data);
-        else await db.collection("roles").doc(selectedId).update(data);
-
-        cerrarModales(); await cargarRoles(); alert("Rol sincronizado correctamente");
-    }
-
-    async function eliminarRol(id) {
-        if(confirm("¿Eliminar rol? Los usuarios con este rol podrían perder accesos.")) {
-            await db.collection("roles").doc(id).delete();
-            await cargarRoles();
-        }
-    }
-
-    function renderTablaRoles() {
-        const tb = document.getElementById('tbody_roles');
-        if(!tb) return;
-        tb.innerHTML = "";
-        listaRolesGlobal.forEach(r => {
-            tb.innerHTML += `<tr><td><b>${r.nombre}</b></td><td>${r.modulos.length} Módulos asignados</td><td><button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')"><i class="fas fa-edit"></i></button><button class="btn-acc bg-d-red" onclick="eliminarRol('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
-        });
     }
 
     async function guardarDatoMaestro() {
@@ -581,10 +600,30 @@
         tb.innerHTML = html || "<tr><td colspan='6' style='text-align:center;'>No hay mantenimientos registrados</td></tr>";
     }
 
+    function abrirEditarMnt(coll, equipId, mntId, data) {
+        selectedCollMnt = coll; selectedEquipIdMnt = equipId; selectedMntId = mntId;
+        modoModal = "editar_mnt";
+        document.getElementById('mnt_modal_title').innerText = "Editar Mantenimiento";
+        document.getElementById('mnt_fecha').value = data.fecha;
+        document.getElementById('mnt_tipo').value = data.tipo;
+        document.getElementById('mnt_desc').value = data.desc;
+        document.getElementById('btn_guardar_mnt').onclick = ejecutarEditarMnt;
+        document.getElementById('modalMantenimiento').style.display = 'block';
+    }
+
+    async function ejecutarEditarMnt() {
+        const fecha = document.getElementById('mnt_fecha').value;
+        const tipo = document.getElementById('mnt_tipo').value;
+        const desc = document.getElementById('mnt_desc').value;
+        if(!fecha || !desc) return alert("Complete los campos.");
+        await db.collection(selectedCollMnt).doc(selectedEquipIdMnt).collection("mantenimientos").doc(selectedMntId).update({ fecha, tipo, desc });
+        cerrarModales(); alert("Mantenimiento actualizado");
+        cargarGestionMantenimientos();
+    }
+
     async function eliminarMnt(coll, equipId, mntId) {
-        if(confirm("¿Estás seguro de eliminar este mantenimiento? Se borrará también del cronograma.")) {
+        if(confirm("¿Estás seguro de eliminar este mantenimiento?")) {
             await db.collection(coll).doc(equipId).collection("mantenimientos").doc(mntId).delete();
-            alert("Mantenimiento eliminado.");
             cargarGestionMantenimientos();
         }
     }
@@ -668,4 +707,39 @@
     async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
     async function eliminar(id, coll) { if(confirm("¿Eliminar?")) await db.collection(coll || currentColl).doc(id).delete(); }
     async function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); document.getElementById('modalReasignar').style.display = 'block'; }
-    async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new
+    async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); }
+    
+    async function cargarGraficaActualizada() {
+        const f = document.getElementById('filtro_stats').value;
+        const canvas = document.getElementById('miGrafica');
+        const ctx = canvas.getContext('2d');
+        if(miChart) miChart.destroy();
+        const snap = await db.collection("tickets").get();
+        let conteo = {};
+        if(snap.empty) return;
+        snap.forEach(doc => {
+            let val = doc.data()[f] || "Sin Datos";
+            conteo[val] = (conteo[val] || 0) + 1;
+        });
+        miChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(conteo),
+                datasets: [{
+                    label: 'Tickets',
+                    data: Object.values(conteo),
+                    backgroundColor: ['#2563eb', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#00bcd4', '#64748b', '#0f172a']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+        miChart.resize(); miChart.update();
+    }
+
+    function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+    function logout() { localStorage.clear(); auth.signOut().then(() => location.reload()); }
+    function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
+    function abrir_maestro(c, t) { abrir('mod_maestro', c, t); }
+</script>
+</body>
+</html>
