@@ -129,13 +129,21 @@
     </div>
 
     <div id="mod_stats" class="modulo">
-        <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <button onclick="volver()" class="btn-gray">Volver</button>
-            <select id="filtro_stats" onchange="cargarGraficaActualizada()" style="padding:8px; border-radius:8px;">
-                <option value="estado">Por Estado</option><option value="tipo">Por Requerimiento</option><option value="asignado">Por Gestor</option>
-            </select>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <label style="font-weight:bold; font-size:0.8rem;">Filtrar por:</label>
+                <select id="filtro_stats" onchange="cargarGraficaActualizada()" style="padding:8px; border-radius:8px; border:1px solid #ddd;">
+                    <option value="estado">Estado del Ticket</option>
+                    <option value="tipo">Tipo de Requerimiento</option>
+                    <option value="asignado">Gestor Asignado</option>
+                    <option value="campus">Campus</option>
+                </select>
+            </div>
         </div>
-        <div style="height:400px;"><canvas id="miGrafica"></canvas></div>
+        <div style="position: relative; height:450px; width:100%; display:flex; justify-content:center;">
+            <canvas id="miGrafica"></canvas>
+        </div>
     </div>
 
     <div id="mod_calendario" class="modulo">
@@ -237,7 +245,6 @@
             cargarGestores();
             observarContadores();
             
-            // PERSISTENCIA DE MÓDULO AL ACTUALIZAR
             const lastMod = localStorage.getItem('activeModulo');
             if(lastMod) {
                 const params = JSON.parse(localStorage.getItem('activeParams') || '{}');
@@ -287,27 +294,23 @@
         document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none');
         document.getElementById(id).style.display = 'block';
         
-        // Guardar estado actual
         localStorage.setItem('activeModulo', id);
         localStorage.setItem('activeParams', JSON.stringify({coll: mColl, tit: mTit}));
 
         if(mColl) {
             currentColl = mColl; document.getElementById('m_titulo').innerText = mTit;
-            
-            // Gestión de FILTROS: Solo para Administrativos y Salas
             const searchBar = document.getElementById('m_search_container');
             if(mColl === 'inventario' || mColl === 'inventario_salas') {
                 searchBar.style.display = 'flex';
             } else {
                 searchBar.style.display = 'none';
             }
-
             db.collection(currentColl).onSnapshot(s => { localData = []; s.forEach(d => localData.push({id: d.id, ...d.data()})); renderTablaMaestra(); });
         }
         if(id === 'mod_mis_tickets') cargarMisTickets();
         if(id === 'mod_admin_tickets') cargarTicketsAdmin();
         if(id === 'mod_tickets_cerrados') cargarTicketsCerrados();
-        if(id === 'mod_stats') cargarGraficaActualizada();
+        if(id === 'mod_stats') setTimeout(cargarGraficaActualizada, 100);
         if(id === 'mod_calendario') setTimeout(inicializarCalendario, 300);
     }
 
@@ -330,37 +333,14 @@
         } else {
             h.innerHTML = `<tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Serial</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Sede</th><th>Acciones</th></tr>`;
             displayData.forEach(e => {
-                b.innerHTML += `<tr>
-                    <td><b>${e.nom || ''}</b></td>
-                    <td>${e.tip || ''}</td>
-                    <td>${e.mod || ''}</td>
-                    <td>${e.ser || ''}</td>
-                    <td>${e.res || ''}</td>
-                    <td>${e.dep || ''}</td>
-                    <td>${e.cam || ''}</td>
-                    <td>${e.sed || ''}</td>
-                    <td>
-                        <div style="display:flex;">
-                            <button class="btn-acc bg-info-e" title="Editar" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>
-                            <button class="btn-acc bg-r-purple" title="Mantenimiento" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>
-                            <button class="btn-acc bg-v-gray" title="Historial" onclick="verHistorial('${e.id}')"><i class="fas fa-eye"></i></button>
-                            ${isAdmin ? `<button class="btn-acc bg-d-red" title="Eliminar" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>` : ''}
-                        </div>
-                    </td>
-                </tr>`;
+                b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${e.sed || ''}</td><td><div style="display:flex;"><button class="btn-acc bg-info-e" title="Editar" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button><button class="btn-acc bg-r-purple" title="Mantenimiento" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button><button class="btn-acc bg-v-gray" title="Historial" onclick="verHistorial('${e.id}')"><i class="fas fa-eye"></i></button>${isAdmin ? `<button class="btn-acc bg-d-red" title="Eliminar" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>` : ''}</div></td></tr>`;
             });
         }
     }
 
     function filtrarMaestro() {
         const term = document.getElementById('m_search').value.toLowerCase();
-        const filtrados = localData.filter(e => 
-            (e.nom && e.nom.toLowerCase().includes(term)) || 
-            (e.ser && e.ser.toLowerCase().includes(term)) || 
-            (e.res && e.res.toLowerCase().includes(term)) ||
-            (e.mod && e.mod.toLowerCase().includes(term)) ||
-            (e.tip && e.tip.toLowerCase().includes(term))
-        );
+        const filtrados = localData.filter(e => (e.nom && e.nom.toLowerCase().includes(term)) || (e.ser && e.ser.toLowerCase().includes(term)) || (e.res && e.res.toLowerCase().includes(term)) || (e.mod && e.mod.toLowerCase().includes(term)) || (e.tip && e.tip.toLowerCase().includes(term)));
         renderTablaMaestra(filtrados);
     }
 
@@ -485,13 +465,60 @@
     async function eliminar(id, coll) { if(confirm("¿Eliminar?")) await db.collection(coll || currentColl).doc(id).delete(); }
     async function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); document.getElementById('modalReasignar').style.display = 'block'; }
     async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); }
+    
+    // --- FUNCIÓN DE ESTADÍSTICAS CORREGIDA ---
     async function cargarGraficaActualizada() {
-        const f = document.getElementById('filtro_stats').value; const snap = await db.collection("tickets").get();
-        let conteo = {}; snap.forEach(doc => { let val = doc.data()[f] || "N/A"; conteo[val] = (conteo[val] || 0) + 1; });
-        if(miChart) miChart.destroy();
+        const f = document.getElementById('filtro_stats').value;
+        const snap = await db.collection("tickets").get();
+        let conteo = {};
+        
+        if(snap.empty) {
+            console.log("No hay tickets registrados.");
+            return;
+        }
+
+        snap.forEach(doc => {
+            let val = doc.data()[f] || "Sin Datos";
+            conteo[val] = (conteo[val] || 0) + 1;
+        });
+
+        const labels = Object.keys(conteo);
+        const values = Object.values(conteo);
+
+        // Limpiar instancia anterior si existe
+        if(miChart) {
+            miChart.destroy();
+        }
+
         const ctx = document.getElementById('miGrafica').getContext('2d');
-        miChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(conteo), datasets: [{ data: Object.values(conteo), backgroundColor: ['#2563eb','#22c55e','#f59e0b','#ef4444','#8b5cf6','#64748b'] }] }, options: { responsive: true, maintainAspectRatio: false } });
+        miChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Cantidad de Tickets',
+                    data: values,
+                    backgroundColor: [
+                        '#2563eb', '#22c55e', '#f59e0b', '#ef4444', 
+                        '#8b5cf6', '#00bcd4', '#64748b', '#0f172a'
+                    ],
+                    borderWidth: 1,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 20, font: { size: 12 } }
+                    }
+                }
+            }
+        });
     }
+
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { localStorage.clear(); auth.signOut().then(() => location.reload()); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
