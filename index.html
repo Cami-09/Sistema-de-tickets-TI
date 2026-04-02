@@ -359,7 +359,6 @@
             listaRolesGlobal = [];
             snap.forEach(doc => {
                 const data = doc.data();
-                // LIMPIEZA: Eliminación definitiva del rol Supervisor
                 if (data.nombre === "Supervisor") {
                     db.collection("roles").doc(doc.id).delete();
                 } else {
@@ -771,10 +770,16 @@
     function cargarTicketsCerrados() {
         const tb = document.getElementById('tbody_cerrados');
         db.collection("tickets").where("estado", "==", "Cerrado").onSnapshot(snap => {
-            tb.innerHTML = ""; snap.forEach(doc => {
-                const t = doc.data(); if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
+            tb.innerHTML = ""; 
+            snap.forEach(doc => {
+                const t = doc.data(); 
+                if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
+                
                 let btnDet = `<button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>`;
-                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante}</td><td>${t.tipo}</td><td>${t.asignado}</td><td>${t.fecha_cierre}</td><td>${btnDet}</td></tr>`;
+                // RESTAURACIÓN: Botón de eliminar para el Administrador
+                let btnDel = (userRole === "Admin") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : "";
+                
+                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante}</td><td>${t.tipo}</td><td>${t.asignado}</td><td>${t.fecha_cierre}</td><td>${btnDet}${btnDel}</td></tr>`;
             });
         });
     }
