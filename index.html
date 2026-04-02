@@ -101,6 +101,27 @@
         <div class="card" id="card_usuarios" onclick="abrir_maestro('usuarios', 'Usuarios')"><i class="fas fa-users-cog"></i><h3>Usuarios</h3></div>
         <div class="card" id="card_aulas" onclick="abrir_maestro('aulas_dti', 'Aulas DTI')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
         <div class="card" id="card_impresoras" onclick="abrir_maestro('impresoras', 'Impresoras')"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
+        <div class="card" id="card_gest_mantenimientos" onclick="abrir('mod_gest_mantenimientos')"><i class="fas fa-tools"></i><i class="fas fa-cog" style="font-size: 15px; position: absolute; margin-left: -10px; margin-top: 20px;"></i><h3>Gestión Mantenimientos</h3></div>
+    </div>
+
+    <div id="mod_gest_mantenimientos" class="modulo">
+        <button onclick="volver()" class="btn-gray">⬅ Volver</button>
+        <h2 style="margin-top:15px;"><i class="fas fa-tools"></i> Listado General de Mantenimientos</h2>
+        <div style="overflow-x:auto; margin-top:15px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Equipo</th>
+                        <th>Ubicación</th>
+                        <th>Tipo</th>
+                        <th>Descripción</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody_gest_mantenimientos"></tbody>
+            </table>
+        </div>
     </div>
 
     <div id="mod_maestro" class="modulo">
@@ -175,14 +196,14 @@
 
 <div id="modalMantenimiento" class="modal">
     <div class="modal-content" style="max-width:400px;">
-        <h3>Registrar Mantenimiento</h3>
+        <h3 id="mnt_modal_title">Registrar Mantenimiento</h3>
         <div class="grid-bonito" style="grid-template-columns:1fr;">
             <div class="campo-group"><label>Fecha Programada</label><input type="date" id="mnt_fecha"></div>
             <div class="campo-group"><label>Tipo</label><select id="mnt_tipo"><option>Preventivo</option><option>Correctivo</option></select></div>
             <div class="campo-group"><label>Descripción del Trabajo</label><textarea id="mnt_desc" rows="4"></textarea></div>
             <div style="display:flex; gap:10px; margin-top:10px;">
                 <button class="btn-gray" onclick="cerrarModales()" style="flex:1;">Cerrar</button>
-                <button class="btn-agregar-master" onclick="guardarMantenimiento()" style="flex:1; justify-content:center;">Guardar</button>
+                <button class="btn-agregar-master" id="btn_guardar_mnt" onclick="guardarMantenimiento()" style="flex:1; justify-content:center;">Guardar</button>
             </div>
         </div>
     </div>
@@ -237,6 +258,7 @@
     const auth = firebase.auth();
 
     let user, userRole, currentColl, localData = [], selectedId, modoModal = "nuevo", miChart = null, listaGestoresGlobal = [], nombreRealUsuario = "";
+    let selectedMntId = null, selectedCollMnt = null, selectedEquipIdMnt = null;
 
     auth.onAuthStateChanged(async (u) => {
         if(u) {
@@ -286,8 +308,13 @@
         }
         document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
         if(userRole !== "Usuario") document.getElementById('stats_contadores_visibles').style.display = 'flex';
-        const c = ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_calendario", "card_stats", "card_usuarios", "card_aulas", "card_impresoras"];
-        const v = { "Admin": c, "Gestor": c.filter(x => x !== "card_usuarios" && x !== "card_stats"), "Usuario": ["card_mis_tickets", "card_enviar_ticket"] };
+        
+        const c = ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_calendario", "card_stats", "card_usuarios", "card_aulas", "card_impresoras", "card_gest_mantenimientos"];
+        const v = { 
+            "Admin": c, 
+            "Gestor": c.filter(x => x !== "card_usuarios" && x !== "card_stats" && x !== "card_gest_mantenimientos"), 
+            "Usuario": ["card_mis_tickets", "card_enviar_ticket"] 
+        };
         (v[userRole] || v["Usuario"]).forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
     }
 
@@ -312,8 +339,9 @@
         if(id === 'mod_mis_tickets') cargarMisTickets();
         if(id === 'mod_admin_tickets') cargarTicketsAdmin();
         if(id === 'mod_tickets_cerrados') cargarTicketsCerrados();
-        if(id === 'mod_stats') setTimeout(cargarGraficaActualizada, 350); // Tiempo aumentado para asegurar renderizado
+        if(id === 'mod_stats') setTimeout(cargarGraficaActualizada, 350);
         if(id === 'mod_calendario') setTimeout(inicializarCalendario, 300);
+        if(id === 'mod_gest_mantenimientos') cargarGestionMantenimientos();
     }
 
     function volver() { 
@@ -400,6 +428,75 @@
         calendar.render();
     }
 
+    async function cargarGestionMantenimientos() {
+        const tb = document.getElementById('tbody_gest_mantenimientos');
+        tb.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando mantenimientos...</td></tr>";
+        const colecciones = ["inventario", "inventario_salas", "impresoras"];
+        let html = "";
+        
+        for(let coll of colecciones) {
+            const equipos = await db.collection(coll).get();
+            for(let equip of equipos.docs) {
+                const eData = equip.data();
+                const mnts = await db.collection(coll).doc(equip.id).collection("mantenimientos").get();
+                mnts.forEach(m => {
+                    const mData = m.data();
+                    html += `<tr>
+                        <td>${mData.fecha}</td>
+                        <td><b>${eData.nom || 'S/N'}</b></td>
+                        <td>${coll.replace('_', ' ').toUpperCase()}</td>
+                        <td><span style="color:${mData.tipo === 'Preventivo' ? 'var(--purple)' : 'var(--danger)'}; font-weight:bold;">${mData.tipo}</span></td>
+                        <td>${mData.desc}</td>
+                        <td>
+                            <button class="btn-acc bg-info-e" onclick="abrirEditarMnt('${coll}', '${equip.id}', '${m.id}', ${JSON.stringify(mData).replace(/"/g, '&quot;')})"><i class="fas fa-edit"></i></button>
+                            <button class="btn-acc bg-d-red" onclick="eliminarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+                });
+            }
+        }
+        tb.innerHTML = html || "<tr><td colspan='6' style='text-align:center;'>No hay mantenimientos registrados</td></tr>";
+    }
+
+    function abrirEditarMnt(coll, equipId, mntId, data) {
+        selectedCollMnt = coll;
+        selectedEquipIdMnt = equipId;
+        selectedMntId = mntId;
+        modoModal = "editar_mnt";
+        
+        document.getElementById('mnt_modal_title').innerText = "Editar Mantenimiento";
+        document.getElementById('mnt_fecha').value = data.fecha;
+        document.getElementById('mnt_tipo').value = data.tipo;
+        document.getElementById('mnt_desc').value = data.desc;
+        document.getElementById('btn_guardar_mnt').onclick = ejecutarEditarMnt;
+        
+        document.getElementById('modalMantenimiento').style.display = 'block';
+    }
+
+    async function ejecutarEditarMnt() {
+        const fecha = document.getElementById('mnt_fecha').value;
+        const tipo = document.getElementById('mnt_tipo').value;
+        const desc = document.getElementById('mnt_desc').value;
+        
+        if(!fecha || !desc) return alert("Complete los campos.");
+        
+        await db.collection(selectedCollMnt).doc(selectedEquipIdMnt).collection("mantenimientos").doc(selectedMntId).update({
+            fecha, tipo, desc
+        });
+        
+        cerrarModales();
+        alert("Mantenimiento actualizado con éxito.");
+        cargarGestionMantenimientos();
+    }
+
+    async function eliminarMnt(coll, equipId, mntId) {
+        if(confirm("¿Estás seguro de eliminar este mantenimiento? Se borrará también del cronograma.")) {
+            await db.collection(coll).doc(equipId).collection("mantenimientos").doc(mntId).delete();
+            alert("Mantenimiento eliminado.");
+            cargarGestionMantenimientos();
+        }
+    }
+
     async function enviarTicket() {
         const nom = document.getElementById('tk_nom_user').value;
         const d = document.getElementById('tk_desc').value;
@@ -443,13 +540,22 @@
         });
     }
 
-    function abrirMantenimiento(id) { selectedId = id; document.getElementById('mnt_fecha').value=""; document.getElementById('mnt_desc').value=""; document.getElementById('modalMantenimiento').style.display='block'; }
+    function abrirMantenimiento(id) { 
+        selectedId = id; 
+        document.getElementById('mnt_modal_title').innerText = "Registrar Mantenimiento";
+        document.getElementById('mnt_fecha').value=""; 
+        document.getElementById('mnt_desc').value=""; 
+        document.getElementById('btn_guardar_mnt').onclick = guardarMantenimiento;
+        document.getElementById('modalMantenimiento').style.display='block'; 
+    }
+
     async function guardarMantenimiento() {
         const fecha = document.getElementById('mnt_fecha').value; const tipo = document.getElementById('mnt_tipo').value; const desc = document.getElementById('mnt_desc').value;
         if(!fecha || !desc) return alert("Complete los campos de fecha y descripción");
         await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ fecha, tipo, desc });
         cerrarModales(); alert("Mantenimiento programado");
     }
+
     async function verHistorial(id) {
         const content = document.getElementById('historial_content'); content.innerHTML = "Cargando...";
         const snap = await db.collection(currentColl).doc(id).collection("mantenimientos").orderBy("fecha","desc").get();
@@ -459,44 +565,31 @@
         });
         document.getElementById('modalHistorial').style.display='block';
     }
+
     function abrirModalCierre(id) { selectedId = id; document.getElementById('tk_respuesta_cierre').value = ""; document.getElementById('modalCerrarTicket').style.display = 'block'; }
     async function ejecutarCierreConComentario() { const r = document.getElementById('tk_respuesta_cierre').value; if(!r) return alert("Escribe la solución"); await db.collection("tickets").doc(selectedId).update({ estado: "Cerrado", respuesta: r, fecha_cierre: new Date().toLocaleString() }); cerrarModales(); }
-    async function verDetalleTicket(id) { 
-        const doc = await db.collection("tickets").doc(id).get(); const t = doc.data(); 
-        document.getElementById('detalle_content').innerHTML = `<div class="grid-bonito" style="grid-template-columns:1fr"><p><b>Solicitante:</b> ${t.solicitante}</p><p><b>Asignado a:</b> ${t.asignado}</p><p><b>Campus:</b> ${t.campus} | <b>Prioridad:</b> ${t.prioridad}</p><p><b>Descripción:</b> ${t.desc}</p>${t.respuesta ? `<div style="background:#f0fdf4; padding:15px; border-radius:10px; border:1px solid #bbf7d0; margin-top:10px;"><b>Solución:</b><br>${t.respuesta}</div>` : ''}</div>`; 
-        document.getElementById('modalVerTicket').style.display = 'block'; 
+    async function verDetalleTicket(id) { 
+        const doc = await db.collection("tickets").doc(id).get(); const t = doc.data(); 
+        document.getElementById('detalle_content').innerHTML = `<div class="grid-bonito" style="grid-template-columns:1fr"><p><b>Solicitante:</b> ${t.solicitante}</p><p><b>Asignado a:</b> ${t.asignado}</p><p><b>Campus:</b> ${t.campus} | <b>Prioridad:</b> ${t.prioridad}</p><p><b>Descripción:</b> ${t.desc}</p>${t.respuesta ? `<div style="background:#f0fdf4; padding:15px; border-radius:10px; border:1px solid #bbf7d0; margin-top:10px;"><b>Solución:</b><br>${t.respuesta}</div>` : ''}</div>`; 
+        document.getElementById('modalVerTicket').style.display = 'block'; 
     }
     async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
     async function eliminar(id, coll) { if(confirm("¿Eliminar?")) await db.collection(coll || currentColl).doc(id).delete(); }
     async function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); document.getElementById('modalReasignar').style.display = 'block'; }
     async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); }
     
-    // --- FUNCIÓN DE ESTADÍSTICAS RE-CORREGIDA ---
     async function cargarGraficaActualizada() {
         const f = document.getElementById('filtro_stats').value;
         const canvas = document.getElementById('miGrafica');
         const ctx = canvas.getContext('2d');
-        
-        // Destruir instancia previa si existe para evitar superposiciones
-        if(miChart) {
-            miChart.destroy();
-        }
-
+        if(miChart) miChart.destroy();
         const snap = await db.collection("tickets").get();
         let conteo = {};
-        
-        if(snap.empty) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.font = "16px Segoe UI";
-            ctx.fillText("No hay tickets para mostrar", 10, 50);
-            return;
-        }
-
+        if(snap.empty) return;
         snap.forEach(doc => {
             let val = doc.data()[f] || "Sin Datos";
             conteo[val] = (conteo[val] || 0) + 1;
         });
-
         miChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
@@ -507,18 +600,9 @@
                     backgroundColor: ['#2563eb', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#00bcd4', '#64748b', '#0f172a']
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
         });
-        
-        // Refresco manual del tamaño
-        miChart.resize();
-        miChart.update();
+        miChart.resize(); miChart.update();
     }
 
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
