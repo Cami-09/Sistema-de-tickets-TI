@@ -24,7 +24,7 @@
         #dashboard { display: none; padding: 20px; }
         
         .grid-main { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; }
-        .card { background: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; display: none; }
+        .card { background: white; padding: 25px; border-radius: 15px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; display: none; position: relative; }
         .card:hover { transform: translateY(-5px); box-shadow: 0 12px 20px rgba(0,0,0,0.08); border-color: var(--primary); }
         .card i { font-size: 35px; color: var(--primary); margin-bottom: 12px; }
 
@@ -65,9 +65,12 @@
         #miGrafica { width: 100% !important; height: 100% !important; }
 
         /* Estilos para el nuevo módulo de roles */
-        .roles-chk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1.5px solid #eee; margin-top: 10px; }
-        .role-option { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: var(--dark); cursor: pointer; }
-        .role-option input { width: 16px; height: 16px; cursor: pointer; }
+        .roles-chk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1.5px solid #eee; margin-top: 10px; }
+        .role-block { background: white; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .role-option { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--primary); cursor: pointer; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; margin-bottom: 5px; }
+        .actions-sub-grid { display: flex; gap: 10px; padding-left: 25px; }
+        .action-item { font-size: 11px; display: flex; align-items: center; gap: 4px; color: var(--gray); font-weight: 600; }
+        .role-block input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -119,11 +122,7 @@
         <div style="overflow-x:auto;">
             <table>
                 <thead>
-                    <tr>
-                        <th>Nombre del Rol</th>
-                        <th>Módulos Visibles</th>
-                        <th>Acciones</th>
-                    </tr>
+                    <tr><th>Nombre del Rol</th><th>Módulos Visibles</th><th>Acciones</th></tr>
                 </thead>
                 <tbody id="tbody_roles"></tbody>
             </table>
@@ -134,19 +133,7 @@
         <button onclick="volver()" class="btn-gray">⬅ Volver</button>
         <h2 style="margin-top:15px;"><i class="fas fa-tools"></i> Listado General de Mantenimientos</h2>
         <div style="overflow-x:auto; margin-top:15px;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Equipo</th>
-                        <th>Ubicación</th>
-                        <th>Tipo</th>
-                        <th>Descripción</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody_gest_mantenimientos"></tbody>
-            </table>
+            <table><thead><tr><th>Fecha</th><th>Equipo</th><th>Ubicación</th><th>Tipo</th><th>Descripción</th><th>Acciones</th></tr></thead><tbody id="tbody_gest_mantenimientos"></tbody></table>
         </div>
     </div>
 
@@ -157,76 +144,26 @@
             <button class="btn-agregar-master" onclick="abrirModalRegistro('nuevo')"><i class="fas fa-plus"></i> Nuevo</button>
         </div>
         <div class="search-container" id="m_search_container" style="display:none;">
-            <input type="text" id="m_search" placeholder="Buscar por PC, Tipo, Modelo, Serial o Responsable..." style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;" onkeyup="filtrarMaestro()">
+            <input type="text" id="m_search" placeholder="Buscar..." style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;" onkeyup="filtrarMaestro()">
         </div>
         <div style="overflow-x:auto;"><table><thead id="m_thead"></thead><tbody id="m_tbody"></tbody></table></div>
     </div>
 
-    <div id="mod_mis_tickets" class="modulo">
-        <button onclick="volver()" class="btn-gray">⬅ Volver</button>
-        <div id="mis_tk_container" class="grid-main" style="margin-top:20px;"></div>
-    </div>
-
-    <div id="mod_admin_tickets" class="modulo">
-        <button onclick="volver()" class="btn-gray">Volver</button>
-        <div style="overflow-x:auto; margin-top:15px;"><table><thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Estado</th><th>Gestor</th><th>Acciones</th></tr></thead><tbody id="tbody_admin_tickets"></tbody></table></div>
-    </div>
-
-    <div id="mod_tickets_cerrados" class="modulo">
-        <button onclick="volver()" class="btn-gray">Volver</button>
-        <div style="overflow-x:auto; margin-top:15px;"><table><thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Gestor</th><th>Fecha Cierre</th><th>Acciones</th></tr></thead><tbody id="tbody_cerrados"></tbody></table></div>
-    </div>
-
-    <div id="mod_stats" class="modulo">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <button onclick="volver()" class="btn-gray">Volver</button>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <label style="font-weight:bold; font-size:0.8rem;">Filtrar por:</label>
-                <select id="filtro_stats" onchange="cargarGraficaActualizada()" style="padding:8px; border-radius:8px; border:1px solid #ddd;">
-                    <option value="estado">Estado del Ticket</option>
-                    <option value="tipo">Tipo de Requerimiento</option>
-                    <option value="asignado">Gestor Asignado</option>
-                    <option value="campus">Campus</option>
-                </select>
-            </div>
-        </div>
-        <div style="position: relative; height:450px; width:100%; display:flex; justify-content:center;">
-            <canvas id="miGrafica"></canvas>
-        </div>
-    </div>
-
-    <div id="mod_calendario" class="modulo">
-        <button onclick="volver()" class="btn-gray">Volver</button>
-        <h3 style="margin-top:15px; color:var(--dark);"><i class="fas fa-tools"></i> Cronograma de Mantenimientos</h3>
-        <div id="calendar" style="margin-top:10px;"></div>
-    </div>
-
-    <div id="mod_enviar_ticket" class="modulo">
-        <button onclick="volver()" class="btn-gray">⬅ Volver</button>
-        <div style="max-width:600px; margin:auto;">
-            <h2 style="text-align:center; color: var(--primary);"><i class="fas fa-headset"></i> Nueva Solicitud de Soporte</h2>
-            <div class="grid-bonito" style="grid-template-columns:1fr;">
-                <div class="campo-group"><label><i class="fas fa-user"></i> Nombre Completo</label><input type="text" id="tk_nom_user" placeholder="Ingrese su nombre completo"></div>
-                <div class="grid-bonito">
-                    <div class="campo-group"><label><i class="fas fa-map-marker-alt"></i> Campus</label><select id="tk_campus"><option>Bucaramanga</option><option>Bogotá</option><option>Tunja</option></select></div>
-                    <div class="campo-group"><label><i class="fas fa-exclamation-triangle"></i> Prioridad</label><select id="tk_prioridad"><option>Baja</option><option>Media</option><option>Alta</option></select></div>
-                </div>
-                <div class="campo-group"><label><i class="fas fa-building"></i> Dependencia / Área</label><select id="tk_dep"><option>Administrativa</option><option>Docente</option><option>Estudiante</option><option>Bienestar</option><option>Registro y Control</option><option>Contabilidad</option><option>Biblioteca</option><option>Secretaría</option></select></div>
-                <div class="campo-group"><label><i class="fas fa-tools"></i> Tipo de Requerimiento</label><select id="tk_tipo"><option>Soporte Técnico</option><option>Redes e Internet</option><option>Software / Licencias</option><option>Mantenimiento Físico</option></select></div>
-                <div class="campo-group"><label><i class="fas fa-comment-dots"></i> Descripción del Problema</label><textarea id="tk_desc" rows="4" placeholder="Describa detalladamente su solicitud..."></textarea></div>
-                <button class="btn-agregar-master" onclick="enviarTicket()" style="justify-content:center; margin-top:10px; padding:15px;">Enviar Ticket</button>
-            </div>
-        </div>
-    </div>
+    <div id="mod_mis_tickets" class="modulo"><button onclick="volver()" class="btn-gray">⬅ Volver</button><div id="mis_tk_container" class="grid-main" style="margin-top:20px;"></div></div>
+    <div id="mod_admin_tickets" class="modulo"><button onclick="volver()" class="btn-gray">Volver</button><div style="overflow-x:auto; margin-top:15px;"><table><thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Estado</th><th>Gestor</th><th>Acciones</th></tr></thead><tbody id="tbody_admin_tickets"></tbody></table></div></div>
+    <div id="mod_tickets_cerrados" class="modulo"><button onclick="volver()" class="btn-gray">Volver</button><div style="overflow-x:auto; margin-top:15px;"><table><thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Gestor</th><th>Fecha Cierre</th><th>Acciones</th></tr></thead><tbody id="tbody_cerrados"></tbody></table></div></div>
+    <div id="mod_stats" class="modulo"><div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;"><button onclick="volver()" class="btn-gray">Volver</button><select id="filtro_stats" onchange="cargarGraficaActualizada()"><option value="estado">Estado</option><option value="tipo">Tipo</option><option value="asignado">Gestor</option><option value="campus">Campus</option></select></div><div style="position: relative; height:450px; width:100%; display:flex; justify-content:center;"><canvas id="miGrafica"></canvas></div></div>
+    <div id="mod_calendario" class="modulo"><button onclick="volver()" class="btn-gray">Volver</button><div id="calendar" style="margin-top:10px;"></div></div>
+    <div id="mod_enviar_ticket" class="modulo"><button onclick="volver()" class="btn-gray">⬅ Volver</button><div style="max-width:600px; margin:auto;"><h2 style="text-align:center;">Nueva Solicitud</h2><div class="grid-bonito" style="grid-template-columns:1fr;"><div class="campo-group"><label>Nombre</label><input type="text" id="tk_nom_user"></div><div class="campo-group"><label>Campus</label><select id="tk_campus"><option>Bucaramanga</option><option>Bogotá</option><option>Tunja</option></select></div><button class="btn-agregar-master" onclick="enviarTicket()">Enviar Ticket</button></div></div></div>
 </div>
 
 <div id="modalRol" class="modal">
-    <div class="modal-content" style="max-width: 600px;">
+    <div class="modal-content" style="max-width: 700px;">
         <h3 id="rol_modal_title">Configurar Rol</h3>
         <div class="grid-bonito" style="grid-template-columns: 1fr;">
-            <div class="campo-group"><label>Nombre del Rol</label><input type="text" id="rol_nombre" placeholder="Ej: Supervisor, Pasante..."></div>
+            <div class="campo-group"><label>Nombre del Rol</label><input type="text" id="rol_nombre" placeholder="Ej: Pasante de TI"></div>
             <div class="campo-group">
-                <label>Seleccionar Módulos Permitidos</label>
+                <label>Permisos de Módulos y Acciones</label>
                 <div class="roles-chk-grid" id="chk_modulos_container"></div>
             </div>
             <div style="display:flex; gap:10px; margin-top:20px;">
@@ -237,62 +174,12 @@
     </div>
 </div>
 
-<div id="modalMantenimiento" class="modal">
-    <div class="modal-content" style="max-width:400px;">
-        <h3 id="mnt_modal_title">Registrar Mantenimiento</h3>
-        <div class="grid-bonito" style="grid-template-columns:1fr;">
-            <div class="campo-group"><label>Fecha Programada</label><input type="date" id="mnt_fecha"></div>
-            <div class="campo-group"><label>Tipo</label><select id="mnt_tipo"><option>Preventivo</option><option>Correctivo</option></select></div>
-            <div class="campo-group"><label>Descripción del Trabajo</label><textarea id="mnt_desc" rows="4"></textarea></div>
-            <div style="display:flex; gap:10px; margin-top:10px;">
-                <button class="btn-gray" onclick="cerrarModales()" style="flex:1;">Cerrar</button>
-                <button class="btn-agregar-master" id="btn_guardar_mnt" onclick="guardarMantenimiento()" style="flex:1; justify-content:center;">Guardar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="modalHistorial" class="modal">
-    <div class="modal-content">
-        <h3>Historial de Mantenimientos</h3>
-        <div id="historial_content"></div>
-        <div style="margin-top:20px; text-align:right;"><button class="btn-gray" onclick="cerrarModales()">Cerrar</button></div>
-    </div>
-</div>
-
-<div id="modalCerrarTicket" class="modal">
-    <div class="modal-content" style="max-width:450px;">
-        <h3>Finalizar Ticket</h3>
-        <textarea id="tk_respuesta_cierre" rows="4" style="width:100%; border-radius:10px; padding:10px; border:1px solid #ddd;" placeholder="Escriba la solución brindada..."></textarea>
-        <div style="display:flex; gap:10px; margin-top:15px;">
-            <button class="btn-gray" onclick="cerrarModales()" style="flex:1;">Cancelar</button>
-            <button class="btn-agregar-master" onclick="ejecutarCierreConComentario()" style="flex:1; justify-content:center;">Confirmar Cierre</button>
-        </div>
-    </div>
-</div>
-
-<div id="modalVerTicket" class="modal">
-    <div class="modal-content">
-        <h3>Detalle del Ticket</h3>
-        <div id="detalle_content"></div>
-        <div style="margin-top:20px; text-align:right;"><button class="btn-gray" onclick="cerrarModales()">Cerrar</button></div>
-    </div>
-</div>
-
-<div id="modalRegistro" class="modal">
-    <div class="modal-content"><h3 id="modal_tit">Formulario de Registro</h3><div id="form_dinamico" class="grid-bonito"></div><div style="margin-top:30px; text-align:right;"><button class="btn-gray" onclick="cerrarModales()" style="margin-right:10px;">Cerrar</button><button class="btn-agregar-master" onclick="guardarDatoMaestro()">Guardar Registro</button></div></div>
-</div>
-
-<div id="modalReasignar" class="modal">
-    <div class="modal-content" style="max-width:400px;">
-        <h2>Reasignar Ticket</h2>
-        <select id="re_gestor_new" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;"></select>
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <button class="btn-gray" onclick="cerrarModales()" style="flex:1;">Cerrar</button>
-            <button class="btn-agregar-master" onclick="ejecutarReasignar()" style="flex:1; justify-content:center;">Confirmar</button>
-        </div>
-    </div>
-</div>
+<div id="modalMantenimiento" class="modal"><div class="modal-content" style="max-width:400px;"><h3>Mantenimiento</h3><div class="campo-group"><label>Fecha</label><input type="date" id="mnt_fecha"></div><div class="campo-group"><label>Descripción</label><textarea id="mnt_desc" rows="4"></textarea></div><div style="display:flex; gap:10px; margin-top:10px;"><button class="btn-gray" onclick="cerrarModales()">Cerrar</button><button class="btn-agregar-master" id="btn_guardar_mnt" onclick="guardarMantenimiento()">Guardar</button></div></div></div>
+<div id="modalHistorial" class="modal"><div class="modal-content"><h3>Historial</h3><div id="historial_content"></div><button class="btn-gray" onclick="cerrarModales()">Cerrar</button></div></div>
+<div id="modalCerrarTicket" class="modal"><div class="modal-content"><h3>Cierre</h3><textarea id="tk_respuesta_cierre" rows="4"></textarea><button onclick="ejecutarCierreConComentario()">Confirmar</button></div></div>
+<div id="modalVerTicket" class="modal"><div class="modal-content"><h3>Detalle</h3><div id="detalle_content"></div><button onclick="cerrarModales()">Cerrar</button></div></div>
+<div id="modalRegistro" class="modal"><div class="modal-content"><h3 id="modal_tit">Registro</h3><div id="form_dinamico" class="grid-bonito"></div><button onclick="guardarDatoMaestro()">Guardar</button></div></div>
+<div id="modalReasignar" class="modal"><div class="modal-content"><h3>Reasignar</h3><select id="re_gestor_new"></select><button onclick="ejecutarReasignar()">Confirmar</button></div></div>
 
 <script>
     const firebaseConfig = { apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw", authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com", projectId: "sistema-de-tickets-ti-b12f5" };
@@ -301,10 +188,8 @@
     const auth = firebase.auth();
 
     let user, userRole, currentColl, localData = [], selectedId, modoModal = "nuevo", miChart = null, listaGestoresGlobal = [], nombreRealUsuario = "";
-    let selectedMntId = null, selectedCollMnt = null, selectedEquipIdMnt = null;
     let listaRolesGlobal = [];
 
-    // Definición de todos los módulos disponibles para la gestión de permisos
     const MODULOS_SISTEMA = [
         {id: "card_mis_tickets", nom: "Mis Tickets"},
         {id: "card_enviar_ticket", nom: "Enviar Ticket"},
@@ -325,16 +210,10 @@
             user = u;
             document.getElementById('login').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
-            await cargarRoles(); // Cargar roles antes de verificar
+            await cargarRoles();
             await verificarRol();
             cargarGestores();
             observarContadores();
-            
-            const lastMod = localStorage.getItem('activeModulo');
-            if(lastMod) {
-                const params = JSON.parse(localStorage.getItem('activeParams') || '{}');
-                abrir(lastMod, params.coll, params.tit);
-            }
         } else {
             document.getElementById('login').style.display = 'flex';
             document.getElementById('dashboard').style.display = 'none';
@@ -342,20 +221,162 @@
     });
 
     async function cargarRoles() {
-        const snap = await db.collection("roles").onSnapshot(snap => {
+        db.collection("roles").onSnapshot(snap => {
             listaRolesGlobal = [];
             snap.forEach(doc => listaRolesGlobal.push({id: doc.id, ...doc.data()}));
             renderTablaRoles();
         });
     }
 
+    async function verificarRol() {
+        document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
+        const q = await db.collection("usuarios").where("cor", "==", user.email).get();
+        if(!q.empty) {
+            const d = q.docs[0].data(); userRole = d.rol; nombreRealUsuario = d.nom;
+        } else {
+            userRole = (user.email === "camicarmona1212@gmail.com") ? "Admin" : "Usuario"; nombreRealUsuario = "Admin";
+        }
+        document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
+        if(userRole !== "Usuario") document.getElementById('stats_contadores_visibles').style.display = 'flex';
+        
+        let mods = [];
+        const rDB = listaRolesGlobal.find(r => r.nombre === userRole);
+        if(userRole === "Admin") mods = MODULOS_SISTEMA.map(m => m.id);
+        else if(rDB) mods = rDB.modulos;
+        else mods = ["card_mis_tickets", "card_enviar_ticket"];
+
+        mods.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
+    }
+
+    // --- Gestión de Preferencias y Roles con Acciones ---
+    function abrirModalRol(modo, id = null) {
+        modoModal = modo; selectedId = id;
+        document.getElementById('rol_modal_title').innerText = modo === 'nuevo' ? "Crear Nuevo Rol" : "Editar Rol";
+        document.getElementById('rol_nombre').value = "";
+        const container = document.getElementById('chk_modulos_container');
+        container.innerHTML = "";
+        
+        MODULOS_SISTEMA.forEach(m => {
+            container.innerHTML += `
+                <div class="role-block">
+                    <label class="role-option">
+                        <input type="checkbox" class="chk-rol-mod" value="${m.id}" onchange="toggleAcciones('${m.id}', this.checked)"> ${m.nom}
+                    </label>
+                    <div class="actions-sub-grid" id="actions_${m.id}" style="opacity: 0.5; pointer-events: none;">
+                        <label class="action-item"><input type="checkbox" class="chk-act" data-mod="${m.id}" value="crear"> Crear</label>
+                        <label class="action-item"><input type="checkbox" class="chk-act" data-mod="${m.id}" value="editar"> Editar</label>
+                        <label class="action-item"><input type="checkbox" class="chk-act" data-mod="${m.id}" value="eliminar"> Eliminar</label>
+                    </div>
+                </div>`;
+        });
+
+        if(modo === 'editar') {
+            const r = listaRolesGlobal.find(x => x.id === id);
+            document.getElementById('rol_nombre').value = r.nombre;
+            document.querySelectorAll('.chk-rol-mod').forEach(chk => {
+                if(r.modulos.includes(chk.value)) {
+                    chk.checked = true;
+                    toggleAcciones(chk.value, true);
+                    const acts = r.acciones ? r.acciones[chk.value] || [] : [];
+                    document.querySelectorAll(`.chk-act[data-mod="${chk.value}"]`).forEach(a => {
+                        if(acts.includes(a.value)) a.checked = true;
+                    });
+                }
+            });
+        }
+        document.getElementById('btn_guardar_rol').onclick = guardarRol;
+        document.getElementById('modalRol').style.display = 'block';
+    }
+
+    function toggleAcciones(modId, checked) {
+        const div = document.getElementById(`actions_${modId}`);
+        div.style.opacity = checked ? "1" : "0.5";
+        div.style.pointer_events = checked ? "auto" : "none";
+        if(!checked) div.querySelectorAll('input').forEach(i => i.checked = false);
+    }
+
+    async function guardarRol() {
+        const nombre = document.getElementById('rol_nombre').value;
+        const modulos = Array.from(document.querySelectorAll('.chk-rol-mod:checked')).map(c => c.value);
+        if(!nombre) return alert("Ingrese el nombre");
+
+        let acciones = {};
+        modulos.forEach(m => {
+            acciones[m] = Array.from(document.querySelectorAll(`.chk-act[data-mod="${m}"]:checked`)).map(a => a.value);
+        });
+
+        const data = { nombre, modulos, acciones };
+        if(modoModal === 'nuevo') await db.collection("roles").add(data);
+        else await db.collection("roles").doc(selectedId).update(data);
+        cerrarModales(); alert("Rol Guardado");
+    }
+
+    async function eliminarRol(id) { if(confirm("¿Eliminar rol?")) await db.collection("roles").doc(id).delete(); }
+
+    function renderTablaRoles() {
+        const tb = document.getElementById('tbody_roles');
+        if(!tb) return; tb.innerHTML = "";
+        listaRolesGlobal.forEach(r => {
+            tb.innerHTML += `<tr><td><b>${r.nombre}</b></td><td>${r.modulos.length} módulos</td><td><button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')"><i class="fas fa-edit"></i></button><button class="btn-acc bg-d-red" onclick="eliminarRol('${r.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+        });
+    }
+
+    // --- Funciones Originales de Gestión y UI ---
+    function abrir(id, mColl = null, mTit = null) {
+        document.getElementById('panel-principal').style.display = 'none';
+        document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none');
+        document.getElementById(id).style.display = 'block';
+        if(mColl) {
+            currentColl = mColl; document.getElementById('m_titulo').innerText = mTit;
+            document.getElementById('m_search_container').style.display = (mColl.includes('inventario')) ? 'flex' : 'none';
+            db.collection(currentColl).onSnapshot(s => { localData = []; s.forEach(d => localData.push({id: d.id, ...d.data()})); renderTablaMaestra(); });
+        }
+        if(id === 'mod_gest_mantenimientos') cargarGestionMantenimientos();
+        if(id === 'mod_mis_tickets') cargarMisTickets();
+        if(id === 'mod_admin_tickets') cargarTicketsAdmin();
+        if(id === 'mod_stats') setTimeout(cargarGraficaActualizada, 350);
+        if(id === 'mod_calendario') setTimeout(inicializarCalendario, 300);
+    }
+
+    function renderTablaMaestra() {
+        const b = document.getElementById('m_tbody'); b.innerHTML = "";
+        const h = document.getElementById('m_thead');
+        const isAdmin = userRole === 'Admin';
+        if(currentColl === 'usuarios') {
+            h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
+            localData.forEach(e => { b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td><td><button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>${isAdmin ? `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}')"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`; });
+        } else {
+            h.innerHTML = `<tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Responsable</th><th>Acciones</th></tr>`;
+            localData.forEach(e => { b.innerHTML += `<tr><td><b>${e.nom}</b></td><td>${e.tip}</td><td>${e.mod}</td><td>${e.res}</td><td><button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button><button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button></td></tr>`; });
+        }
+    }
+
+    function abrirModalRegistro(modo, id = null) {
+        modoModal = modo; selectedId = id;
+        const f = document.getElementById('form_dinamico'); f.innerHTML = "";
+        if(currentColl === 'usuarios') {
+            // CORRECCIÓN: Filtrar solo roles válidos (Base + Dinámicos de la DB)
+            const rolesLimpios = ["Admin", "Gestor", "Usuario", ...listaRolesGlobal.map(r => r.nombre)];
+            const uniqueRoles = [...new Set(rolesLimpios)].filter(r => r && r !== "undefined");
+            
+            f.innerHTML = `<div class="campo-group"><label>Nombre</label><input id="nom"></div>
+                           <div class="campo-group"><label>Correo</label><input id="cor"></div>
+                           <div class="campo-group"><label>Rol</label><select id="rol">${uniqueRoles.map(r => `<option value="${r}">${r}</option>`).join('')}</select></div>`;
+        } else {
+            f.innerHTML = `<div class="campo-group"><label>Nombre</label><input id="nom"></div><div class="campo-group"><label>Tipo</label><input id="tip"></div><div class="campo-group"><label>Modelo</label><input id="mod"></div><div class="campo-group"><label>Resp.</label><input id="res"></div>`;
+        }
+        if(modo==='editar') {
+            const d = localData.find(x=>x.id===id);
+            setTimeout(()=>Object.keys(d).forEach(k=>{ if(document.getElementById(k)) document.getElementById(k).value=d[k] }),50);
+        }
+        document.getElementById('modalRegistro').style.display='block';
+    }
+
+    // Funciones de apoyo (Contadores, Gestores, etc.)
     function observarContadores() {
         db.collection("tickets").onSnapshot(snap => {
             let ab = 0, pr = 0, ce = 0;
-            snap.forEach(doc => {
-                const s = doc.data().estado;
-                if(s === "Abierto") ab++; else if(s === "En Proceso") pr++; else if(s === "Cerrado") ce++;
-            });
+            snap.forEach(doc => { const s = doc.data().estado; if(s === "Abierto") ab++; else if(s === "En Proceso") pr++; else ce++; });
             document.getElementById('count_abiertos').innerText = ab;
             document.getElementById('count_proceso').innerText = pr;
             document.getElementById('count_cerrados').innerText = ce;
@@ -367,378 +388,33 @@
         listaGestoresGlobal = []; q.forEach(doc => listaGestoresGlobal.push(doc.data()));
     }
 
-    async function verificarRol() {
-        document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
-        const q = await db.collection("usuarios").where("cor", "==", user.email).get();
-        
-        if(!q.empty) {
-            const d = q.docs[0].data(); userRole = d.rol; nombreRealUsuario = d.nom;
-        } else {
-            userRole = (user.email === "camicarmona1212@gmail.com") ? "Admin" : "Usuario"; nombreRealUsuario = "Admin";
-        }
-        document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
-        if(userRole !== "Usuario") document.getElementById('stats_contadores_visibles').style.display = 'flex';
-        
-        // --- Lógica Dinámica de Visibilidad ---
-        let modulosPermitidos = [];
-        const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
-
-        if(userRole === "Admin") {
-            modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
-        } else if(rolDB) {
-            modulosPermitidos = rolDB.modulos;
-        } else {
-            // Reglas por defecto si no hay rol en DB
-            const vDefault = { 
-                "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_calendario", "card_aulas", "card_impresoras"],
-                "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
-            };
-            modulosPermitidos = vDefault[userRole] || vDefault["Usuario"];
-        }
-
-        modulosPermitidos.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
-    }
-
-    // --- Funciones Gestión Roles (Preferencias) ---
-    function abrirModalRol(modo, id = null) {
-        modoModal = modo; selectedId = id;
-        document.getElementById('rol_modal_title').innerText = modo === 'nuevo' ? "Crear Nuevo Rol" : "Editar Rol";
-        document.getElementById('rol_nombre').value = "";
-        const container = document.getElementById('chk_modulos_container');
-        container.innerHTML = "";
-        
-        MODULOS_SISTEMA.forEach(m => {
-            container.innerHTML += `<label class="role-option"><input type="checkbox" class="chk-rol-mod" value="${m.id}"> ${m.nom}</label>`;
-        });
-
-        if(modo === 'editar') {
-            const r = listaRolesGlobal.find(x => x.id === id);
-            document.getElementById('rol_nombre').value = r.nombre;
-            document.querySelectorAll('.chk-rol-mod').forEach(chk => {
-                if(r.modulos.includes(chk.value)) chk.checked = true;
-            });
-        }
-        document.getElementById('btn_guardar_rol').onclick = guardarRol;
-        document.getElementById('modalRol').style.display = 'block';
-    }
-
-    async function guardarRol() {
-        const nombre = document.getElementById('rol_nombre').value;
-        const seleccionados = Array.from(document.querySelectorAll('.chk-rol-mod:checked')).map(c => c.value);
-        if(!nombre) return alert("Ingrese el nombre del rol");
-
-        const data = { nombre, modulos: seleccionados };
-        if(modoModal === 'nuevo') await db.collection("roles").add(data);
-        else await db.collection("roles").doc(selectedId).update(data);
-
-        cerrarModales(); alert("Rol actualizado con éxito");
-    }
-
-    async function eliminarRol(id) {
-        if(confirm("¿Eliminar este rol? Los usuarios asociados perderán sus permisos.")) {
-            await db.collection("roles").doc(id).delete();
-        }
-    }
-
-    function renderTablaRoles() {
-        const tb = document.getElementById('tbody_roles');
-        if(!tb) return;
-        tb.innerHTML = "";
-        listaRolesGlobal.forEach(r => {
-            tb.innerHTML += `<tr>
-                <td><b>${r.nombre}</b></td>
-                <td>${r.modulos.length} módulos asignados</td>
-                <td>
-                    <button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn-acc bg-d-red" onclick="eliminarRol('${r.id}')"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>`;
-        });
-    }
-
-    // --- Funciones Originales ---
-    function abrir(id, mColl = null, mTit = null) {
-        document.getElementById('panel-principal').style.display = 'none';
-        document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none');
-        document.getElementById(id).style.display = 'block';
-        
-        localStorage.setItem('activeModulo', id);
-        localStorage.setItem('activeParams', JSON.stringify({coll: mColl, tit: mTit}));
-
-        if(mColl) {
-            currentColl = mColl; document.getElementById('m_titulo').innerText = mTit;
-            const searchBar = document.getElementById('m_search_container');
-            if(mColl === 'inventario' || mColl === 'inventario_salas') {
-                searchBar.style.display = 'flex';
-            } else {
-                searchBar.style.display = 'none';
+    async function cargarGestionMantenimientos() {
+        const tb = document.getElementById('tbody_gest_mantenimientos'); tb.innerHTML = "Cargando...";
+        const colls = ["inventario", "inventario_salas", "impresoras"]; let h = "";
+        for(let c of colls) {
+            const eqs = await db.collection(c).get();
+            for(let eq of eqs.docs) {
+                const mnts = await db.collection(c).doc(eq.id).collection("mantenimientos").get();
+                mnts.forEach(m => { h += `<tr><td>${m.data().fecha}</td><td>${eq.data().nom}</td><td>${c}</td><td>${m.data().tipo || 'N/A'}</td><td>${m.data().desc}</td><td><button class="btn-acc bg-d-red" onclick="eliminarMnt('${c}','${eq.id}','${m.id}')"><i class="fas fa-trash"></i></button></td></tr>`; });
             }
-            db.collection(currentColl).onSnapshot(s => { localData = []; s.forEach(d => localData.push({id: d.id, ...d.data()})); renderTablaMaestra(); });
         }
-        if(id === 'mod_mis_tickets') cargarMisTickets();
-        if(id === 'mod_admin_tickets') cargarTicketsAdmin();
-        if(id === 'mod_tickets_cerrados') cargarTicketsCerrados();
-        if(id === 'mod_stats') setTimeout(cargarGraficaActualizada, 350);
-        if(id === 'mod_calendario') setTimeout(inicializarCalendario, 300);
-        if(id === 'mod_gest_mantenimientos') cargarGestionMantenimientos();
+        tb.innerHTML = h || "<tr><td colspan='6'>Sin registros</td></tr>";
     }
 
-    function volver() { 
-        localStorage.removeItem('activeModulo');
-        localStorage.removeItem('activeParams');
-        document.getElementById('panel-principal').style.display = 'grid'; 
-        document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none'); 
-    }
-
-    function renderTablaMaestra(dataFiltrada = null) {
-        const b = document.getElementById('m_tbody'); b.innerHTML = "";
-        const h = document.getElementById('m_thead');
-        const displayData = dataFiltrada || localData;
-        const isAdmin = userRole === 'Admin';
-
-        if(currentColl === 'usuarios') {
-            h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
-            displayData.forEach(e => { b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td><td><button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>${isAdmin ? `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`; });
-        } else {
-            h.innerHTML = `<tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Serial</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Sede</th><th>Acciones</th></tr>`;
-            displayData.forEach(e => {
-                b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${e.sed || ''}</td><td><div style="display:flex;"><button class="btn-acc bg-info-e" title="Editar" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button><button class="btn-acc bg-r-purple" title="Mantenimiento" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button><button class="btn-acc bg-v-gray" title="Historial" onclick="verHistorial('${e.id}')"><i class="fas fa-eye"></i></button>${isAdmin ? `<button class="btn-acc bg-d-red" title="Eliminar" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>` : ''}</div></td></tr>`;
-            });
-        }
-    }
-
-    function filtrarMaestro() {
-        const term = document.getElementById('m_search').value.toLowerCase();
-        const filtrados = localData.filter(e => (e.nom && e.nom.toLowerCase().includes(term)) || (e.ser && e.ser.toLowerCase().includes(term)) || (e.res && e.res.toLowerCase().includes(term)) || (e.mod && e.mod.toLowerCase().includes(term)) || (e.tip && e.tip.toLowerCase().includes(term)));
-        renderTablaMaestra(filtrados);
-    }
-
-    function abrirModalRegistro(modo, id = null) {
-        modoModal = modo; selectedId = id;
-        const f = document.getElementById('form_dinamico');
-        f.innerHTML = "";
-        let fields = [];
-        if(currentColl === 'usuarios') {
-            // Sincronización de roles creados en el select de usuarios
-            const rolesDinamicos = ["Admin", "Gestor", "Usuario", ...listaRolesGlobal.map(r => r.nombre)];
-            const uniqueRoles = [...new Set(rolesDinamicos)];
-            fields = [["Nombre","nom"],["Correo","cor"],["Rol","rol","select", uniqueRoles]];
-        } else {
-            fields = [["PC (Nombre Equipo)","nom"],["Tipo Equipo","tip"],["Modelo","mod"],["Serial","ser"],["Responsable","res"],["Dependencia","dep"],["Campus","cam","select",["Bucaramanga","Bogotá","Tunja"]],["Sede","sed"]];
-        }
-        fields.forEach(x => {
-            let inp = x[2]==="select" ? `<select id="${x[1]}">${x[3].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>` : `<input type="text" id="${x[1]}" placeholder="${x[0]}">`;
-            f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${inp}</div>`;
-        });
-        if(modo==='editar') {
-            const d = localData.find(x=>x.id===id);
-            setTimeout(()=>Object.keys(d).forEach(k=>{if(document.getElementById(k)) document.getElementById(k).value=d[k]}),50);
-        }
-        document.getElementById('modalRegistro').style.display='block';
-    }
+    async function eliminarMnt(c, eid, mid) { if(confirm("¿Eliminar?")) { await db.collection(c).doc(eid).collection("mantenimientos").doc(mid).delete(); cargarGestionMantenimientos(); } }
 
     async function guardarDatoMaestro() {
-        let o = {};
-        document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => o[i.id] = i.value);
+        let o = {}; document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => o[i.id] = i.value);
         if(modoModal === 'editar') await db.collection(currentColl).doc(selectedId).update(o);
         else await db.collection(currentColl).add(o);
         cerrarModales();
     }
 
-    async function inicializarCalendario() {
-        const calendarEl = document.getElementById('calendar');
-        if (!calendarEl) return;
-        const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth', locale: 'es',
-            headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,dayGridWeek' },
-            events: async function(info, success) {
-                const evs = [];
-                const colecciones = ["inventario", "inventario_salas", "impresoras"];
-                for(let coll of colecciones) {
-                    const snapEquipos = await db.collection(coll).get();
-                    for(let docE of snapEquipos.docs) {
-                        const mnts = await db.collection(coll).doc(docE.id).collection("mantenimientos").get();
-                        mnts.forEach(m => {
-                            const dataM = m.data();
-                            evs.push({ title: `${dataM.tipo}: ${docE.data().nom || 'Equipo'}`, start: dataM.fecha, backgroundColor: dataM.tipo === 'Preventivo' ? '#8b5cf6' : '#ef4444', extendedProps: { desc: dataM.desc } });
-                        });
-                    }
-                }
-                success(evs);
-            }
-        });
-        calendar.render();
-    }
-
-    async function cargarGestionMantenimientos() {
-        const tb = document.getElementById('tbody_gest_mantenimientos');
-        tb.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando mantenimientos...</td></tr>";
-        const colecciones = ["inventario", "inventario_salas", "impresoras"];
-        let html = "";
-        
-        for(let coll of colecciones) {
-            const equipos = await db.collection(coll).get();
-            for(let equip of equipos.docs) {
-                const eData = equip.data();
-                const mnts = await db.collection(coll).doc(equip.id).collection("mantenimientos").get();
-                mnts.forEach(m => {
-                    const mData = m.data();
-                    html += `<tr>
-                        <td>${mData.fecha}</td>
-                        <td><b>${eData.nom || 'S/N'}</b></td>
-                        <td>${coll.replace('_', ' ').toUpperCase()}</td>
-                        <td><span style="color:${mData.tipo === 'Preventivo' ? 'var(--purple)' : 'var(--danger)'}; font-weight:bold;">${mData.tipo}</span></td>
-                        <td>${mData.desc}</td>
-                        <td>
-                            <button class="btn-acc bg-info-e" onclick="abrirEditarMnt('${coll}', '${equip.id}', '${m.id}', ${JSON.stringify(mData).replace(/"/g, '&quot;')})"><i class="fas fa-edit"></i></button>
-                            <button class="btn-acc bg-d-red" onclick="eliminarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>`;
-                });
-            }
-        }
-        tb.innerHTML = html || "<tr><td colspan='6' style='text-align:center;'>No hay mantenimientos registrados</td></tr>";
-    }
-
-    function abrirEditarMnt(coll, equipId, mntId, data) {
-        selectedCollMnt = coll; selectedEquipIdMnt = equipId; selectedMntId = mntId;
-        modoModal = "editar_mnt";
-        document.getElementById('mnt_modal_title').innerText = "Editar Mantenimiento";
-        document.getElementById('mnt_fecha').value = data.fecha;
-        document.getElementById('mnt_tipo').value = data.tipo;
-        document.getElementById('mnt_desc').value = data.desc;
-        document.getElementById('btn_guardar_mnt').onclick = ejecutarEditarMnt;
-        document.getElementById('modalMantenimiento').style.display = 'block';
-    }
-
-    async function ejecutarEditarMnt() {
-        const fecha = document.getElementById('mnt_fecha').value;
-        const tipo = document.getElementById('mnt_tipo').value;
-        const desc = document.getElementById('mnt_desc').value;
-        if(!fecha || !desc) return alert("Complete los campos.");
-        await db.collection(selectedCollMnt).doc(selectedEquipIdMnt).collection("mantenimientos").doc(selectedMntId).update({ fecha, tipo, desc });
-        cerrarModales(); alert("Mantenimiento actualizado");
-        cargarGestionMantenimientos();
-    }
-
-    async function eliminarMnt(coll, equipId, mntId) {
-        if(confirm("¿Estás seguro de eliminar este mantenimiento?")) {
-            await db.collection(coll).doc(equipId).collection("mantenimientos").doc(mntId).delete();
-            cargarGestionMantenimientos();
-        }
-    }
-
-    async function enviarTicket() {
-        const nom = document.getElementById('tk_nom_user').value;
-        const d = document.getElementById('tk_desc').value;
-        if(!nom || !d) return alert("Por favor complete su nombre y la descripción.");
-        let asig = "Pendiente";
-        if(listaGestoresGlobal.length > 0) asig = listaGestoresGlobal[Math.floor(Math.random() * listaGestoresGlobal.length)].nom;
-        await db.collection("tickets").add({ solicitante: nom, usuario: user.email, campus: document.getElementById('tk_campus').value, prioridad: document.getElementById('tk_prioridad').value, dependencia: document.getElementById('tk_dep').value, tipo: document.getElementById('tk_tipo').value, desc: d, estado: "Abierto", asignado: asig, fecha: new Date().toLocaleString() });
-        alert(`¡Ticket enviado con éxito! Asignado a: ${asig}`); volver();
-    }
-
-    function cargarTicketsAdmin() {
-        const tb = document.getElementById('tbody_admin_tickets');
-        db.collection("tickets").onSnapshot(snap => {
-            tb.innerHTML = ""; 
-            snap.forEach(doc => {
-                const t = doc.data(); 
-                if(t.estado === "Cerrado") return;
-                if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
-                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante || t.usuario.split('@')[0]}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado || 'Pend.'}</td><td><button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button><button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>${userRole==='Admin' ? `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : ''}<button class="btn-acc bg-c-green" onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>${userRole==='Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`;
-            });
-        });
-    }
-
-    function cargarTicketsCerrados() {
-        const tb = document.getElementById('tbody_cerrados');
-        db.collection("tickets").where("estado", "==", "Cerrado").onSnapshot(snap => {
-            tb.innerHTML = ""; snap.forEach(doc => {
-                const t = doc.data(); if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
-                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante || t.usuario.split('@')[0]}</td><td>${t.tipo}</td><td>${t.asignado}</td><td>${t.fecha_cierre}</td><td><button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>${userRole === 'Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}','tickets')"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`;
-            });
-        });
-    }
-
-    function cargarMisTickets() {
-        const c = document.getElementById('mis_tk_container'); c.innerHTML = "Cargando...";
-        db.collection("tickets").where("usuario", "==", user.email).onSnapshot(s => {
-            c.innerHTML = ""; s.forEach(doc => {
-                const t = doc.data(); const col = t.estado === 'Cerrado' ? 'var(--success)' : (t.estado === 'En Proceso' ? 'var(--warning)' : 'var(--primary)');
-                c.innerHTML += `<div class="card tk-card" style="border-left-color: ${col}; display:block;"><div class="tk-status" style="background:${col}">${t.estado}</div><h4>${t.tipo}</h4><p style="font-size:12px; color:gray;">${t.desc.substring(0,60)}...</p><p><small><b>Gestor:</b> ${t.asignado}</small></p><button class="btn-acc bg-v-gray" style="margin-top:10px" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i> Ver más</button></div>`;
-            });
-        });
-    }
-
-    function abrirMantenimiento(id) { 
-        selectedId = id; 
-        document.getElementById('mnt_modal_title').innerText = "Registrar Mantenimiento";
-        document.getElementById('mnt_fecha').value=""; 
-        document.getElementById('mnt_desc').value=""; 
-        document.getElementById('btn_guardar_mnt').onclick = guardarMantenimiento;
-        document.getElementById('modalMantenimiento').style.display='block'; 
-    }
-
-    async function guardarMantenimiento() {
-        const fecha = document.getElementById('mnt_fecha').value; const tipo = document.getElementById('mnt_tipo').value; const desc = document.getElementById('mnt_desc').value;
-        if(!fecha || !desc) return alert("Complete los campos de fecha y descripción");
-        await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ fecha, tipo, desc });
-        cerrarModales(); alert("Mantenimiento programado");
-    }
-
-    async function verHistorial(id) {
-        const content = document.getElementById('historial_content'); content.innerHTML = "Cargando...";
-        const snap = await db.collection(currentColl).doc(id).collection("mantenimientos").orderBy("fecha","desc").get();
-        content.innerHTML = snap.empty ? "<p>No hay registros</p>" : "";
-        snap.forEach(doc => {
-            const d = doc.data(); content.innerHTML += `<div class="mantenimiento-item"><b>Fecha:</b> ${d.fecha} | <b>Tipo:</b> <span style="color:${d.tipo==='Preventivo'?'purple':'red'}">${d.tipo}</span><br><p style="margin:5px 0"><b>Descripción:</b> ${d.desc}</p></div>`;
-        });
-        document.getElementById('modalHistorial').style.display='block';
-    }
-
-    function abrirModalCierre(id) { selectedId = id; document.getElementById('tk_respuesta_cierre').value = ""; document.getElementById('modalCerrarTicket').style.display = 'block'; }
-    async function ejecutarCierreConComentario() { const r = document.getElementById('tk_respuesta_cierre').value; if(!r) return alert("Escribe la solución"); await db.collection("tickets").doc(selectedId).update({ estado: "Cerrado", respuesta: r, fecha_cierre: new Date().toLocaleString() }); cerrarModales(); }
-    async function verDetalleTicket(id) { 
-        const doc = await db.collection("tickets").doc(id).get(); const t = doc.data(); 
-        document.getElementById('detalle_content').innerHTML = `<div class="grid-bonito" style="grid-template-columns:1fr"><p><b>Solicitante:</b> ${t.solicitante}</p><p><b>Asignado a:</b> ${t.asignado}</p><p><b>Campus:</b> ${t.campus} | <b>Prioridad:</b> ${t.prioridad}</p><p><b>Descripción:</b> ${t.desc}</p>${t.respuesta ? `<div style="background:#f0fdf4; padding:15px; border-radius:10px; border:1px solid #bbf7d0; margin-top:10px;"><b>Solución:</b><br>${t.respuesta}</div>` : ''}</div>`; 
-        document.getElementById('modalVerTicket').style.display = 'block'; 
-    }
-    async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
-    async function eliminar(id, coll) { if(confirm("¿Eliminar?")) await db.collection(coll || currentColl).doc(id).delete(); }
-    async function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); document.getElementById('modalReasignar').style.display = 'block'; }
-    async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); }
-    
-    async function cargarGraficaActualizada() {
-        const f = document.getElementById('filtro_stats').value;
-        const canvas = document.getElementById('miGrafica');
-        const ctx = canvas.getContext('2d');
-        if(miChart) miChart.destroy();
-        const snap = await db.collection("tickets").get();
-        let conteo = {};
-        if(snap.empty) return;
-        snap.forEach(doc => {
-            let val = doc.data()[f] || "Sin Datos";
-            conteo[val] = (conteo[val] || 0) + 1;
-        });
-        miChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(conteo),
-                datasets: [{
-                    label: 'Tickets',
-                    data: Object.values(conteo),
-                    backgroundColor: ['#2563eb', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#00bcd4', '#64748b', '#0f172a']
-                }]
-            },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-        });
-        miChart.resize(); miChart.update();
-    }
-
+    // Navegación y Auth
+    function volver() { document.getElementById('panel-principal').style.display = 'grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none'); }
+    function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { localStorage.clear(); auth.signOut().then(() => location.reload()); }
-    function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
     function abrir_maestro(c, t) { abrir('mod_maestro', c, t); }
 </script>
 </body>
