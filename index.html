@@ -357,8 +357,10 @@
     async function cargarRoles() {
         db.collection("roles").onSnapshot(snap => {
             listaRolesGlobal = [];
-            snap.forEach(doc => listaRolesGlobal.push({id: doc.id, ...doc.data()}));
-            renderTablaRoles();
+            snap.forEach(doc => {
+                listaRolesGlobal.push({id: doc.id, ...doc.data()});
+            });
+            renderTablaRoles(); // SE ASEGURA DE RENDERIZAR LA TABLA CADA VEZ QUE HAY UN CAMBIO
             if(user) verificarRol();
         });
     }
@@ -485,7 +487,8 @@
         const data = { nombre, modulos, accionesPermitidas };
         if(modoModal === 'nuevo') await db.collection("roles").add(data);
         else await db.collection("roles").doc(selectedId).update(data);
-        cerrarModales(); alert("Rol actualizado con éxito");
+        cerrarModales(); 
+        alert("Rol actualizado con éxito");
     }
 
     async function eliminarRol(id) {
