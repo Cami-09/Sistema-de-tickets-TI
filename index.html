@@ -62,8 +62,7 @@
         .search-container { display: flex; gap: 10px; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 10px; }
         .mantenimiento-item { border-bottom: 1px solid #eee; padding: 10px 0; }
 
-        /* Corrección para que la gráfica ocupe su contenedor */
-        #miGrafica { width: 100% !important; height: 100% !important; max-height: 400px; }
+        #miGrafica { width: 100% !important; height: 100% !important; }
     </style>
 </head>
 <body>
@@ -144,7 +143,7 @@
                 </select>
             </div>
         </div>
-        <div style="position: relative; height:400px; width:100%; display:flex; justify-content:center;">
+        <div style="position: relative; height:450px; width:100%; display:flex; justify-content:center;">
             <canvas id="miGrafica"></canvas>
         </div>
     </div>
@@ -313,7 +312,7 @@
         if(id === 'mod_mis_tickets') cargarMisTickets();
         if(id === 'mod_admin_tickets') cargarTicketsAdmin();
         if(id === 'mod_tickets_cerrados') cargarTicketsCerrados();
-        if(id === 'mod_stats') setTimeout(cargarGraficaActualizada, 100);
+        if(id === 'mod_stats') setTimeout(cargarGraficaActualizada, 350); // Tiempo aumentado para asegurar renderizado
         if(id === 'mod_calendario') setTimeout(inicializarCalendario, 300);
     }
 
@@ -462,10 +461,10 @@
     }
     function abrirModalCierre(id) { selectedId = id; document.getElementById('tk_respuesta_cierre').value = ""; document.getElementById('modalCerrarTicket').style.display = 'block'; }
     async function ejecutarCierreConComentario() { const r = document.getElementById('tk_respuesta_cierre').value; if(!r) return alert("Escribe la solución"); await db.collection("tickets").doc(selectedId).update({ estado: "Cerrado", respuesta: r, fecha_cierre: new Date().toLocaleString() }); cerrarModales(); }
-    async function verDetalleTicket(id) { 
-        const doc = await db.collection("tickets").doc(id).get(); const t = doc.data(); 
-        document.getElementById('detalle_content').innerHTML = `<div class="grid-bonito" style="grid-template-columns:1fr"><p><b>Solicitante:</b> ${t.solicitante}</p><p><b>Asignado a:</b> ${t.asignado}</p><p><b>Campus:</b> ${t.campus} | <b>Prioridad:</b> ${t.prioridad}</p><p><b>Descripción:</b> ${t.desc}</p>${t.respuesta ? `<div style="background:#f0fdf4; padding:15px; border-radius:10px; border:1px solid #bbf7d0; margin-top:10px;"><b>Solución:</b><br>${t.respuesta}</div>` : ''}</div>`; 
-        document.getElementById('modalVerTicket').style.display = 'block'; 
+    async function verDetalleTicket(id) { 
+        const doc = await db.collection("tickets").doc(id).get(); const t = doc.data(); 
+        document.getElementById('detalle_content').innerHTML = `<div class="grid-bonito" style="grid-template-columns:1fr"><p><b>Solicitante:</b> ${t.solicitante}</p><p><b>Asignado a:</b> ${t.asignado}</p><p><b>Campus:</b> ${t.campus} | <b>Prioridad:</b> ${t.prioridad}</p><p><b>Descripción:</b> ${t.desc}</p>${t.respuesta ? `<div style="background:#f0fdf4; padding:15px; border-radius:10px; border:1px solid #bbf7d0; margin-top:10px;"><b>Solución:</b><br>${t.respuesta}</div>` : ''}</div>`; 
+        document.getElementById('modalVerTicket').style.display = 'block'; 
     }
     async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
     async function eliminar(id, coll) { if(confirm("¿Eliminar?")) await db.collection(coll || currentColl).doc(id).delete(); }
@@ -475,8 +474,10 @@
     // --- FUNCIÓN DE ESTADÍSTICAS RE-CORREGIDA ---
     async function cargarGraficaActualizada() {
         const f = document.getElementById('filtro_stats').value;
-        const ctx = document.getElementById('miGrafica').getContext('2d');
+        const canvas = document.getElementById('miGrafica');
+        const ctx = canvas.getContext('2d');
         
+        // Destruir instancia previa si existe para evitar superposiciones
         if(miChart) {
             miChart.destroy();
         }
@@ -484,7 +485,12 @@
         const snap = await db.collection("tickets").get();
         let conteo = {};
         
-        if(snap.empty) return;
+        if(snap.empty) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = "16px Segoe UI";
+            ctx.fillText("No hay tickets para mostrar", 10, 50);
+            return;
+        }
 
         snap.forEach(doc => {
             let val = doc.data()[f] || "Sin Datos";
@@ -503,14 +509,16 @@
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false, // Importante para que use el tamaño del contenedor
+                maintainAspectRatio: false,
                 plugins: {
                     legend: { position: 'bottom' }
                 }
             }
         });
         
+        // Refresco manual del tamaño
         miChart.resize();
+        miChart.update();
     }
 
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
