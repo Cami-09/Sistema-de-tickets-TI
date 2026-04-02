@@ -194,7 +194,7 @@
                 </select>
             </div>
         </div>
-        <div style="position: relative; height:450px; width:100%; display:flex; justify-content:center;">
+        <div style="position: relative; height:350px; width:100%; max-width:500px; margin: 0 auto; display:flex; justify-content:center;">
             <canvas id="miGrafica"></canvas>
         </div>
     </div>
@@ -215,8 +215,8 @@
                     <div class="campo-group"><label><i class="fas fa-map-marker-alt"></i> Campus</label><select id="tk_campus"><option>Bucaramanga</option><option>Bogotá</option><option>Tunja</option></select></div>
                     <div class="campo-group"><label><i class="fas fa-exclamation-triangle"></i> Prioridad</label><select id="tk_prioridad"><option>Baja</option><option>Media</option><option>Alta</option></select></div>
                 </div>
-                <div class="campo-group"><label><i class="fas fa-building"></i> Dependencia / Área</label><select id="tk_dep"><option>Seleccione Dependencia</option><option>Sistemas</option><option>Contabilidad</option><option>Tesorería</option><option>Cartera</option><option>Coordinación Administrativa y Financiera</option><option>Registro y Control</option><option>Talento Humano</option><option>Rectoría</option><option>Infraestructura</option><option>Planeación Académica</option><option>Planeación Estratégica</option><option>Decanatura de Ingenierías</option><option>Decanatura de Derecho</option><option>Decanatura de Ciencias Económicas y Empresariales (CEE)</option><option>Reintegro</option><option>Mercadeo</option><option>Cise</option><option>Consultorio G-Púrpura</option><option>Consultorio Jurídico Asesores (Planta)</option><option>Extensión e Internacionalización</option><option>Idiomas</option><option>Egresados</option><option>Centro de Conciliacion</option><option>Biblioteca</option><option>Audiovisuales</option><option>Bienestar Universitario</option><option>Consultorio Jurídico (Asesores)</option><option>Asignación y Reparto</option></select></div>
-                <div class="campo-group"><label><i class="fas fa-tools"></i> Tipo de Requerimiento</label><select id="tk_tipo"><option>Seleccione</option><option>Mantenimiento Preventivo/Correctivo</option><option>Instalación o traslado de equipo</option><option>Instalación o licenciamiento de Office</option><option>Problemas con el wifi</option><option>Problemas con la red cableada</option><option>Problemas con la impresora</option><option>Instalación o configuración de impresora</option><option>Acompañamiento en evento</option><option>Soporte remoto</option><option>Otro tipo de soporte</option></select></div>
+                <div class="campo-group"><label><i class="fas fa-building"></i> Dependencia / Área</label><select id="tk_dep"><option>Seleccione Dependencia</option><option>Sistemas</option><option>Contabilidad</option><option>Tesorería</option><option>Cartera</option><option>Coordinación Administrativa y Financiana</option><option>Registro y Control</option><option>Talento Humano</option><option>Rectoría</option><option>Infraestructura</option><option>Planeación Académica</option><option>Planeación Estratégica</option><option>Decanatura de Ingenierías</option><option>Decanatura de Derecho</option><option>Decanatura de Ciencias Económicas y Empresariales (CEE)</option><option>Reintegro</option><option>Mercadeo</option><option>Cise</option><option>Consultorio G-Púrpura</option><option>Consultorio Jurídico Asesores (Planta)</option><option>Extensión e Internacionalización</option><option>Idiomas</option><option>Egresados</option><option>Centro de Conciliacion</option><option>Biblioteca</option><option>Audiovisuales</option><option>Bienestar Universitario</option><option>Consultorio Jurídico (Asesores)</option><option>Asignación y Reparto</option></select></div>
+                <div class="campo-group"><label><i class="fas fa-tools"></i> Tipo de Requerimiento</label><select id="tk_tipo"><option>Seleccione</option><option>Mantenimiento Preventivo/Correctivo</option><option>Instalación o traslado de equipo</option><option>Instalación o licenciamiento de Office</option><option>Problemas con el Wifi</option><option>Problemas con la red cableada</option><option>Problemas con la impresora</option><option>Instalación o configuración de impresora</option><option>Acompañamiento en evento</option><option>Soporte remoto</option><option>Otro tipo de soporte</option></select></div>
                 <div class="campo-group"><label><i class="fas fa-comment-dots"></i> Descripción del Problema</label><textarea id="tk_desc" rows="4" placeholder="Describa detalladamente su solicitud..."></textarea></div>
                 <button class="btn-agregar-master" onclick="enviarTicket()" style="justify-content:center; margin-top:10px; padding:15px;">Enviar Ticket</button>
             </div>
@@ -317,7 +317,6 @@
     let listaRolesGlobal = [];
     let currentPermissions = {}; 
 
-    // MODULOS ACTUALIZADOS CON EXTENSIONES
     const MODULOS_SISTEMA = [
         {id: "card_mis_tickets", nom: "Mis Tickets", acts: ["Ver Detalle"]},
         {id: "card_enviar_ticket", nom: "Enviar Ticket", acts: ["Crear"]},
@@ -614,7 +613,7 @@
         const f = document.getElementById('form_dinamico');
         f.innerHTML = "";
         let fields = [];
-        const dependenciasGlobal = ["Administrativa", "Docente", "Estudiante", "Bienestar", "Registro y Control", "Contabilidad", "Biblioteca", "Secretaría"];
+        const dependenciasGlobal = ["Sistemas","Contabilidad","Tesorería","Cartera","Coordinación Administrativa y Financiera","Registro y Control","Talento Humano","Rectoría","Infraestructura","Planeación Académica","Planeación Estratégica","Decanatura de Ingenierías","Decanatura de Derecho","Decanatura de Ciencias Económicas y Empresariales (CEE)","Reintegro","Mercadeo","Cise","Consultorio G-Púrpura","Consultorio Jurídico Asesores (Planta)","Extensión e Internacionalización","Idiomas","Egresados","Centro de Conciliacion","Biblioteca","Audiovisuales","Bienestar Universitario","Consultorio Jurídico (Asesores)","Asignación y Reparto"];
 
         if(currentColl === 'extensiones') {
             fields = [
@@ -823,7 +822,17 @@
         const snap = await db.collection("tickets").get();
         let conteo = {};
         snap.forEach(doc => { let val = doc.data()[f] || "N/A"; conteo[val] = (conteo[val] || 0) + 1; });
-        miChart = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(conteo), datasets: [{ data: Object.values(conteo), backgroundColor: ['#2563eb', '#22c55e', '#f59e0b', '#ef4444'] }] } });
+        miChart = new Chart(ctx, { 
+            type: 'doughnut', 
+            data: { labels: Object.keys(conteo), datasets: [{ data: Object.values(conteo), backgroundColor: ['#2563eb', '#22c55e', '#f59e0b', '#ef4444'] }] },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false, // Permite que la gráfica respete el tamaño del contenedor CSS
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
     }
 
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
