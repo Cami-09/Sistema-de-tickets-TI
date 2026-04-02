@@ -410,9 +410,12 @@
 
     function cargarTicketsAdmin() {
         const tb = document.getElementById('tbody_admin_tickets');
-        db.collection("tickets").where("estado", "!=", "Cerrado").onSnapshot(snap => {
-            tb.innerHTML = ""; snap.forEach(doc => {
-                const t = doc.data(); if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
+        db.collection("tickets").onSnapshot(snap => {
+            tb.innerHTML = ""; 
+            snap.forEach(doc => {
+                const t = doc.data(); 
+                if(t.estado === "Cerrado") return; // Filtramos cerrados manualmente para mantener tu lógica
+                if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
                 tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante || t.usuario.split('@')[0]}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado || 'Pend.'}</td><td><button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button><button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>${userRole==='Admin' ? `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : ''}<button class="btn-acc bg-c-green" onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>${userRole==='Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`;
             });
         });
@@ -466,57 +469,47 @@
     async function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); document.getElementById('modalReasignar').style.display = 'block'; }
     async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); }
     
-    // --- FUNCIÓN DE ESTADÍSTICAS CORREGIDA ---
+    // --- FUNCIÓN DE ESTADÍSTICAS RE-CORREGIDA ---
     async function cargarGraficaActualizada() {
         const f = document.getElementById('filtro_stats').value;
+        const ctx = document.getElementById('miGrafica').getContext('2d');
+        
+        // Limpiar instancia anterior si existe
+        if(miChart) {
+            miChart.destroy();
+        }
+
         const snap = await db.collection("tickets").get();
         let conteo = {};
         
-        if(snap.empty) {
-            console.log("No hay tickets registrados.");
-            return;
-        }
+        if(snap.empty) return;
 
         snap.forEach(doc => {
             let val = doc.data()[f] || "Sin Datos";
             conteo[val] = (conteo[val] || 0) + 1;
         });
 
-        const labels = Object.keys(conteo);
-        const values = Object.values(conteo);
-
-        // Limpiar instancia anterior si existe
-        if(miChart) {
-            miChart.destroy();
-        }
-
-        const ctx = document.getElementById('miGrafica').getContext('2d');
         miChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: labels,
+                labels: Object.keys(conteo),
                 datasets: [{
-                    label: 'Cantidad de Tickets',
-                    data: values,
-                    backgroundColor: [
-                        '#2563eb', '#22c55e', '#f59e0b', '#ef4444', 
-                        '#8b5cf6', '#00bcd4', '#64748b', '#0f172a'
-                    ],
-                    borderWidth: 1,
-                    borderColor: '#ffffff'
+                    label: 'Tickets',
+                    data: Object.values(conteo),
+                    backgroundColor: ['#2563eb', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#00bcd4', '#64748b', '#0f172a']
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { padding: 20, font: { size: 12 } }
-                    }
+                    legend: { position: 'bottom' }
                 }
             }
         });
+        
+        // Forzar redimensionado para asegurar visibilidad
+        miChart.resize();
     }
 
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
