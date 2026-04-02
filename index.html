@@ -22,6 +22,7 @@
         .card { background: white; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; display: none; }
         .card:hover { transform: translateY(-3px); border-color: var(--primary); box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         .card i { font-size: 30px; color: var(--primary); margin-bottom: 10px; }
+        .container-stats-header { display: flex; gap: 15px; margin-bottom: 20px; justify-content: center; flex-wrap: wrap; }
         .stat-box { background: white; border-radius: 10px; padding: 10px; min-width: 120px; text-align: center; border: 2px solid #ddd; cursor: pointer; }
         .stat-box.abierto { border-color: var(--success); color: var(--success); }
         .stat-box.proceso { border-color: var(--warning); color: var(--warning); }
@@ -32,12 +33,12 @@
         .btn-acc { width: 30px; height: 30px; border-radius: 6px; border: none; color: white; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; margin-right: 3px; font-size: 0.85rem; }
         .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); }
         .modal-content { background: white; margin: 1% auto; padding: 20px; width: 90%; max-width: 850px; border-radius: 12px; position: relative; max-height: 95vh; overflow-y: auto; }
-        .grid-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .grid-form { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
         .campo-group { display: flex; flex-direction: column; gap: 3px; }
         .campo-group label { font-weight: 700; font-size: 0.65rem; color: var(--gray); text-transform: uppercase; }
         .campo-group input, .campo-group select, .campo-group textarea { padding: 8px; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: 12px; }
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 10px; border-bottom: 2px solid #eee; font-size: 0.7rem; background: #f8fafc; }
+        th { text-align: left; padding: 10px; border-bottom: 2px solid #eee; font-size: 0.7rem; background: #f8fafc; text-transform: uppercase; }
         td { padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 0.75rem; }
         .search-container-adv { background: #f8fafc; padding: 12px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #e2e8f0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
     </style>
@@ -54,22 +55,13 @@
         <div class="card" id="card_inv_admin" onclick="abrir_maestro('inventario', 'Equipos Administrativos')"><i class="fas fa-laptop"></i><h3>Equipos Administrativos</h3></div>
         <div class="card" id="card_inv_salas" onclick="abrir_maestro('inventario_salas', 'Equipos Salas')"><i class="fas fa-desktop"></i><h3>Equipos Salas</h3></div>
         <div class="card" id="card_calendario" onclick="abrir('mod_calendario')"><i class="fas fa-calendar-alt"></i><h3>Calendario</h3></div>
-        <div class="card" id="card_stats" onclick="abrir('mod_stats')"><i class="fas fa-chart-pie"></i><h3>Estadísticas</h3></div>
     </div>
-
     <div id="mod_maestro" class="modulo">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;"><button onclick="volver()" class="btn-gray">⬅ Volver</button><h2 id="m_titulo"></h2><button class="btn-agregar-master" onclick="abrirModalRegistro('nuevo')">Nuevo Registro</button></div>
-        <div class="search-container-adv">
-            <input type="text" id="f_serial" placeholder="Filtrar por Serial" onkeyup="filtrarMaestro()">
-            <input type="text" id="f_marca" placeholder="Filtrar por Marca" onkeyup="filtrarMaestro()">
-            <input type="text" id="f_nombre" placeholder="Filtrar por Nombre" onkeyup="filtrarMaestro()">
-        </div>
+        <div class="search-container-adv"><input type="text" id="f_serial" placeholder="Filtrar Serial" onkeyup="filtrarMaestro()"><input type="text" id="f_marca" placeholder="Filtrar Marca" onkeyup="filtrarMaestro()"><input type="text" id="f_nombre" placeholder="Filtrar Nombre" onkeyup="filtrarMaestro()"></div>
         <div style="overflow-x:auto;"><table><thead id="m_thead"></thead><tbody id="m_tbody"></tbody></table></div>
     </div>
-
     <div id="mod_calendario" class="modulo"><button onclick="volver()">⬅ Volver</button><div id="calendar" style="margin-top:15px;"></div></div>
-    
-    <div id="mod_enviar_ticket" class="modulo"><button onclick="volver()">⬅ Volver</button><div style="max-width:500px;margin:auto;"><h2 style="text-align:center;">Solicitud Soporte</h2><div class="grid-form" style="grid-template-columns:1fr;"><input type="text" id="tk_nom_user" placeholder="Nombre..."><select id="tk_campus"><option value="Bucaramanga">Bucaramanga (BGA)</option><option value="Bogotá">Bogotá (BOG)</option><option value="Tunja">Tunja (TUN)</option></select><select id="tk_dep"><option>Administrativa</option><option>Docente</option><option>Secretaría</option></select><textarea id="tk_desc" rows="4" placeholder="Problema..."></textarea><button class="btn-agregar-master" onclick="enviarTicket()">Enviar</button></div></div></div>
 </div>
 
 <div id="modalRegistro" class="modal"><div class="modal-content"><h3 id="modal_tit">Formulario Equipo</h3><div id="form_dinamico" class="grid-form"></div><div style="margin-top:20px;display:flex;justify-content:flex-end;gap:10px;"><button onclick="cerrarModales()" style="padding:10px;cursor:pointer;background:#eee;border:none;border-radius:5px;">Cerrar</button><button class="btn-agregar-master" onclick="guardarDatoMaestro()">Guardar Cambios</button></div></div></div>
@@ -80,7 +72,7 @@
     const firebaseConfig = { apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw", authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com", projectId: "sistema-de-tickets-ti-b12f5" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore(); const auth = firebase.auth();
-    let user, userRole, currentColl, localData = [], selectedId, modoModal = "nuevo", calendar;
+    let user, userRole, currentColl, localData = [], selectedId, modoModal = "nuevo";
 
     const camposEquipo = [
         ["Nombre","nom"],["Serial","ser"],["Marca","mar"],["Sede","sed"],
@@ -91,10 +83,8 @@
     ];
 
     auth.onAuthStateChanged(async (u) => {
-        if(u) {
-            user = u; document.getElementById('login').style.display = 'none'; document.getElementById('dashboard').style.display = 'block';
-            await verificarRol(); observarContadores();
-        } else { document.getElementById('login').style.display = 'flex'; document.getElementById('dashboard').style.display = 'none'; }
+        if(u) { user = u; document.getElementById('login').style.display='none'; document.getElementById('dashboard').style.display='block'; await verificarRol(); observarContadores(); }
+        else { document.getElementById('login').style.display='flex'; document.getElementById('dashboard').style.display='none'; }
     });
 
     async function verificarRol() {
@@ -114,9 +104,9 @@
 
     function renderTablaMaestra(dataFiltrada = null) {
         const b = document.getElementById('m_tbody'); b.innerHTML = ""; const h = document.getElementById('m_thead');
-        const displayData = dataFiltrada || localData;
+        const d = dataFiltrada || localData;
         h.innerHTML = `<tr><th>Nombre/Equipo</th><th>Serial</th><th>Marca</th><th>Sede</th><th>Acciones</th></tr>`;
-        displayData.forEach(e => {
+        d.forEach(e => {
             b.innerHTML += `<tr><td>${e.nom}</td><td>${e.ser}</td><td>${e.mar}</td><td>${e.sed}</td><td>
                 <button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>
                 <button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>
@@ -139,38 +129,25 @@
     async function guardarMantenimiento() {
         const d = { fecha: mnt_fecha.value, tipo: mnt_tipo.value, desc: mnt_desc.value };
         const eq = localData.find(x => x.id === selectedId);
-        // Guardar mantenimiento con datos del equipo para el calendario
-        await db.collection("mantenimientos_global").add({
-            ...d, equipoId: selectedId, 
-            nombreEq: eq.nom, 
-            dep: eq.dep_eq || "General", 
-            campus: eq.campus_eq || "Bucaramanga"
-        });
-        cerrarModales(); alert("Mantenimiento Registrado");
+        await db.collection("mantenimientos_global").add({ ...d, equipoId: selectedId, nombreEq: eq.nom, dep: eq.dep_eq || "General", campus: eq.campus_eq || "Bucaramanga" });
+        cerrarModales(); alert("Registrado");
     }
 
     function initCalendar() {
-        const el = document.getElementById('calendar');
-        calendar = new FullCalendar.Calendar(el, {
+        const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
             initialView: 'dayGridMonth', locale: 'es',
             events: async function(info, success) {
                 const snap = await db.collection("mantenimientos_global").get();
                 const evs = [];
                 snap.forEach(doc => {
-                    const d = doc.data();
-                    const sigla = d.campus === "Bucaramanga" ? "BGA" : (d.campus === "Bogotá" ? "BOG" : "TUN");
-                    evs.push({
-                        title: `[${sigla}] ${d.nombreEq} - ${d.dep}`,
-                        start: d.fecha,
-                        extendedProps: d,
-                        backgroundColor: d.tipo === 'Correctivo' ? '#ef4444' : '#22c55e'
-                    });
+                    const d = doc.data(); const sigla = d.campus === "Bucaramanga" ? "BGA" : (d.campus === "Bogotá" ? "BOG" : "TUN");
+                    evs.push({ title: `[${sigla}] ${d.nombreEq} - ${d.dep}`, start: d.fecha, extendedProps: d, backgroundColor: d.tipo === 'Correctivo' ? '#ef4444' : '#22c55e' });
                 });
                 success(evs);
             },
             eventClick: (info) => {
                 const d = info.event.extendedProps;
-                document.getElementById('det_evento_body').innerHTML = `<b>Fecha:</b> ${d.fecha}<br><b>Tipo:</b> ${d.tipo}<br><b>Equipo:</b> ${d.nombreEq}<br><b>Dependencia:</b> ${d.dep}<br><b>Campus:</b> ${d.campus}<br><b>Descripción:</b> ${d.desc}`;
+                document.getElementById('det_evento_body').innerHTML = `<b>Equipo:</b> ${d.nombreEq}<br><b>Dependencia:</b> ${d.dep}<br><b>Campus:</b> ${d.campus}<br><b>Descripción:</b> ${d.desc}`;
                 document.getElementById('modalVerEvento').style.display='block';
             }
         });
@@ -187,12 +164,12 @@
     async function guardarDatoMaestro() { let o = {}; document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => o[i.id] = i.value); if(modoModal === 'editar') await db.collection(currentColl).doc(selectedId).update(o); else await db.collection(currentColl).add(o); cerrarModales(); }
     function duplicarEquipo(id) { const o = localData.find(x => x.id === id); abrirModalRegistro('nuevo'); setTimeout(() => { Object.keys(o).forEach(k => { if(document.getElementById(k) && k !== 'id') document.getElementById(k).value = o[k]; }); }, 100); }
     function abrirMantenimiento(id) { selectedId = id; document.getElementById('mnt_fecha').value = new Date().toISOString().split('T')[0]; document.getElementById('modalMantenimiento').style.display='block'; }
-    function observarContadores() { db.collection("tickets").onSnapshot(snap => { let ab = 0, pr = 0, ce = 0; snap.forEach(doc => { const s = doc.data().estado; if(s === "Abierto") ab++; else if(s === "En Proceso") pr++; else if(s === "Cerrado") ce++; }); document.getElementById('count_abiertos').innerText = ab; document.getElementById('count_proceso').innerText = pr; document.getElementById('count_cerrados').innerText = ce; }); }
-    function volver() { document.getElementById('panel-principal').style.display = 'grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none'); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
+    function volver() { document.getElementById('panel-principal').style.display='grid'; document.querySelectorAll('.modulo').forEach(m => m.style.display='none'); }
     function logout() { auth.signOut().then(() => location.reload()); }
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function abrir_maestro(c, t) { abrir('mod_maestro', c, t); }
+    function observarContadores() { db.collection("tickets").onSnapshot(snap => { let ab = 0, pr = 0, ce = 0; snap.forEach(doc => { const s = doc.data().estado; if(s === "Abierto") ab++; else if(s === "En Proceso") pr++; else if(s === "Cerrado") ce++; }); if(document.getElementById('count_abiertos')) { document.getElementById('count_abiertos').innerText = ab; document.getElementById('count_proceso').innerText = pr; document.getElementById('count_cerrados').innerText = ce; } }); }
 </script>
 </body>
 </html>
