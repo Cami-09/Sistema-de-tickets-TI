@@ -64,7 +64,6 @@
 
         #miGrafica { width: 100% !important; height: 100% !important; }
 
-        /* Estilos para el nuevo módulo de roles */
         .roles-chk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1.5px solid #eee; margin-top: 10px; }
         .role-block { background: white; padding: 10px; border-radius: 8px; border: 1px solid #ddd; }
         .role-option { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--primary); cursor: pointer; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; margin-bottom: 5px; }
@@ -156,7 +155,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
             <button onclick="volver()" class="btn-gray">⬅ Volver</button>
             <h2 id="m_titulo" style="margin:0;"></h2>
-            <button class="btn-agregar-master" onclick="abrirModalRegistro('nuevo')"><i class="fas fa-plus"></i> Nuevo</button>
+            <button class="btn-agregar-master" id="btn_maestro_nuevo" onclick="abrirModalRegistro('nuevo')"><i class="fas fa-plus"></i> Nuevo</button>
         </div>
         <div class="search-container" id="m_search_container" style="display:none;">
             <input type="text" id="m_search" placeholder="Buscar por PC, Tipo, Modelo, Serial o Responsable..." style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;" onkeyup="filtrarMaestro()">
@@ -305,8 +304,8 @@
     let user, userRole, currentColl, localData = [], selectedId, modoModal = "nuevo", miChart = null, listaGestoresGlobal = [], nombreRealUsuario = "";
     let selectedMntId = null, selectedCollMnt = null, selectedEquipIdMnt = null;
     let listaRolesGlobal = [];
+    let currentPermissions = {}; // Almacena permisos del usuario logueado
 
-    // Definición de todos los módulos disponibles con sus acciones funcionales
     const MODULOS_SISTEMA = [
         {id: "card_mis_tickets", nom: "Mis Tickets", acts: ["Ver Detalle"]},
         {id: "card_enviar_ticket", nom: "Enviar Ticket", acts: ["Crear"]},
@@ -348,6 +347,7 @@
             listaRolesGlobal = [];
             snap.forEach(doc => listaRolesGlobal.push({id: doc.id, ...doc.data()}));
             renderTablaRoles();
+            if(user) verificarRol(); // Re-verificar permisos si cambian los roles
         });
     }
 
@@ -381,9 +381,10 @@
         document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
         if(userRole !== "Usuario") document.getElementById('stats_contadores_visibles').style.display = 'flex';
         
-        let modulosPermitidos = [];
         const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
+        currentPermissions = rolDB ? (rolDB.accionesPermitidas || {}) : {};
 
+        let modulosPermitidos = [];
         if(userRole === "Admin") {
             modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
         } else if(rolDB) {
@@ -515,19 +516,39 @@
         document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none'); 
     }
 
+    function checkPermission(modId, action) {
+        if(userRole === 'Admin') return true;
+        const modPerms = currentPermissions[modId] || [];
+        return modPerms.includes(action);
+    }
+
     function renderTablaMaestra(dataFiltrada = null) {
         const b = document.getElementById('m_tbody'); b.innerHTML = "";
         const h = document.getElementById('m_thead');
         const displayData = dataFiltrada || localData;
-        const isAdmin = userRole === 'Admin';
+        const modId = document.querySelector('.card[onclick*="'+currentColl+'"]') ? document.querySelector('.card[onclick*="'+currentColl+'"]').id : "";
+        
+        // Control botón "Nuevo" del maestro
+        document.getElementById('btn_maestro_nuevo').style.display = checkPermission(modId, "Crear") ? "block" : "none";
 
         if(currentColl === 'usuarios') {
             h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
-            displayData.forEach(e => { b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td><td><button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>${isAdmin ? `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`; });
+            displayData.forEach(e => { 
+                let btns = "";
+                if(checkPermission("card_usuarios", "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                if(checkPermission("card_usuarios", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
+                b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td><td>${btns}</td></tr>`; 
+            });
         } else {
             h.innerHTML = `<tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Serial</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Sede</th><th>Acciones</th></tr>`;
             displayData.forEach(e => {
-                b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${e.sed || ''}</td><td><div style="display:flex;"><button class="btn-acc bg-info-e" title="Editar" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button><button class="btn-acc bg-r-purple" title="Mantenimiento" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button><button class="btn-acc bg-v-gray" title="Historial" onclick="verHistorial('${e.id}')"><i class="fas fa-eye"></i></button>${isAdmin ? `<button class="btn-acc bg-d-red" title="Eliminar" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>` : ''}</div></td></tr>`;
+                let btns = "";
+                if(checkPermission(modId, "Editar")) btns += `<button class="btn-acc bg-info-e" title="Editar" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                if(checkPermission(modId, "Mantenimiento")) btns += `<button class="btn-acc bg-r-purple" title="Mantenimiento" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
+                if(checkPermission(modId, "Historial")) btns += `<button class="btn-acc bg-v-gray" title="Historial" onclick="verHistorial('${e.id}')"><i class="fas fa-eye"></i></button>`;
+                if(checkPermission(modId, "Eliminar")) btns += `<button class="btn-acc bg-d-red" title="Eliminar" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
+                
+                b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${e.sed || ''}</td><td><div style="display:flex;">${btns}</div></td></tr>`;
             });
         }
     }
@@ -607,16 +628,16 @@
                 const mnts = await db.collection(coll).doc(equip.id).collection("mantenimientos").get();
                 mnts.forEach(m => {
                     const mData = m.data();
+                    let btnEdit = checkPermission("card_gest_mantenimientos", "Editar") ? `<button class="btn-acc bg-info-e" onclick="abrirEditarMnt('${coll}', '${equip.id}', '${m.id}', ${JSON.stringify(mData).replace(/"/g, '&quot;')})"><i class="fas fa-edit"></i></button>` : "";
+                    let btnDel = checkPermission("card_gest_mantenimientos", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-trash"></i></button>` : "";
+                    
                     html += `<tr>
                         <td>${mData.fecha}</td>
                         <td><b>${eData.nom || 'S/N'}</b></td>
                         <td>${coll.replace('_', ' ').toUpperCase()}</td>
                         <td><span style="color:${mData.tipo === 'Preventivo' ? 'var(--purple)' : 'var(--danger)'}; font-weight:bold;">${mData.tipo}</span></td>
                         <td>${mData.desc}</td>
-                        <td>
-                            <button class="btn-acc bg-info-e" onclick="abrirEditarMnt('${coll}', '${equip.id}', '${m.id}', ${JSON.stringify(mData).replace(/"/g, '&quot;')})"><i class="fas fa-edit"></i></button>
-                            <button class="btn-acc bg-d-red" onclick="eliminarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-trash"></i></button>
-                        </td>
+                        <td>${btnEdit} ${btnDel}</td>
                     </tr>`;
                 });
             }
@@ -670,7 +691,14 @@
                 const t = doc.data(); 
                 if(t.estado === "Cerrado") return;
                 if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
-                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante || t.usuario.split('@')[0]}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado || 'Pend.'}</td><td><button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button><button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>${userRole==='Admin' ? `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : ''}<button class="btn-acc bg-c-green" onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>${userRole==='Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`;
+                
+                let btnDet = checkPermission("card_admin_tickets", "Ver Detalle") ? `<button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>` : "";
+                let btnEdit = checkPermission("card_admin_tickets", "Editar") ? `<button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>` : "";
+                let btnRe = checkPermission("card_admin_tickets", "Reasignar") ? `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : "";
+                let btnFin = checkPermission("card_admin_tickets", "Finalizar") ? `<button class="btn-acc bg-c-green" onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>` : "";
+                let btnDel = checkPermission("card_admin_tickets", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : "";
+
+                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante || t.usuario.split('@')[0]}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado || 'Pend.'}</td><td>${btnDet}${btnEdit}${btnRe}${btnFin}${btnDel}</td></tr>`;
             });
         });
     }
@@ -680,7 +708,9 @@
         db.collection("tickets").where("estado", "==", "Cerrado").onSnapshot(snap => {
             tb.innerHTML = ""; snap.forEach(doc => {
                 const t = doc.data(); if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
-                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante || t.usuario.split('@')[0]}</td><td>${t.tipo}</td><td>${t.asignado}</td><td>${t.fecha_cierre}</td><td><button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>${userRole === 'Admin' ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}','tickets')"><i class="fas fa-trash"></i></button>` : ''}</td></tr>`;
+                let btnDet = checkPermission("card_admin_tickets", "Ver Detalle") ? `<button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>` : "";
+                let btnDel = checkPermission("card_admin_tickets", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}','tickets')"><i class="fas fa-trash"></i></button>` : "";
+                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante || t.usuario.split('@')[0]}</td><td>${t.tipo}</td><td>${t.asignado}</td><td>${t.fecha_cierre}</td><td>${btnDet}${btnDel}</td></tr>`;
             });
         });
     }
@@ -690,7 +720,8 @@
         db.collection("tickets").where("usuario", "==", user.email).onSnapshot(s => {
             c.innerHTML = ""; s.forEach(doc => {
                 const t = doc.data(); const col = t.estado === 'Cerrado' ? 'var(--success)' : (t.estado === 'En Proceso' ? 'var(--warning)' : 'var(--primary)');
-                c.innerHTML += `<div class="card tk-card" style="border-left-color: ${col}; display:block;"><div class="tk-status" style="background:${col}">${t.estado}</div><h4>${t.tipo}</h4><p style="font-size:12px; color:gray;">${t.desc.substring(0,60)}...</p><p><small><b>Gestor:</b> ${t.asignado}</small></p><button class="btn-acc bg-v-gray" style="margin-top:10px" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i> Ver más</button></div>`;
+                let btnDet = checkPermission("card_mis_tickets", "Ver Detalle") ? `<button class="btn-acc bg-v-gray" style="margin-top:10px" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i> Ver más</button>` : "";
+                c.innerHTML += `<div class="card tk-card" style="border-left-color: ${col}; display:block;"><div class="tk-status" style="background:${col}">${t.estado}</div><h4>${t.tipo}</h4><p style="font-size:12px; color:gray;">${t.desc.substring(0,60)}...</p><p><small><b>Gestor:</b> ${t.asignado}</small></p>${btnDet}</div>`;
             });
         });
     }
