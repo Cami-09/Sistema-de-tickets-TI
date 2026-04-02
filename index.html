@@ -306,6 +306,7 @@
     let listaRolesGlobal = [];
     let currentPermissions = {}; // Almacena permisos del usuario logueado
 
+    // PUNTO 3: Agregar Mantenimiento e Historial a Aulas e Impresoras
     const MODULOS_SISTEMA = [
         {id: "card_mis_tickets", nom: "Mis Tickets", acts: ["Ver Detalle"]},
         {id: "card_enviar_ticket", nom: "Enviar Ticket", acts: ["Crear"]},
@@ -315,8 +316,8 @@
         {id: "card_calendario", nom: "Calendario", acts: ["Ver"]},
         {id: "card_stats", nom: "Estadísticas", acts: ["Ver"]},
         {id: "card_usuarios", nom: "Usuarios", acts: ["Crear", "Editar", "Eliminar"]},
-        {id: "card_aulas", nom: "Aulas DTI", acts: ["Crear", "Editar", "Eliminar"]},
-        {id: "card_impresoras", nom: "Impresoras", acts: ["Crear", "Editar", "Eliminar"]},
+        {id: "card_aulas", nom: "Aulas DTI", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
+        {id: "card_impresoras", nom: "Impresoras", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
         {id: "card_gest_mantenimientos", nom: "Gestión Mantenimientos", acts: ["Editar", "Eliminar"]},
         {id: "card_preferencias", nom: "Gestión Preferencias", acts: ["Crear", "Editar", "Eliminar"]}
     ];
@@ -379,10 +380,27 @@
             userRole = (user.email === "camicarmona1212@gmail.com") ? "Admin" : "Usuario"; nombreRealUsuario = "Admin";
         }
         document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
-        if(userRole !== "Usuario") document.getElementById('stats_contadores_visibles').style.display = 'flex';
         
         const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
-        currentPermissions = rolDB ? (rolDB.accionesPermitidas || {}) : {};
+        
+        // PUNTO 1: Configurar limitaciones por defecto para Gestor
+        if(rolDB) {
+            currentPermissions = rolDB.accionesPermitidas || {};
+        } else if (userRole === "Gestor") {
+            currentPermissions = {
+                "card_mis_tickets": ["Ver Detalle"],
+                "card_enviar_ticket": ["Crear"],
+                "card_admin_tickets": ["Editar", "Finalizar", "Ver Detalle"], // NO TIENE REASIGNAR NI ELIMINAR
+                "card_inv_admin": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_inv_salas": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_calendario": ["Ver"],
+                "card_aulas": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_impresoras": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_gest_mantenimientos": ["Editar"]
+            };
+        } else {
+            currentPermissions = {};
+        }
 
         let modulosPermitidos = [];
         if(userRole === "Admin") {
@@ -391,13 +409,14 @@
             modulosPermitidos = rolDB.modulos;
         } else {
             const vDefault = { 
-                "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_calendario", "card_aulas", "card_impresoras"],
+                "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_calendario", "card_aulas", "card_impresoras", "card_gest_mantenimientos"],
                 "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
             };
             modulosPermitidos = vDefault[userRole] || vDefault["Usuario"];
         }
 
         modulosPermitidos.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
+        if(userRole !== "Usuario") document.getElementById('stats_contadores_visibles').style.display = 'flex';
     }
 
     function abrirModalRol(modo, id = null) {
@@ -528,7 +547,6 @@
         const displayData = dataFiltrada || localData;
         const modId = document.querySelector('.card[onclick*="'+currentColl+'"]') ? document.querySelector('.card[onclick*="'+currentColl+'"]').id : "";
         
-        // Control botón "Nuevo" del maestro
         document.getElementById('btn_maestro_nuevo').style.display = checkPermission(modId, "Crear") ? "block" : "none";
 
         if(currentColl === 'usuarios') {
@@ -618,7 +636,7 @@
     async function cargarGestionMantenimientos() {
         const tb = document.getElementById('tbody_gest_mantenimientos');
         tb.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando mantenimientos...</td></tr>";
-        const colecciones = ["inventario", "inventario_salas", "impresoras"];
+        const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti"];
         let html = "";
         
         for(let coll of colecciones) {
@@ -668,17 +686,23 @@
 
     async function eliminarMnt(coll, equipId, mntId) {
         if(confirm("¿Estás seguro de eliminar este mantenimiento?")) {
-            await db.collection(coll).doc(equipId).collection("mantenimientos").doc(mntId).delete();
+            await db.collection(coll).doc(equipId).collection("mantenimientos").doc(mid).delete();
             cargarGestionMantenimientos();
         }
     }
 
+    // PUNTO 2: Asignación automática de tickets
     async function enviarTicket() {
         const nom = document.getElementById('tk_nom_user').value;
         const d = document.getElementById('tk_desc').value;
         if(!nom || !d) return alert("Por favor complete su nombre y la descripción.");
+        
         let asig = "Pendiente";
-        if(listaGestoresGlobal.length > 0) asig = listaGestoresGlobal[Math.floor(Math.random() * listaGestoresGlobal.length)].nom;
+        if(listaGestoresGlobal.length > 0) {
+            // Selección aleatoria de gestor
+            asig = listaGestoresGlobal[Math.floor(Math.random() * listaGestoresGlobal.length)].nom;
+        }
+        
         await db.collection("tickets").add({ solicitante: nom, usuario: user.email, campus: document.getElementById('tk_campus').value, prioridad: document.getElementById('tk_prioridad').value, dependencia: document.getElementById('tk_dep').value, tipo: document.getElementById('tk_tipo').value, desc: d, estado: "Abierto", asignado: asig, fecha: new Date().toLocaleString() });
         alert(`¡Ticket enviado con éxito! Asignado a: ${asig}`); volver();
     }
