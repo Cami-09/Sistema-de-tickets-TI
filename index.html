@@ -355,12 +355,18 @@
     });
 
     async function cargarRoles() {
-        db.collection("roles").onSnapshot(snap => {
+        db.collection("roles").onSnapshot(async (snap) => {
             listaRolesGlobal = [];
             snap.forEach(doc => {
-                listaRolesGlobal.push({id: doc.id, ...doc.data()});
+                const data = doc.data();
+                // LIMPIEZA AUTOMÁTICA: Si existe un rol Supervisor fantasma, se elimina de la DB
+                if (data.nombre === "Supervisor") {
+                    db.collection("roles").doc(doc.id).delete();
+                } else {
+                    listaRolesGlobal.push({id: doc.id, ...data});
+                }
             });
-            renderTablaRoles(); // SE ASEGURA DE RENDERIZAR LA TABLA CADA VEZ QUE HAY UN CAMBIO
+            renderTablaRoles();
             if(user) verificarRol();
         });
     }
@@ -700,7 +706,7 @@
                 mnts.forEach(m => {
                     const mData = m.data();
                     let btnEdit = checkPermission("card_gest_mantenimientos", "Editar") ? `<button class="btn-acc bg-info-e" onclick="abrirEditarMnt('${coll}', '${equip.id}', '${m.id}', ${JSON.stringify(mData).replace(/"/g, '&quot;')})"><i class="fas fa-edit"></i></button>` : "";
-                    let btnDel = checkPermission("card_gest_mantenimientos", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-trash"></i></button>` : "";
+                    let btn Del = checkPermission("card_gest_mantenimientos", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-trash"></i></button>` : "";
                     html += `<tr><td>${mData.fecha}</td><td><b>${eData.nom || 'S/N'}</b></td><td>${coll.toUpperCase()}</td><td>${mData.tipo}</td><td>${mData.desc}</td><td>${btnEdit}${btnDel}</td></tr>`;
                 });
             }
