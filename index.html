@@ -405,7 +405,6 @@
                     listaRolesGlobal.push({id: doc.id, ...data});
                 }
             });
-            setTimeout(renderTablaRoles, 100);
             renderTablaRoles();
             if(user) verificarRol();
         });
@@ -630,27 +629,20 @@
     }
 
     function renderTablaRoles() {
-    const tb = document.getElementById('tbody_roles');
-    if(!tb) return;
-
-    tb.innerHTML = "";
-
-    if(listaRolesGlobal.length === 0){
-        tb.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No hay roles registrados</td></tr>";
-        return;
+        const tb = document.getElementById('tbody_roles');
+        if(!tb) return;
+        tb.innerHTML = "";
+        listaRolesGlobal.forEach(r => {
+            tb.innerHTML += `<tr>
+                <td><b>${r.nombre}</b></td>
+                <td>${r.modulos.length} módulos asignados</td>
+                <td>
+                    <button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')"><i class="fas fa-edit"></i></button>
+                    <button class="btn-acc bg-d-red" onclick="eliminarRol('${r.id}')"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`;
+        });
     }
-
-    listaRolesGlobal.forEach(r => {
-        tb.innerHTML += `<tr>
-            <td><b>${r.nombre}</b></td>
-            <td>${(r.modulos || []).length} módulos asignados</td>
-            <td>
-                <button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')"><i class="fas fa-edit"></i></button>
-                ${userRole === "Admin" ? `<button class="btn-acc bg-d-red" onclick="eliminarRol('${r.id}')"><i class="fas fa-trash"></i></button>` : ""}
-            </td>
-        </tr>`;
-    });
-}
 
     async function eliminarRol(id) {
         if(confirm("¿Eliminar este rol?")) await db.collection("roles").doc(id).delete();
@@ -869,32 +861,14 @@
                 const mnts = await db.collection(coll).doc(equip.id).collection("mantenimientos").get();
                 mnts.forEach(m => {
                     const mData = m.data();
-                    tb.innerHTML += `<tr><td>${mData.fecha}</td><td><b>${eData.nom || 'S/N'}</b></td><td>${coll}</td><td>${mData.tipo}</td><td>${mData.desc}</td><td>
-    <button class="btn-acc bg-info-e" onclick="editarMnt('${coll}', '${equip.id}', '${m.id}', '${mData.fecha}', '${mData.tipo}', \`${mData.desc}\`)">
-        <i class="fas fa-edit"></i>
-    </button>
-    ${userRole === "Admin" ? `<button class="btn-acc bg-d-red" onclick="eliminarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-trash"></i></button>` : ""}
-</td>
+                    tb.innerHTML += `<tr><td>${mData.fecha}</td><td><b>${eData.nom || 'S/N'}</b></td><td>${coll}</td><td>${mData.tipo}</td><td>${mData.desc}</td><td><button class="btn-acc bg-d-red" onclick="eliminarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
                 });
             }
         }
     }
 
     async function eliminarMnt(coll, eid, mid) { if(confirm("¿Eliminar mantenimiento?")) { await db.collection(coll).doc(eid).collection("mantenimientos").doc(mid).delete(); cargarGestionMantenimientos(); } }
-let editMntMode = false;
-let editMntData = {};
 
-function editarMnt(coll, eid, mid, fecha, tipo, desc) {
-    editMntMode = true;
-    editMntData = {coll, eid, mid};
-
-    document.getElementById('mnt_fecha').value = fecha;
-    document.getElementById('mnt_tipo').value = tipo;
-    document.getElementById('mnt_desc').value = desc;
-
-    document.getElementById('mnt_modal_title').innerText = "Editar Mantenimiento";
-    document.getElementById('modalMantenimiento').style.display = 'block';
-}
     async function verHistorial(id) {
         const content = document.getElementById('historial_content');
         const snap = await db.collection(currentColl).doc(id).collection("mantenimientos").orderBy("fecha","desc").get();
@@ -905,30 +879,10 @@ function editarMnt(coll, eid, mid, fecha, tipo, desc) {
 
     function abrirMantenimiento(id) { selectedId = id; document.getElementById('modalMantenimiento').style.display='block'; }
     async function guardarMantenimiento() {
-    const f = document.getElementById('mnt_fecha').value;
-    const t = document.getElementById('mnt_tipo').value;
-    const d = document.getElementById('mnt_desc').value;
-
-    if(editMntMode){
-        await db.collection(editMntData.coll)
-            .doc(editMntData.eid)
-            .collection("mantenimientos")
-            .doc(editMntData.mid)
-            .update({ fecha: f, tipo: t, desc: d });
-
-        editMntMode = false;
-        editMntData = {};
-    } else {
-        await db.collection(currentColl)
-            .doc(selectedId)
-            .collection("mantenimientos")
-            .add({ fecha: f, tipo: t, desc: d });
+        const f = document.getElementById('mnt_fecha').value; const t = document.getElementById('mnt_tipo').value; const d = document.getElementById('mnt_desc').value;
+        await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ fecha: f, tipo: t, desc: d });
+        cerrarModales(); alert("Guardado");
     }
-
-    cerrarModales();
-    alert("Guardado correctamente");
-    cargarGestionMantenimientos();
-}
 
     // Auxiliares
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
