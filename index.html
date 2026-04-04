@@ -613,6 +613,7 @@
         const container = document.getElementById('chk_modulos_container');
         container.innerHTML = "";
         
+        // Generamos la estructura base de todos los módulos disponibles
         MODULOS_SISTEMA.forEach(m => {
             container.innerHTML += `
                 <div class="role-block">
@@ -629,24 +630,32 @@
             const r = listaRolesGlobal.find(x => x.id === id);
             if(r) {
                 document.getElementById('rol_nombre').value = r.nombre;
+                
+                // Usamos un pequeño delay para asegurar que el HTML se terminó de renderizar en el DOM
                 setTimeout(() => {
                     document.querySelectorAll('.chk-rol-mod').forEach(chk => {
+                        // Si el ID del módulo está en la lista de módulos del rol
                         if(r.modulos && r.modulos.includes(chk.value)) {
                             chk.checked = true;
+                            
+                            // ACTIVAMOS visualmente el panel de acciones
                             toggleAccionesRol(chk.value, true);
+                            
+                            // Marcamos las acciones específicas que estaban guardadas
                             const savedActs = r.accionesPermitidas ? r.accionesPermitidas[chk.value] || [] : [];
                             document.querySelectorAll(`.chk-act-rol[data-mod="${chk.value}"]`).forEach(aCheck => {
-                                if(savedActs.includes(aCheck.value)) aCheck.checked = true;
+                                if(savedActs.includes(aCheck.value)) {
+                                    aCheck.checked = true;
+                                }
                             });
                         }
                     });
-                }, 50);
+                }, 100); // Aumentamos a 100ms para mayor seguridad en el renderizado
             }
         }
         document.getElementById('btn_guardar_rol').onclick = guardarRol;
         document.getElementById('modalRol').style.display = 'block';
     }
-
     async function guardarRol() {
         const nombre = document.getElementById('rol_nombre').value.trim();
         const modulosChecks = document.querySelectorAll('.chk-rol-mod:checked');
