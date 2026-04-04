@@ -817,6 +817,9 @@
         if(!b) return;
         b.innerHTML = "";
         const h = document.getElementById('m_thead');
+        if(!h) return;
+        h.innerHTML = "";
+        
         const displayData = dataFiltrada || localData;
         
         // Obtenemos el ID del módulo actual para validar permisos
@@ -826,20 +829,15 @@
             h.innerHTML = `<tr><th>Nombre</th><th>Dependencia</th><th>Extensión</th><th>Tipo</th><th>Acciones</th></tr>`;
             displayData.forEach(e => {
                 let btns = "";
-                
-                // Validación del permiso para "Ver Detalle" (Ojito)
                 if(checkPermission("card_extensiones", "Ver Detalle")) {
                     btns += `<button class="btn-acc bg-v-gray" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
                 }
-                
                 if(checkPermission("card_extensiones", "Editar")) {
                     btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
                 }
-                
                 if(userRole === "Admin" || checkPermission("card_extensiones", "Eliminar")) {
                     btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
                 }
-                
                 b.innerHTML += `<tr><td><b>${e.nom}</b></td><td>${e.dep}</td><td>${e.ext}</td><td>${e.tipo_ext}</td><td>${btns}</td></tr>`;
             });
         } 
@@ -866,30 +864,22 @@
 
             displayData.forEach(e => {
                 let btns = "";
-                
-                // Botón Editar
                 if(checkPermission(activeModId, "Editar")) {
                     btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
                 }
-                
-                // Botón Mantenimiento
                 if(checkPermission(activeModId, "Mantenimiento")) {
                     btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
                 }
-                
-                // Botón Historial
                 if(checkPermission(activeModId, "Historial")) {
                     btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
                 }
-                
-                // Botón Eliminar
                 if(userRole === "Admin" || checkPermission(activeModId, "Eliminar")) {
                     btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
                 }
-                
                 b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
             });
         }
+    }
 
     function verOjitoExtension(id) {
         const d = localData.find(x => x.id === id);
