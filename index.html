@@ -611,11 +611,11 @@
         document.getElementById('rol_modal_title').innerText = modo === 'nuevo' ? "Crear Nuevo Rol" : "Editar Rol";
         document.getElementById('rol_nombre').value = "";
         const container = document.getElementById('chk_modulos_container');
-        container.innerHTML = "";
         
-        // Generamos la estructura base de todos los módulos disponibles
+        // 1. Limpiamos y generamos TODO el HTML de una vez
+        let htmlBase = "";
         MODULOS_SISTEMA.forEach(m => {
-            container.innerHTML += `
+            htmlBase += `
                 <div class="role-block">
                     <label class="role-option">
                         <input type="checkbox" class="chk-rol-mod" value="${m.id}" onchange="toggleAccionesRol('${m.id}', this.checked)"> ${m.nom}
@@ -625,32 +625,34 @@
                     </div>
                 </div>`;
         });
+        container.innerHTML = htmlBase;
 
+        // 2. Si es edición, buscamos los datos
         if(modo === 'editar') {
-            const r = listaRolesGlobal.find(x => x.id === id);
-            if(r) {
-                document.getElementById('rol_nombre').value = r.nombre;
+            const rolEncontrado = listaRolesGlobal.find(x => x.id === id);
+            if(rolEncontrado) {
+                document.getElementById('rol_nombre').value = rolEncontrado.nombre;
                 
-                // Usamos un pequeño delay para asegurar que el HTML se terminó de renderizar en el DOM
+                // Esperamos un instante a que el navegador "digiera" el innerHTML
                 setTimeout(() => {
-                    document.querySelectorAll('.chk-rol-mod').forEach(chk => {
-                        // Si el ID del módulo está en la lista de módulos del rol
-                        if(r.modulos && r.modulos.includes(chk.value)) {
-                            chk.checked = true;
-                            
-                            // ACTIVAMOS visualmente el panel de acciones
-                            toggleAccionesRol(chk.value, true);
-                            
-                            // Marcamos las acciones específicas que estaban guardadas
-                            const savedActs = r.accionesPermitidas ? r.accionesPermitidas[chk.value] || [] : [];
-                            document.querySelectorAll(`.chk-act-rol[data-mod="${chk.value}"]`).forEach(aCheck => {
-                                if(savedActs.includes(aCheck.value)) {
-                                    aCheck.checked = true;
-                                }
-                            });
-                        }
-                    });
-                }, 100); // Aumentamos a 100ms para mayor seguridad en el renderizado
+                    // Marcamos los módulos (IDs guardados en rolEncontrado.modulos)
+                    if (rolEncontrado.modulos && Array.isArray(rolEncontrado.modulos)) {
+                        rolEncontrado.modulos.forEach(modId => {
+                            const chkMod = container.querySelector(`.chk-rol-mod[value="${modId}"]`);
+                            if (chkMod) {
+                                chkMod.checked = true;
+                                toggleAccionesRol(modId, true); // Desbloqueamos el panel de acciones
+                                
+                                // Marcamos las acciones de este módulo
+                                const accionesGuardadas = rolEncontrado.accionesPermitidas ? rolEncontrado.accionesPermitidas[modId] || [] : [];
+                                accionesGuardadas.forEach(actNom => {
+                                    const chkAct = container.querySelector(`.chk-act-rol[data-mod="${modId}"][value="${actNom}"]`);
+                                    if (chkAct) chkAct.checked = true;
+                                });
+                            }
+                        });
+                    }
+                }, 150); // Un pequeño margen de tiempo para asegurar el renderizado
             }
         }
         document.getElementById('btn_guardar_rol').onclick = guardarRol;
