@@ -855,16 +855,41 @@
         else {
             // Inventarios generales (Admin, Salas, Impresoras, Aulas)
             h.innerHTML = `<tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Serial</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Acciones</th></tr>`;
+            
+            const modIdMap = {
+                'inventario': 'card_inv_admin',
+                'inventario_salas': 'card_inv_salas',
+                'aulas_dti': 'card_aulas',
+                'impresoras': 'card_impresoras'
+            };
+            const activeModId = modIdMap[currentColl] || currentColl;
+
             displayData.forEach(e => {
                 let btns = "";
-                if(checkPermission(currentModId, "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-                if(checkPermission(currentModId, "Mantenimiento")) btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
-                if(checkPermission(currentModId, "Historial")) btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
-                if(userRole === "Admin" || checkPermission(currentModId, "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
+                
+                // Botón Editar
+                if(checkPermission(activeModId, "Editar")) {
+                    btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                }
+                
+                // Botón Mantenimiento
+                if(checkPermission(activeModId, "Mantenimiento")) {
+                    btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
+                }
+                
+                // Botón Historial
+                if(checkPermission(activeModId, "Historial")) {
+                    btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
+                }
+                
+                // Botón Eliminar
+                if(userRole === "Admin" || checkPermission(activeModId, "Eliminar")) {
+                    btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
+                }
+                
                 b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
             });
         }
-    }
 
     function verOjitoExtension(id) {
         const d = localData.find(x => x.id === id);
