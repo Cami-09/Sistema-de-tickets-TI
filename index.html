@@ -605,14 +605,25 @@
         
         return false;
     }
-
+    
+    function toggleAccionesRol(modId, activo) {
+        const div = document.getElementById(`div_acts_${modId}`);
+        if (div) {
+            div.style.opacity = activo ? "1" : "0.3";
+            div.style.pointerEvents = activo ? "auto" : "none";
+            // Si se desactiva el módulo, desmarcamos todas sus acciones
+            if (!activo) {
+                div.querySelectorAll('input').forEach(i => i.checked = false);
+            }
+        }
+    }
+    
     function abrirModalRol(modo, id = null) {
         modoModal = modo; selectedId = id;
         document.getElementById('rol_modal_title').innerText = modo === 'nuevo' ? "Crear Nuevo Rol" : "Editar Rol";
         document.getElementById('rol_nombre').value = "";
         const container = document.getElementById('chk_modulos_container');
         
-        // 1. Limpiamos y generamos TODO el HTML de una vez
         let htmlBase = "";
         MODULOS_SISTEMA.forEach(m => {
             htmlBase += `
@@ -627,32 +638,31 @@
         });
         container.innerHTML = htmlBase;
 
-        // 2. Si es edición, buscamos los datos
         if(modo === 'editar') {
             const rolEncontrado = listaRolesGlobal.find(x => x.id === id);
             if(rolEncontrado) {
                 document.getElementById('rol_nombre').value = rolEncontrado.nombre;
                 
-                // Esperamos un instante a que el navegador "digiera" el innerHTML
+                // Aumentamos un poco el delay para asegurar que el DOM esté listo
                 setTimeout(() => {
-                    // Marcamos los módulos (IDs guardados en rolEncontrado.modulos)
-                    if (rolEncontrado.modulos && Array.isArray(rolEncontrado.modulos)) {
-                        rolEncontrado.modulos.forEach(modId => {
-                            const chkMod = container.querySelector(`.chk-rol-mod[value="${modId}"]`);
-                            if (chkMod) {
-                                chkMod.checked = true;
-                                toggleAccionesRol(modId, true); // Desbloqueamos el panel de acciones
-                                
-                                // Marcamos las acciones de este módulo
-                                const accionesGuardadas = rolEncontrado.accionesPermitidas ? rolEncontrado.accionesPermitidas[modId] || [] : [];
-                                accionesGuardadas.forEach(actNom => {
-                                    const chkAct = container.querySelector(`.chk-act-rol[data-mod="${modId}"][value="${actNom}"]`);
-                                    if (chkAct) chkAct.checked = true;
-                                });
-                            }
-                        });
-                    }
-                }, 150); // Un pequeño margen de tiempo para asegurar el renderizado
+                    const modulosGuardados = rolEncontrado.modulos || [];
+                    const accionesPermitidas = rolEncontrado.accionesPermitidas || {};
+
+                    modulosGuardados.forEach(modId => {
+                        const chkMod = container.querySelector(`.chk-rol-mod[value="${modId}"]`);
+                        if (chkMod) {
+                            chkMod.checked = true;
+                            toggleAccionesRol(modId, true); // Activa visualmente el panel
+                            
+                            // Marcamos las acciones de este módulo
+                            const acciones = accionesPermitidas[modId] || [];
+                            acciones.forEach(actNom => {
+                                const chkAct = container.querySelector(`.chk-act-rol[data-mod="${modId}"][value="${actNom}"]`);
+                                if (chkAct) chkAct.checked = true;
+                            });
+                        }
+                    });
+                }, 200); 
             }
         }
         document.getElementById('btn_guardar_rol').onclick = guardarRol;
