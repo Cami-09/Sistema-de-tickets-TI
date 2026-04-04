@@ -365,7 +365,7 @@
         {id: "card_historico_cerrados", nom: "Histórico Tickets Cerrados", acts: ["Ver Detalle", "Eliminar"]},
         {id: "card_inv_admin", nom: "Equipos Administrativos", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
         {id: "card_inv_salas", nom: "Equipos Salas", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
-        {id: "card_extensiones", nom: "Extensiones Administrativas", acts: ["Crear", "Editar", "Eliminar", "Ver Detalle"]},
+        {id: "card_extensiones", nom: "Extensiones Administrativos", acts: ["Crear", "Editar", "Eliminar", "Ver Detalle"]},
         {id: "card_calendario", nom: "Calendario", acts: ["Ver"]},
         {id: "card_stats", nom: "Estadísticas", acts: ["Ver"]},
         {id: "card_usuarios", nom: "Usuarios", acts: ["Crear", "Editar", "Eliminar"]},
@@ -437,11 +437,12 @@
     }
 
     async function verificarRol() {
-        // 1. Ocultar todo por defecto antes de evaluar
+        // 1. Ocultar todo y limpiar estados previos
         document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
-        if(document.getElementById('stats_contadores_visibles')) {
-            document.getElementById('stats_contadores_visibles').style.display = 'none';
-        }
+        const statsHeader = document.getElementById('stats_contadores_visibles');
+        if(statsHeader) statsHeader.style.display = 'none';
+
+        if (!user) return;
 
         // 2. Identificar al usuario y su rol
         const q = await db.collection("usuarios").where("cor", "==", user.email).get();
@@ -460,48 +461,39 @@
 
         document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
         
-        // 3. Buscar permisos del rol en la base de datos
+        // 3. Buscar permisos del rol en la lista global (que ya cargó cargarRoles)
         const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
-        if(rolDB) {
+        
+        if (userRole === "Admin") {
+            currentPermissions = {}; // Admin salta la validación por checkPermission
+        } else if (rolDB) {
             currentPermissions = rolDB.accionesPermitidas || {};
-        } else if (userRole === "Gestor") {
-            // Permisos por defecto para Gestor si no está en la colección roles
+        } else {
+            // Permisos básicos si el rol no existe en la colección 'roles'
             currentPermissions = {
                 "card_mis_tickets": ["Ver Detalle"],
-                "card_enviar_ticket": ["Crear"],
-                "card_admin_tickets": ["Editar", "Finalizar", "Ver Detalle"],
-                "card_historico_cerrados": ["Ver Detalle"],
-                "card_inv_admin": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_inv_salas": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_extensiones": ["Crear", "Editar", "Ver Detalle"],
-                "card_calendario": ["Ver"],
-                "card_aulas": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_impresoras": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_gest_mantenimientos": ["Editar"]
+                "card_enviar_ticket": ["Crear"]
             };
         }
 
-        // 4. Determinar qué tarjetas mostrar
+        // 4. Determinar módulos permitidos
         let modulosPermitidos = [];
-        if(userRole === "Admin") {
+        if (userRole === "Admin") {
             modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
-        } else if(rolDB && rolDB.modulos) {
+        } else if (rolDB && rolDB.modulos) {
             modulosPermitidos = rolDB.modulos;
         } else {
-            const vDefault = { 
-                "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_historico_cerrados", "card_inv_admin", "card_inv_salas", "card_extensiones", "card_calendario", "card_aulas", "card_impresoras", "card_gest_mantenimientos"],
-                "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
-            };
-            modulosPermitidos = vDefault[userRole] || vDefault["Usuario"];
+            modulosPermitidos = ["card_mis_tickets", "card_enviar_ticket"];
         }
 
-        // 5. Aplicar visibilidad en el HTML
+        // 5. Mostrar módulos en el HTML
         modulosPermitidos.forEach(id => { 
-            if(document.getElementById(id)) document.getElementById(id).style.display = 'block'; 
+            const el = document.getElementById(id);
+            if(el) el.style.display = 'block'; 
         });
 
-        if(userRole !== "Usuario" && document.getElementById('stats_contadores_visibles')) {
-            document.getElementById('stats_contadores_visibles').style.display = 'flex';
+        if(userRole !== "Usuario" && statsHeader) {
+            statsHeader.style.display = 'flex';
         }
     }
     // Lógica para Histórico de Cerrados
@@ -592,15 +584,15 @@
     }
 
     // Lógica de Permisos / Roles
-    function checkPermission(modId, action) {
-        // El Admin siempre tiene permiso
+   function checkPermission(modId, action) {
         if(userRole === 'Admin') return true;
         
-        // Buscamos si el módulo existe en los permisos del usuario
-        if(currentPermissions && currentPermissions[modId]) {
-            const accionesMod = currentPermissions[modId];
-            // Solo devolvemos true si la acción específica está en la lista
-            return accionesMod.includes(action);
+        // Si no hay permisos cargados, denegar
+        if(!currentPermissions) return false;
+
+        // Si el módulo existe en los permisos, verificar la acción
+        if(currentPermissions[modId]) {
+            return currentPermissions[modId].includes(action);
         }
         
         return false;
