@@ -437,14 +437,14 @@
     }
 
     async function verificarRol() {
-        // 1. Ocultar todo por defecto
+        // 1. Ocultar todo y limpiar estado visual
         document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
         const statsHeader = document.getElementById('stats_contadores_visibles');
         if(statsHeader) statsHeader.style.display = 'none';
 
         if (!user) return;
 
-        // 2. Determinar el Rol
+        // 2. Identificar Usuario y su Rol
         const q = await db.collection("usuarios").where("cor", "==", user.email).get();
         if (user.email === "camicarmona1212@gmail.com") {
             userRole = "Admin";
@@ -460,37 +460,35 @@
 
         document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
         
-        // 3. Cargar permisos desde la lista global cargada de Firebase
+        // 3. Buscar permisos en la base de datos
         const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
-        if(rolDB) {
-            currentPermissions = rolDB.accionesPermitidas || {};
-        } else {
-            currentPermissions = {}; // Limpiar si no hay rol específico
-        }
+        currentPermissions = rolDB ? (rolDB.accionesPermitidas || {}) : {};
 
-        // 4. Decidir qué módulos mostrar
+        // 4. Determinar Módulos a mostrar (Corregido para Gestores)
         let modulosPermitidos = [];
         if(userRole === "Admin") {
             modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
         } else if(rolDB && rolDB.modulos) {
             modulosPermitidos = rolDB.modulos;
         } else {
-            // Accesos mínimos para cualquier usuario logueado
-            modulosPermitidos = ["card_mis_tickets", "card_enviar_ticket"];
+            // Configuración por defecto si no hay rol creado en la tabla de preferencias
+            const vDefault = { 
+                "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_historico_cerrados", "card_inv_admin", "card_inv_salas", "card_extensiones", "card_calendario", "card_aulas", "card_impresoras", "card_gest_mantenimientos"],
+                "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
+            };
+            modulosPermitidos = vDefault[userRole] || vDefault["Usuario"];
         }
 
-        // 5. Aplicar visibilidad
+        // 5. Mostrar módulos y estadísticas
         modulosPermitidos.forEach(id => { 
             const el = document.getElementById(id);
             if(el) el.style.display = 'block'; 
         });
 
-        // Mostrar estadísticas solo si no es usuario básico
         if(userRole !== "Usuario" && statsHeader) {
             statsHeader.style.display = 'flex';
         }
     }
-
     // Lógica para Histórico de Cerrados
     async function cargarHistoricoCerrados() {
         const tb = document.getElementById('tbody_historico_cerrados');
@@ -756,30 +754,34 @@
         const b = document.getElementById('m_tbody'); b.innerHTML = "";
         const h = document.getElementById('m_thead');
         const displayData = dataFiltrada || localData;
-        const modId = localStorage.getItem('activeModulo') === 'mod_maestro' ? `card_${currentColl}` : "";
         
+        // Obtenemos el ID del módulo actual para validar permisos
+        const currentModId = `card_${currentColl === 'inventario' ? 'inv_admin' : (currentColl === 'inventario_salas' ? 'inv_salas' : currentColl)}`;
+
         if(currentColl === 'extensiones') {
             h.innerHTML = `<tr><th>Nombre</th><th>Dependencia</th><th>Extensión</th><th>Tipo</th><th>Acciones</th></tr>`;
             displayData.forEach(e => {
                 let btns = `<button class="btn-acc bg-v-gray" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
                 if(checkPermission("card_extensiones", "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-                if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
+                if(userRole === "Admin" || checkPermission("card_extensiones", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
                 b.innerHTML += `<tr><td><b>${e.nom}</b></td><td>${e.dep}</td><td>${e.ext}</td><td>${e.tipo_ext}</td><td>${btns}</td></tr>`;
             });
         } else if(currentColl === 'usuarios') {
             h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
             displayData.forEach(e => { 
-                let btns = `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                let btns = "";
+                if(checkPermission("card_usuarios", "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
                 if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
                 b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td><td>${btns}</td></tr>`; 
             });
         } else {
             h.innerHTML = `<tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Serial</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Acciones</th></tr>`;
             displayData.forEach(e => {
-                let btns = `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-                btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
-                btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
-                if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
+                let btns = "";
+                if(checkPermission(currentModId, "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                if(checkPermission(currentModId, "Mantenimiento")) btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
+                if(checkPermission(currentModId, "Historial")) btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
+                if(userRole === "Admin" || checkPermission(currentModId, "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
                 b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
             });
         }
