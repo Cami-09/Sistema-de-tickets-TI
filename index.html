@@ -894,23 +894,74 @@
 
     async function cargarGestionMantenimientos() {
         const tb = document.getElementById('tbody_gest_mantenimientos');
-        tb.innerHTML = "";
+        tb.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando mantenimientos...</td></tr>";
+        
         const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti"];
+        let htmlRows = "";
+
         for(let coll of colecciones) {
             const equipos = await db.collection(coll).get();
             for(let equip of equipos.docs) {
                 const eData = equip.data();
                 const mnts = await db.collection(coll).doc(equip.id).collection("mantenimientos").get();
+                
                 mnts.forEach(m => {
                     const mData = m.data();
-                    tb.innerHTML += `<tr><td>${mData.fecha}</td><td><b>${eData.nom || 'S/N'}</b></td><td>${coll}</td><td>${mData.tipo}</td><td>${mData.desc}</td><td><button class="btn-acc bg-d-red" onclick="eliminarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+                    // Validar permisos para los botones
+                    let btnEdit = checkPermission("card_gest_mantenimientos", "Editar") ? 
+                        `<button class="btn-acc bg-info-e" onclick="abrirMantenimientoEdicion('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-edit"></i></button>` : "";
+                    
+                    let btnDel = (userRole === "Admin") ? 
+                        `<button class="btn-acc bg-d-red" onclick="eliminarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-trash"></i></button>` : "";
+
+                    htmlRows += `<tr>
+                        <td>${mData.fecha}</td>
+                        <td><b>${eData.nom || 'S/N'}</b></td>
+                        <td>${coll.replace('_', ' ').toUpperCase()}</td>
+                        <td>${mData.tipo}</td>
+                        <td>${mData.desc}</td>
+                        <td>${btnEdit}${btnDel}</td>
+                    </tr>`;
                 });
             }
         }
+        tb.innerHTML = htmlRows || "<tr><td colspan='6' style='text-align:center;'>No hay mantenimientos registrados</td></tr>";
     }
 
     async function eliminarMnt(coll, eid, mid) { if(confirm("¿Eliminar mantenimiento?")) { await db.collection(coll).doc(eid).collection("mantenimientos").doc(mid).delete(); cargarGestionMantenimientos(); } }
 
+    async function abrirMantenimientoEdicion(coll, equipId, mntId) {
+        modoModal = "editar";
+        selectedId = mntId;
+        selectedCollMnt = coll;
+        selectedEquipIdMnt = equipId;
+        
+        const doc = await db.collection(coll).doc(equipId).collection("mantenimientos").doc(mntId).get();
+        const data = doc.data();
+        
+        document.getElementById('mnt_modal_title').innerText = "Editar Mantenimiento";
+        document.getElementById('mnt_fecha').value = data.fecha;
+        document.getElementById('mnt_tipo').value = data.tipo;
+        document.getElementById('mnt_desc').value = data.desc;
+        
+        document.getElementById('btn_guardar_mnt').onclick = guardarMantenimientoEditado;
+        document.getElementById('modalMantenimiento').style.display = 'block';
+    }
+
+    async function guardarMantenimientoEditado() {
+        const f = document.getElementById('mnt_fecha').value;
+        const t = document.getElementById('mnt_tipo').value;
+        const d = document.getElementById('mnt_desc').value;
+        
+        await db.collection(selectedCollMnt).doc(selectedEquipIdMnt).collection("mantenimientos").doc(selectedId).update({
+            fecha: f, tipo: t, desc: d
+        });
+        
+        cerrarModales();
+        alert("Mantenimiento actualizado");
+        cargarGestionMantenimientos();
+    }
+    
     async function verHistorial(id) {
         const content = document.getElementById('historial_content');
         const snap = await db.collection(currentColl).doc(id).collection("mantenimientos").orderBy("fecha","desc").get();
