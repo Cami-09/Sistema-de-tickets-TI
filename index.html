@@ -820,14 +820,21 @@
         // Obtenemos el ID del módulo actual para validar permisos
         const currentModId = `card_${currentColl === 'inventario' ? 'inv_admin' : (currentColl === 'inventario_salas' ? 'inv_salas' : currentColl)}`;
 
-        if(currentColl === 'extensiones') {
-            h.innerHTML = `<tr><th>Nombre</th><th>Dependencia</th><th>Extensión</th><th>Tipo</th><th>Acciones</th></tr>`;
-            displayData.forEach(e => {
-                let btns = `<button class="btn-acc bg-v-gray" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
-                if(checkPermission("card_extensiones", "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-                if(userRole === "Admin" || checkPermission("card_extensiones", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
+        if(checkPermission("card_extensiones", "Ver Detalle")) {
+                    btns += `<button class="btn-acc bg-v-gray" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
+                }
+                
+                if(checkPermission("card_extensiones", "Editar")) {
+                    btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                }
+                
+                if(userRole === "Admin" || checkPermission("card_extensiones", "Eliminar")) {
+                    btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
+                }
+                
                 b.innerHTML += `<tr><td><b>${e.nom}</b></td><td>${e.dep}</td><td>${e.ext}</td><td>${e.tipo_ext}</td><td>${btns}</td></tr>`;
             });
+        }
         } else if(currentColl === 'usuarios') {
             h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
             displayData.forEach(e => { 
