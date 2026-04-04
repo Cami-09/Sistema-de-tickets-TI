@@ -401,12 +401,11 @@
             listaRolesGlobal = [];
             snap.forEach(doc => {
                 const data = doc.data();
-                if (data.nombre !== "Supervisor") {
-                    listaRolesGlobal.push({id: doc.id, ...data});
-                }
+                listaRolesGlobal.push({id: doc.id, ...data});
             });
             renderTablaRoles();
-            if(user) verificarRol();
+            // Esto asegura que una vez carguen los roles, se refresque la vista del usuario
+            if(user) await verificarRol(); 
         });
     }
 
@@ -437,26 +436,17 @@
     }
 
     async function verificarRol() {
-        // Ocultar todo por defecto antes de verificar
+        // 1. Ocultar todo por defecto
         document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
         document.getElementById('stats_contadores_visibles').style.display = 'none';
 
+        // 2. Identificar al usuario
         const q = await db.collection("usuarios").where("cor", "==", user.email).get();
         
-        // CASO ESPECIAL: Super Administrador (Tú)
         if (user.email === "camicarmona1212@gmail.com") {
             userRole = "Admin";
             nombreRealUsuario = "Admin Maestro";
-            // Mostrar todos los módulos definidos en la constante
-            MODULOS_SISTEMA.forEach(m => {
-                if(document.getElementById(m.id)) document.getElementById(m.id).style.display = 'block';
-            });
-            document.getElementById('stats_contadores_visibles').style.display = 'flex';
-            return; // Salir de la función porque ya tiene todo el acceso
-        }
-
-        // CASO USUARIOS REGISTRADOS
-        if(!q.empty) {
+        } else if(!q.empty) {
             const d = q.docs[0].data(); 
             userRole = d.rol; 
             nombreRealUsuario = d.nom;
@@ -467,49 +457,38 @@
 
         document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
         
-        // Buscar el rol en la lista global de roles de la BD
-        const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
-        
-        if(rolDB) {
-            currentPermissions = rolDB.accionesPermitidas || {};
-            // Mostrar solo los módulos que el rol tiene asignados
-            if(rolDB.modulos) {
-                rolDB.modulos.forEach(id => {
-                    if(document.getElementById(id)) document.getElementById(id).style.display = 'block';
-                });
-            }
+        // 3. Lógica de visibilidad
+        let modulosAVisualizar = [];
+
+        if (userRole === "Admin") {
+            // El Admin ve absolutamente todo
+            modulosAVisualizar = MODULOS_SISTEMA.map(m => m.id);
         } else {
-            // Permisos por defecto si el rol no existe en la colección "roles"
-            if(userRole === "Gestor") {
-                const vGestor = ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_extensiones", "card_aulas", "card_impresoras", "card_gest_mantenimientos"];
-                vGestor.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
+            // Buscar permisos en la colección de Roles
+            const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
+            if(rolDB && rolDB.modulos) {
+                modulosAVisualizar = rolDB.modulos;
+                currentPermissions = rolDB.accionesPermitidas || {};
+            } else if (userRole === "Gestor") {
+                // Backup por si no existe el rol en la BD todavía
+                modulosAVisualizar = ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_extensiones", "card_aulas", "card_impresoras", "card_gest_mantenimientos"];
             } else {
-                // Usuario básico
-                document.getElementById('card_mis_tickets').style.display = 'block';
-                document.getElementById('card_enviar_ticket').style.display = 'block';
+                // Usuario estándar
+                modulosAVisualizar = ["card_mis_tickets", "card_enviar_ticket"];
             }
         }
 
-        if(userRole !== "Usuario") document.getElementById('stats_contadores_visibles').style.display = 'flex';
-    }
+        // 4. Aplicar cambios al DOM
+        modulosAVisualizar.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.style.display = 'block';
+        });
 
-        let modulosPermitidos = [];
-        if(userRole === "Admin") {
-            modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
-        } else if(rolDB) {
-            modulosPermitidos = rolDB.modulos;
-        } else {
-            const vDefault = { 
-                "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_historico_cerrados", "card_inv_admin", "card_inv_salas", "card_extensiones", "card_calendario", "card_aulas", "card_impresoras", "card_gest_mantenimientos"],
-                "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
-            };
-            modulosPermitidos = vDefault[userRole] || vDefault["Usuario"];
+        // Mostrar contadores si no es usuario básico
+        if(userRole !== "Usuario") {
+            document.getElementById('stats_contadores_visibles').style.display = 'flex';
         }
-
-        modulosPermitidos.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
-        if(userRole !== "Usuario") document.getElementById('stats_contadores_visibles').style.display = 'flex';
     }
-
     // Lógica para Histórico de Cerrados
     async function cargarHistoricoCerrados() {
         const tb = document.getElementById('tbody_historico_cerrados');
