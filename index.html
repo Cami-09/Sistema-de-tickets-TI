@@ -608,17 +608,22 @@
 
         if(modo === 'editar') {
             const r = listaRolesGlobal.find(x => x.id === id);
-            document.getElementById('rol_nombre').value = r.nombre;
-            document.querySelectorAll('.chk-rol-mod').forEach(chk => {
-                if(r.modulos.includes(chk.value)) {
-                    chk.checked = true;
-                    toggleAccionesRol(chk.value, true);
-                    const savedActs = r.accionesPermitidas ? r.accionesPermitidas[chk.value] || [] : [];
-                    document.querySelectorAll(`.chk-act-rol[data-mod="${chk.value}"]`).forEach(aCheck => {
-                        if(savedActs.includes(aCheck.value)) aCheck.checked = true;
+            if(r) {
+                document.getElementById('rol_nombre').value = r.nombre;
+                // Timeout para asegurar que el DOM de los checkboxes ya existe
+                setTimeout(() => {
+                    document.querySelectorAll('.chk-rol-mod').forEach(chk => {
+                        if(r.modulos && r.modulos.includes(chk.value)) {
+                            chk.checked = true;
+                            toggleAccionesRol(chk.value, true);
+                            const savedActs = r.accionesPermitidas ? r.accionesPermitidas[chk.value] || [] : [];
+                            document.querySelectorAll(`.chk-act-rol[data-mod="${chk.value}"]`).forEach(aCheck => {
+                                if(savedActs.includes(aCheck.value)) aCheck.checked = true;
+                            });
+                        }
                     });
-                }
-            });
+                }, 50);
+            }
         }
         document.getElementById('btn_guardar_rol').onclick = guardarRol;
         document.getElementById('modalRol').style.display = 'block';
@@ -633,19 +638,35 @@
 
     async function guardarRol() {
         const nombre = document.getElementById('rol_nombre').value.trim();
+        // Solo obtenemos los checks de los módulos que están marcados
         const modulosChecks = document.querySelectorAll('.chk-rol-mod:checked');
         const modulos = Array.from(modulosChecks).map(c => c.value);
         
         if(!nombre) return alert("Ingrese el nombre del rol");
-        if(modulos.length === 0) return alert("Seleccione al menos un módulo");
+        if(modulos.length === 0) return alert("Seleccione al menos un módulo para este rol");
 
         let accionesPermitidas = {};
+        
+        // Solo recorremos los módulos que el usuario seleccionó
         modulos.forEach(mId => {
             const accionesChecks = document.querySelectorAll(`.chk-act-rol[data-mod="${mId}"]:checked`);
-            accionesPermitidas[mId] = Array.from(accionesChecks).map(a => a.value);
+            const accionesSeleccionadas = Array.from(accionesChecks).map(a => a.value);
+            
+            // Solo guardamos la entrada en el objeto si hay acciones marcadas
+            if (accionesSeleccionadas.length > 0) {
+                accionesPermitidas[mId] = accionesSeleccionadas;
+            } else {
+                // Si quieres que el módulo sea visible pero NO tenga acciones, 
+                // guardamos un array vacío explícitamente
+                accionesPermitidas[mId] = [];
+            }
         });
 
-        const data = { nombre, modulos, accionesPermitidas };
+        const data = { 
+            nombre: nombre, 
+            modulos: modulos, 
+            accionesPermitidas: accionesPermitidas 
+        };
 
         try {
             if(modoModal === 'nuevo') {
@@ -655,9 +676,9 @@
             }
             cerrarModales(); 
             alert("Rol guardado con éxito");
-            // Llamamos a verificarRol para que los cambios se vean sin recargar
-            verificarRol();
+            verificarRol(); // Refresca la vista inmediatamente
         } catch (e) {
+            console.error("Error al guardar rol:", e);
             alert("Error al guardar: " + e.message);
         }
     }
