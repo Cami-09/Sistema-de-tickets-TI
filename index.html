@@ -633,12 +633,15 @@
         if(!tb) return;
         tb.innerHTML = "";
         listaRolesGlobal.forEach(r => {
+            // Validación para evitar errores de lectura si los datos vienen mal de BD
+            const modulosCount = r.modulos ? r.modulos.length : 0;
+            
             tb.innerHTML += `<tr>
                 <td><b>${r.nombre}</b></td>
-                <td>${r.modulos.length} módulos asignados</td>
+                <td>${modulosCount} módulos asignados</td>
                 <td>
-                    <button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn-acc bg-d-red" onclick="eliminarRol('${r.id}')"><i class="fas fa-trash"></i></button>
+                    <button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')" title="Editar"><i class="fas fa-edit"></i></button>
+                    <button class="btn-acc bg-d-red" onclick="eliminarRol('${r.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>`;
         });
@@ -852,8 +855,10 @@
 
     async function cargarGestionMantenimientos() {
         const tb = document.getElementById('tbody_gest_mantenimientos');
-        tb.innerHTML = "";
+        tb.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando mantenimientos...</td></tr>";
         const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti"];
+        let htmlContent = "";
+
         for(let coll of colecciones) {
             const equipos = await db.collection(coll).get();
             for(let equip of equipos.docs) {
@@ -861,10 +866,27 @@
                 const mnts = await db.collection(coll).doc(equip.id).collection("mantenimientos").get();
                 mnts.forEach(m => {
                     const mData = m.data();
-                    tb.innerHTML += `<tr><td>${mData.fecha}</td><td><b>${eData.nom || 'S/N'}</b></td><td>${coll}</td><td>${mData.tipo}</td><td>${mData.desc}</td><td><button class="btn-acc bg-d-red" onclick="eliminarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+                    
+                    // Botón Editar: Visible para Admin y Gestores
+                    let btnEdit = (userRole === "Admin" || userRole === "Gestor") ? 
+                        `<button class="btn-acc bg-info-e" onclick="abrirEditarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-edit"></i></button>` : "";
+                    
+                    // Botón Eliminar: SOLO Administradores
+                    let btnDel = (userRole === "Admin") ? 
+                        `<button class="btn-acc bg-d-red" onclick="eliminarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-trash"></i></button>` : "";
+                    
+                    htmlContent += `<tr>
+                        <td>${mData.fecha}</td>
+                        <td><b>${eData.nom || 'S/N'}</b></td>
+                        <td>${coll.replace('_', ' ').toUpperCase()}</td>
+                        <td>${mData.tipo}</td>
+                        <td>${mData.desc}</td>
+                        <td>${btnEdit}${btnDel}</td>
+                    </tr>`;
                 });
             }
         }
+        tb.innerHTML = htmlContent || "<tr><td colspan='6' style='text-align:center;'>No hay registros</td></tr>";
     }
 
     async function eliminarMnt(coll, eid, mid) { if(confirm("¿Eliminar mantenimiento?")) { await db.collection(coll).doc(eid).collection("mantenimientos").doc(mid).delete(); cargarGestionMantenimientos(); } }
@@ -892,6 +914,41 @@
     function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); document.getElementById('modalReasignar').style.display = 'block'; }
     async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); }
 
+   // Función para cargar datos en el modal de edición
+    async function abrirEditarMnt(coll, equipId, mntId) {
+        selectedCollMnt = coll; 
+        selectedEquipIdMnt = equipId; 
+        selectedMntId = mntId;
+        
+        const doc = await db.collection(coll).doc(equipId).collection("mantenimientos").doc(mntId).get();
+        const d = doc.data();
+        
+        document.getElementById('mnt_fecha').value = d.fecha;
+        document.getElementById('mnt_tipo').value = d.tipo;
+        document.getElementById('mnt_desc').value = d.desc;
+        
+        document.getElementById('mnt_modal_title').innerText = "Editar Mantenimiento";
+        // Cambiamos el comportamiento del botón guardar del modal
+        document.getElementById('btn_guardar_mnt').onclick = ejecutarUpdateMnt;
+        document.getElementById('modalMantenimiento').style.display = 'block';
+    }
+
+    // Función para ejecutar la actualización en Firebase
+    async function ejecutarUpdateMnt() {
+        const f = document.getElementById('mnt_fecha').value;
+        const t = document.getElementById('mnt_tipo').value;
+        const d = document.getElementById('mnt_desc').value;
+
+        if(!f || !d) return alert("Por favor complete todos los campos.");
+
+        await db.collection(selectedCollMnt).doc(selectedEquipIdMnt).collection("mantenimientos").doc(selectedMntId).update({
+            fecha: f, tipo: t, desc: d
+        });
+
+        cerrarModales();
+        alert("Mantenimiento actualizado correctamente");
+        cargarGestionMantenimientos(); // Recargar la tabla
+    }
 </script>
 </body>
 </html>
