@@ -437,37 +437,61 @@
     }
 
     async function verificarRol() {
+        // Ocultar todo por defecto antes de verificar
         document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
+        document.getElementById('stats_contadores_visibles').style.display = 'none';
+
         const q = await db.collection("usuarios").where("cor", "==", user.email).get();
         
-        if(!q.empty) {
-            const d = q.docs[0].data(); userRole = d.rol; nombreRealUsuario = d.nom;
-        } else {
-            userRole = (user.email === "camicarmona1212@gmail.com") ? "Admin" : "Usuario"; nombreRealUsuario = "Admin";
+        // CASO ESPECIAL: Super Administrador (Tú)
+        if (user.email === "camicarmona1212@gmail.com") {
+            userRole = "Admin";
+            nombreRealUsuario = "Admin Maestro";
+            // Mostrar todos los módulos definidos en la constante
+            MODULOS_SISTEMA.forEach(m => {
+                if(document.getElementById(m.id)) document.getElementById(m.id).style.display = 'block';
+            });
+            document.getElementById('stats_contadores_visibles').style.display = 'flex';
+            return; // Salir de la función porque ya tiene todo el acceso
         }
+
+        // CASO USUARIOS REGISTRADOS
+        if(!q.empty) {
+            const d = q.docs[0].data(); 
+            userRole = d.rol; 
+            nombreRealUsuario = d.nom;
+        } else {
+            userRole = "Usuario"; 
+            nombreRealUsuario = "Invitado";
+        }
+
         document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
         
+        // Buscar el rol en la lista global de roles de la BD
         const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
         
         if(rolDB) {
             currentPermissions = rolDB.accionesPermitidas || {};
-        } else if (userRole === "Gestor") {
-            currentPermissions = {
-                "card_mis_tickets": ["Ver Detalle"],
-                "card_enviar_ticket": ["Crear"],
-                "card_admin_tickets": ["Editar", "Finalizar", "Ver Detalle"],
-                "card_historico_cerrados": ["Ver Detalle"],
-                "card_inv_admin": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_inv_salas": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_extensiones": ["Crear", "Editar", "Ver Detalle"],
-                "card_calendario": ["Ver"],
-                "card_aulas": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_impresoras": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_gest_mantenimientos": ["Editar"]
-            };
+            // Mostrar solo los módulos que el rol tiene asignados
+            if(rolDB.modulos) {
+                rolDB.modulos.forEach(id => {
+                    if(document.getElementById(id)) document.getElementById(id).style.display = 'block';
+                });
+            }
         } else {
-            currentPermissions = {};
+            // Permisos por defecto si el rol no existe en la colección "roles"
+            if(userRole === "Gestor") {
+                const vGestor = ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_extensiones", "card_aulas", "card_impresoras", "card_gest_mantenimientos"];
+                vGestor.forEach(id => { if(document.getElementById(id)) document.getElementById(id).style.display = 'block'; });
+            } else {
+                // Usuario básico
+                document.getElementById('card_mis_tickets').style.display = 'block';
+                document.getElementById('card_enviar_ticket').style.display = 'block';
+            }
         }
+
+        if(userRole !== "Usuario") document.getElementById('stats_contadores_visibles').style.display = 'flex';
+    }
 
         let modulosPermitidos = [];
         if(userRole === "Admin") {
@@ -637,12 +661,12 @@
     }
 
     async function guardarRol() {
-        const nombre = document.getElementById('rol_nombre').value;
+        const nombre = document.getElementById('rol_nombre').value.trim();
         const modulosChecks = document.querySelectorAll('.chk-rol-mod:checked');
         const modulos = Array.from(modulosChecks).map(c => c.value);
         
         if(!nombre) return alert("Ingrese el nombre del rol");
-        if(modulos.length === 0) return alert("Seleccione al menos un módulo");
+        if(modulos.length === 0) return alert("Seleccione al menos un módulo para este rol");
 
         let accionesPermitidas = {};
         modulos.forEach(mId => {
@@ -662,6 +686,15 @@
             } else {
                 await db.collection("roles").doc(selectedId).update(data);
             }
+            cerrarModales(); 
+            alert("Rol guardado exitosamente. Los cambios se aplicarán al recargar.");
+            // Forzar actualización de vista
+            verificarRol();
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Error al guardar en Firebase");
+        }
+    }
             cerrarModales(); 
             alert("Rol guardado y aplicado con éxito");
         } catch (error) {
