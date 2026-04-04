@@ -556,15 +556,26 @@
         document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none');
         document.getElementById(id).style.display = 'block';
         
-        localStorage.setItem('activeModulo', id);
+        // Solo guardamos el ID del módulo si no es el maestro (porque el maestro ya lo guardó abrir_maestro)
+        if (id !== 'mod_maestro') {
+            localStorage.setItem('activeModulo', id);
+        }
         localStorage.setItem('activeParams', JSON.stringify({coll: mColl, tit: mTit}));
 
         if(mColl) {
-            currentColl = mColl; document.getElementById('m_titulo').innerText = mTit;
+            currentColl = mColl; 
+            document.getElementById('m_titulo').innerText = mTit;
             const searchBar = document.getElementById('m_search_container');
-            searchBar.style.display = 'flex';
-            db.collection(currentColl).onSnapshot(s => { localData = []; s.forEach(d => localData.push({id: d.id, ...d.data()})); renderTablaMaestra(); });
+            if(searchBar) searchBar.style.display = 'flex';
+            
+            // Al entrar al maestro, forzamos el renderizado
+            db.collection(currentColl).onSnapshot(s => { 
+                localData = []; 
+                s.forEach(d => localData.push({id: d.id, ...d.data()})); 
+                renderTablaMaestra(); 
+            });
         }
+        // ... (resto de tus condiciones de id === 'mod_mis_tickets', etc.)
         if(id === 'mod_mis_tickets') cargarMisTickets();
         if(id === 'mod_admin_tickets') cargarTicketsAdmin();
         if(id === 'mod_historico_cerrados') cargarHistoricoCerrados();
@@ -783,30 +794,41 @@
         const b = document.getElementById('m_tbody'); b.innerHTML = "";
         const h = document.getElementById('m_thead');
         const displayData = dataFiltrada || localData;
+        
+        // Obtenemos el ID de la tarjeta actual para validar permisos
         const modId = localStorage.getItem('activeModulo') === 'mod_maestro' ? `card_${currentColl}` : "";
         
+        // Control de visibilidad del botón "Nuevo" en el encabezado del módulo maestro
+        const btnNuevoMaestro = document.getElementById('btn_maestro_nuevo');
+        if (btnNuevoMaestro) {
+            btnNuevoMaestro.style.display = checkPermission(modId, "Crear") ? "block" : "none";
+        }
+
         if(currentColl === 'extensiones') {
             h.innerHTML = `<tr><th>Nombre</th><th>Dependencia</th><th>Extensión</th><th>Tipo</th><th>Acciones</th></tr>`;
             displayData.forEach(e => {
-                let btns = `<button class="btn-acc bg-v-gray" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
-                if(checkPermission("card_extensiones", "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-                if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
+                let btns = "";
+                if(checkPermission(modId, "Ver Detalle")) btns += `<button class="btn-acc bg-v-gray" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
+                if(checkPermission(modId, "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                if(checkPermission(modId, "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
                 b.innerHTML += `<tr><td><b>${e.nom}</b></td><td>${e.dep}</td><td>${e.ext}</td><td>${e.tipo_ext}</td><td>${btns}</td></tr>`;
             });
         } else if(currentColl === 'usuarios') {
             h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
             displayData.forEach(e => { 
-                let btns = `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-                if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
+                let btns = "";
+                if(checkPermission(modId, "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                if(checkPermission(modId, "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
                 b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td><td>${btns}</td></tr>`; 
             });
         } else {
             h.innerHTML = `<tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Serial</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Acciones</th></tr>`;
             displayData.forEach(e => {
-                let btns = `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-                btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
-                btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
-                if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
+                let btns = "";
+                if(checkPermission(modId, "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                if(checkPermission(modId, "Mantenimiento")) btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
+                if(checkPermission(modId, "Historial")) btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
+                if(checkPermission(modId, "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
                 b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
             });
         }
@@ -950,7 +972,11 @@
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { localStorage.clear(); auth.signOut().then(() => location.reload()); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
-    function abrir_maestro(c, t) { abrir('mod_maestro', c, t); }
+    function abrir_maestro(c, t) { 
+        // Primero guardamos en localStorage el ID de la tarjeta para que renderTablaMaestra sepa qué permisos pedir
+        localStorage.setItem('activeModulo', `card_${c}`); 
+        abrir('mod_maestro', c, t); 
+    }
     function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); document.getElementById('modalReasignar').style.display = 'block'; }
     async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); }
 
