@@ -437,44 +437,30 @@
     }
 
     async function verificarRol() {
-        // 1. Ocultar todo y limpiar estados previos
         document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
-        const statsHeader = document.getElementById('stats_contadores_visibles');
-        if(statsHeader) statsHeader.style.display = 'none';
-
         if (!user) return;
 
-        // 2. Identificar al usuario y su rol
         const q = await db.collection("usuarios").where("cor", "==", user.email).get();
-        
         if (user.email === "camicarmona1212@gmail.com") {
             userRole = "Admin";
-            nombreRealUsuario = "Admin Maestro";
-        } else if(!q.empty) {
-            const d = q.docs[0].data(); 
-            userRole = d.rol; 
-            nombreRealUsuario = d.nom;
         } else {
-            userRole = "Usuario"; 
-            nombreRealUsuario = "Invitado";
+            userRole = (!q.empty) ? q.docs[0].data().rol : "Usuario";
         }
 
-        document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
-        
-        // 3. Buscar permisos del rol en la lista global (que ya cargó cargarRoles)
         const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
+        currentPermissions = rolDB ? (rolDB.accionesPermitidas || {}) : {};
+
+        let permitidos = (userRole === "Admin") ? MODULOS_SISTEMA.map(m => m.id) : (rolDB ? rolDB.modulos : []);
         
-        if (userRole === "Admin") {
-            currentPermissions = {}; // Admin salta la validación por checkPermission
-        } else if (rolDB) {
-            currentPermissions = rolDB.accionesPermitidas || {};
-        } else {
-            // Permisos básicos si el rol no existe en la colección 'roles'
-            currentPermissions = {
-                "card_mis_tickets": ["Ver Detalle"],
-                "card_enviar_ticket": ["Crear"]
-            };
+        permitidos.forEach(id => {
+            if(document.getElementById(id)) document.getElementById(id).style.display = 'block';
+        });
+
+        document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
+        if(userRole !== "Usuario" && document.getElementById('stats_contadores_visibles')) {
+            document.getElementById('stats_contadores_visibles').style.display = 'flex';
         }
+    }
 
         // 4. Determinar módulos permitidos
         let modulosPermitidos = [];
@@ -586,24 +572,15 @@
     // Lógica de Permisos / Roles
    function checkPermission(modId, action) {
         if(userRole === 'Admin') return true;
-        
-        // Si no hay permisos cargados, denegar
-        if(!currentPermissions) return false;
-
-        // Si el módulo existe en los permisos, verificar la acción
-        if(currentPermissions[modId]) {
-            return currentPermissions[modId].includes(action);
-        }
-        
-        return false;
+        if(!currentPermissions || !currentPermissions[modId]) return false;
+        return currentPermissions[modId].includes(action);
     }
-    
+
     function toggleAccionesRol(modId, activo) {
         const div = document.getElementById(`div_acts_${modId}`);
         if (div) {
             div.style.opacity = activo ? "1" : "0.3";
             div.style.pointerEvents = activo ? "auto" : "none";
-            // Si se desactiva el módulo, desmarcamos todas sus acciones
             if (!activo) {
                 div.querySelectorAll('input').forEach(i => i.checked = false);
             }
@@ -634,19 +611,14 @@
             const rolEncontrado = listaRolesGlobal.find(x => x.id === id);
             if(rolEncontrado) {
                 document.getElementById('rol_nombre').value = rolEncontrado.nombre;
-                
-                // Aumentamos un poco el delay para asegurar que el DOM esté listo
                 setTimeout(() => {
                     const modulosGuardados = rolEncontrado.modulos || [];
                     const accionesPermitidas = rolEncontrado.accionesPermitidas || {};
-
                     modulosGuardados.forEach(modId => {
                         const chkMod = container.querySelector(`.chk-rol-mod[value="${modId}"]`);
                         if (chkMod) {
                             chkMod.checked = true;
-                            toggleAccionesRol(modId, true); // Activa visualmente el panel
-                            
-                            // Marcamos las acciones de este módulo
+                            toggleAccionesRol(modId, true); 
                             const acciones = accionesPermitidas[modId] || [];
                             acciones.forEach(actNom => {
                                 const chkAct = container.querySelector(`.chk-act-rol[data-mod="${modId}"][value="${actNom}"]`);
