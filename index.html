@@ -555,6 +555,7 @@
     }
 
     // Navegación
+    // Navegación
     function abrir(id, mColl = null, mTit = null) {
         document.getElementById('panel-principal').style.display = 'none';
         document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none');
@@ -567,15 +568,23 @@
             currentColl = mColl; 
             document.getElementById('m_titulo').innerText = mTit;
             
-            // --- CORRECCIÓN AQUÍ: Controlar visibilidad del botón Nuevo ---
+            // --- CONTROL DE BOTÓN NUEVO SEGÚN PERMISO "CREAR" ---
             const btnNuevo = document.getElementById('btn_maestro_nuevo');
-            const currentModId = `card_${currentColl === 'inventario' ? 'inv_admin' : (currentColl === 'inventario_salas' ? 'inv_salas' : currentColl)}`;
+            // Mapeamos el nombre de la colección al ID del card para verificar permisos
+            const modIdMap = {
+                'inventario': 'card_inv_admin',
+                'inventario_salas': 'card_inv_salas',
+                'extensiones': 'card_extensiones',
+                'usuarios': 'card_usuarios',
+                'aulas_dti': 'card_aulas',
+                'impresoras': 'card_impresoras'
+            };
+            const currentModId = modIdMap[currentColl] || currentColl;
             
             if(btnNuevo) {
-                // Si tiene permiso de "Crear" o es Admin, se muestra. Si no, se oculta.
+                // Si checkPermission devuelve false para "Crear", ocultamos el botón
                 btnNuevo.style.display = checkPermission(currentModId, "Crear") ? 'flex' : 'none';
             }
-            // --------------------------------------------------------------
 
             const searchBar = document.getElementById('m_search_container');
             searchBar.style.display = 'flex';
@@ -592,26 +601,33 @@
         if(id === 'mod_stats') setTimeout(cargarGraficaActualizada, 350);
         if(id === 'mod_calendario') setTimeout(inicializarCalendario, 300);
         if(id === 'mod_gest_mantenimientos') cargarGestionMantenimientos();
+        
+        // --- CONTROL DE BOTÓN ENVIAR TICKET ---
         if(id === 'mod_enviar_ticket') {
             const btnEnviarTk = document.querySelector('#mod_enviar_ticket .btn-agregar-master');
             if(btnEnviarTk) {
                 btnEnviarTk.style.display = checkPermission("card_enviar_ticket", "Crear") ? 'flex' : 'none';
             }
         }
+    } 
 
     function volver() { 
         localStorage.removeItem('activeModulo');
         localStorage.removeItem('activeParams');
         document.getElementById('panel-principal').style.display = 'grid'; 
         document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none'); 
+        
+        // Resetear visibilidad de botones al volver al panel para evitar errores visuales
+        const btnNuevo = document.getElementById('btn_maestro_nuevo');
+        if(btnNuevo) btnNuevo.style.display = 'none';
     }
 
     // Lógica de Permisos / Roles
     function checkPermission(modId, action) {
         // El administrador maestro siempre tiene permiso total
-        if(user.email === "camicarmona1212@gmail.com") return true;
+        if(user && user.email === "camicarmona1212@gmail.com") return true;
         
-        // Bloqueo explícito de seguridad solicitado
+        // Bloqueo explícito de seguridad para Gestores
         if(userRole === "Gestor" && (action === "Eliminar" || action === "Reasignar")) return false;
 
         if(!currentPermissions || !currentPermissions[modId]) return false;
