@@ -582,9 +582,17 @@
 
     // Lógica de Permisos / Roles
     function checkPermission(modId, action) {
+        // El Admin siempre tiene permiso
         if(userRole === 'Admin') return true;
-        const modPerms = currentPermissions[modId] || [];
-        return modPerms.includes(action);
+        
+        // Buscamos si el módulo existe en los permisos del usuario
+        if(currentPermissions && currentPermissions[modId]) {
+            const accionesMod = currentPermissions[modId];
+            // Solo devolvemos true si la acción específica está en la lista
+            return accionesMod.includes(action);
+        }
+        
+        return false;
     }
 
     function abrirModalRol(modo, id = null) {
@@ -610,7 +618,6 @@
             const r = listaRolesGlobal.find(x => x.id === id);
             if(r) {
                 document.getElementById('rol_nombre').value = r.nombre;
-                // Timeout para asegurar que el DOM de los checkboxes ya existe
                 setTimeout(() => {
                     document.querySelectorAll('.chk-rol-mod').forEach(chk => {
                         if(r.modulos && r.modulos.includes(chk.value)) {
@@ -629,44 +636,23 @@
         document.getElementById('modalRol').style.display = 'block';
     }
 
-    function toggleAccionesRol(modId, checked) {
-        const div = document.getElementById(`div_acts_${modId}`);
-        div.style.opacity = checked ? "1" : "0.3";
-        div.style.pointerEvents = checked ? "auto" : "none";
-        if(!checked) div.querySelectorAll('input').forEach(i => i.checked = false);
-    }
-
     async function guardarRol() {
         const nombre = document.getElementById('rol_nombre').value.trim();
-        // Solo obtenemos los checks de los módulos que están marcados
         const modulosChecks = document.querySelectorAll('.chk-rol-mod:checked');
         const modulos = Array.from(modulosChecks).map(c => c.value);
         
         if(!nombre) return alert("Ingrese el nombre del rol");
-        if(modulos.length === 0) return alert("Seleccione al menos un módulo para este rol");
+        if(modulos.length === 0) return alert("Seleccione al menos un módulo");
 
         let accionesPermitidas = {};
         
-        // Solo recorremos los módulos que el usuario seleccionó
         modulos.forEach(mId => {
             const accionesChecks = document.querySelectorAll(`.chk-act-rol[data-mod="${mId}"]:checked`);
-            const accionesSeleccionadas = Array.from(accionesChecks).map(a => a.value);
-            
-            // Solo guardamos la entrada en el objeto si hay acciones marcadas
-            if (accionesSeleccionadas.length > 0) {
-                accionesPermitidas[mId] = accionesSeleccionadas;
-            } else {
-                // Si quieres que el módulo sea visible pero NO tenga acciones, 
-                // guardamos un array vacío explícitamente
-                accionesPermitidas[mId] = [];
-            }
+            // Guardamos el array de acciones (estará vacío si no marcó ninguna)
+            accionesPermitidas[mId] = Array.from(accionesChecks).map(a => a.value);
         });
 
-        const data = { 
-            nombre: nombre, 
-            modulos: modulos, 
-            accionesPermitidas: accionesPermitidas 
-        };
+        const data = { nombre, modulos, accionesPermitidas };
 
         try {
             if(modoModal === 'nuevo') {
@@ -676,10 +662,9 @@
             }
             cerrarModales(); 
             alert("Rol guardado con éxito");
-            verificarRol(); // Refresca la vista inmediatamente
+            verificarRol(); 
         } catch (e) {
-            console.error("Error al guardar rol:", e);
-            alert("Error al guardar: " + e.message);
+            alert("Error: " + e.message);
         }
     }
 
