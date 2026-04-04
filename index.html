@@ -401,11 +401,12 @@
             listaRolesGlobal = [];
             snap.forEach(doc => {
                 const data = doc.data();
-                listaRolesGlobal.push({id: doc.id, ...data});
+                if (data.nombre !== "Supervisor") {
+                    listaRolesGlobal.push({id: doc.id, ...data});
+                }
             });
             renderTablaRoles();
-            // Esto asegura que una vez carguen los roles, se refresque la vista del usuario
-            if(user) await verificarRol(); 
+            if(user) verificarRol();
         });
     }
 
@@ -436,14 +437,13 @@
     }
 
     async function verificarRol() {
-        // 1. Limpieza inicial: Ocultar todo
+        // 1. Ocultar todo por defecto antes de evaluar
         document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
-        const statsHeader = document.getElementById('stats_contadores_visibles');
-        if(statsHeader) statsHeader.style.display = 'none';
+        if(document.getElementById('stats_contadores_visibles')) {
+            document.getElementById('stats_contadores_visibles').style.display = 'none';
+        }
 
-        // 2. Identificación de Identidad y Rol
-        if (!user) return;
-        
+        // 2. Identificar al usuario y su rol
         const q = await db.collection("usuarios").where("cor", "==", user.email).get();
         
         if (user.email === "camicarmona1212@gmail.com") {
@@ -460,42 +460,55 @@
 
         document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
         
-        // 3. Determinar qué módulos mostrar
-        let modulosFinales = [];
-
-        if (userRole === "Admin") {
-            // Acceso total
-            modulosFinales = MODULOS_SISTEMA.map(m => m.id);
-        } else {
-            // Acceso por Rol en BD o por defecto
-            const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
-            if(rolDB && rolDB.modulos) {
-                modulosFinales = rolDB.modulos;
-                currentPermissions = rolDB.accionesPermitidas || {};
-            } else if (userRole === "Gestor") {
-                modulosFinales = ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_inv_admin", "card_inv_salas", "card_extensiones", "card_aulas", "card_impresoras", "card_gest_mantenimientos"];
-            } else {
-                modulosFinales = ["card_mis_tickets", "card_enviar_ticket"];
-            }
+        // 3. Buscar permisos del rol en la base de datos
+        const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
+        if(rolDB) {
+            currentPermissions = rolDB.accionesPermitidas || {};
+        } else if (userRole === "Gestor") {
+            // Permisos por defecto para Gestor si no está en la colección roles
+            currentPermissions = {
+                "card_mis_tickets": ["Ver Detalle"],
+                "card_enviar_ticket": ["Crear"],
+                "card_admin_tickets": ["Editar", "Finalizar", "Ver Detalle"],
+                "card_historico_cerrados": ["Ver Detalle"],
+                "card_inv_admin": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_inv_salas": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_extensiones": ["Crear", "Editar", "Ver Detalle"],
+                "card_calendario": ["Ver"],
+                "card_aulas": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_impresoras": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_gest_mantenimientos": ["Editar"]
+            };
         }
 
-        // 4. Hacer visibles los módulos permitidos
-        modulosFinales.forEach(id => {
-            const el = document.getElementById(id);
-            if(el) el.style.display = 'block';
+        // 4. Determinar qué tarjetas mostrar
+        let modulosPermitidos = [];
+        if(userRole === "Admin") {
+            modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
+        } else if(rolDB && rolDB.modulos) {
+            modulosPermitidos = rolDB.modulos;
+        } else {
+            const vDefault = { 
+                "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_historico_cerrados", "card_inv_admin", "card_inv_salas", "card_extensiones", "card_calendario", "card_aulas", "card_impresoras", "card_gest_mantenimientos"],
+                "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
+            };
+            modulosPermitidos = vDefault[userRole] || vDefault["Usuario"];
+        }
+
+        // 5. Aplicar visibilidad en el HTML
+        modulosPermitidos.forEach(id => { 
+            if(document.getElementById(id)) document.getElementById(id).style.display = 'block'; 
         });
 
-        // Mostrar estadísticas si no es usuario raso
-        if(userRole !== "Usuario" && statsHeader) {
-            statsHeader.style.display = 'flex';
+        if(userRole !== "Usuario" && document.getElementById('stats_contadores_visibles')) {
+            document.getElementById('stats_contadores_visibles').style.display = 'flex';
         }
     }
-
-    // --- FUNCIONES DE TICKETS Y MANTENIMIENTOS ---
-
+    // Lógica para Histórico de Cerrados
     async function cargarHistoricoCerrados() {
         const tb = document.getElementById('tbody_historico_cerrados');
         tb.innerHTML = "<tr><td colspan='8' style='text-align:center;'>Cargando historial...</td></tr>";
+        
         db.collection("tickets").where("estado", "==", "Cerrado").onSnapshot(snap => {
             dataHistoricoCerrados = [];
             snap.forEach(doc => dataHistoricoCerrados.push({id: doc.id, ...doc.data()}));
@@ -509,7 +522,17 @@
         data.forEach(t => {
             let btnDet = checkPermission("card_historico_cerrados", "Ver Detalle") ? `<button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${t.id}')"><i class="fas fa-eye"></i></button>` : "";
             let btnDel = (userRole === "Admin") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${t.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : "";
-            tb.innerHTML += `<tr><td>#${t.id.substring(0,5)}</td><td><b>${t.solicitante}</b></td><td>${t.tipo}</td><td>${t.dependencia}</td><td>${t.prioridad}</td><td>${t.campus}</td><td>${t.asignado}</td><td>${btnDet}${btnDel}</td></tr>`;
+            
+            tb.innerHTML += `<tr>
+                <td>#${t.id.substring(0,5)}</td>
+                <td><b>${t.solicitante}</b></td>
+                <td>${t.tipo}</td>
+                <td>${t.dependencia}</td>
+                <td>${t.prioridad}</td>
+                <td>${t.campus}</td>
+                <td>${t.asignado}</td>
+                <td>${btnDet}${btnDel}</td>
+            </tr>`;
         });
         if(data.length === 0) tb.innerHTML = "<tr><td colspan='8' style='text-align:center;'>No se encontraron tickets cerrados</td></tr>";
     }
@@ -518,20 +541,28 @@
         const dep = document.getElementById('filtro_hist_dep').value.toLowerCase();
         const campus = document.getElementById('filtro_hist_campus').value;
         const gestor = document.getElementById('filtro_hist_gestor').value;
+
         const filtrados = dataHistoricoCerrados.filter(t => {
-            return (t.dependencia.toLowerCase().includes(dep)) && (campus === "" || t.campus === campus) && (gestor === "" || t.asignado === gestor);
+            return (t.dependencia.toLowerCase().includes(dep)) &&
+                   (campus === "" || t.campus === campus) &&
+                   (gestor === "" || t.asignado === gestor);
         });
         renderTablaHistorico(filtrados);
     }
 
+    // Navegación
     function abrir(id, mColl = null, mTit = null) {
         document.getElementById('panel-principal').style.display = 'none';
         document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none');
         document.getElementById(id).style.display = 'block';
+        
         localStorage.setItem('activeModulo', id);
         localStorage.setItem('activeParams', JSON.stringify({coll: mColl, tit: mTit}));
+
         if(mColl) {
             currentColl = mColl; document.getElementById('m_titulo').innerText = mTit;
+            const searchBar = document.getElementById('m_search_container');
+            searchBar.style.display = 'flex';
             db.collection(currentColl).onSnapshot(s => { localData = []; s.forEach(d => localData.push({id: d.id, ...d.data()})); renderTablaMaestra(); });
         }
         if(id === 'mod_mis_tickets') cargarMisTickets();
@@ -542,38 +573,374 @@
         if(id === 'mod_gest_mantenimientos') cargarGestionMantenimientos();
     }
 
-    function volver() { 
+    function volver() { 
         localStorage.removeItem('activeModulo');
         localStorage.removeItem('activeParams');
-        document.getElementById('panel-principal').style.display = 'grid'; 
-        document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none'); 
+        document.getElementById('panel-principal').style.display = 'grid'; 
+        document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none'); 
     }
 
+    // Lógica de Permisos / Roles
     function checkPermission(modId, action) {
         if(userRole === 'Admin') return true;
         const modPerms = currentPermissions[modId] || [];
         return modPerms.includes(action);
     }
 
+    function abrirModalRol(modo, id = null) {
+        modoModal = modo; selectedId = id;
+        document.getElementById('rol_modal_title').innerText = modo === 'nuevo' ? "Crear Nuevo Rol" : "Editar Rol";
+        document.getElementById('rol_nombre').value = "";
+        const container = document.getElementById('chk_modulos_container');
+        container.innerHTML = "";
+        
+        MODULOS_SISTEMA.forEach(m => {
+            container.innerHTML += `
+                <div class="role-block">
+                    <label class="role-option">
+                        <input type="checkbox" class="chk-rol-mod" value="${m.id}" onchange="toggleAccionesRol('${m.id}', this.checked)"> ${m.nom}
+                    </label>
+                    <div class="actions-sub-grid" id="div_acts_${m.id}" style="opacity:0.3; pointer-events:none;">
+                        ${m.acts.map(a => `<label class="action-item"><input type="checkbox" class="chk-act-rol" data-mod="${m.id}" value="${a}"> ${a}</label>`).join('')}
+                    </div>
+                </div>`;
+        });
+
+        if(modo === 'editar') {
+            const r = listaRolesGlobal.find(x => x.id === id);
+            document.getElementById('rol_nombre').value = r.nombre;
+            document.querySelectorAll('.chk-rol-mod').forEach(chk => {
+                if(r.modulos.includes(chk.value)) {
+                    chk.checked = true;
+                    toggleAccionesRol(chk.value, true);
+                    const savedActs = r.accionesPermitidas ? r.accionesPermitidas[chk.value] || [] : [];
+                    document.querySelectorAll(`.chk-act-rol[data-mod="${chk.value}"]`).forEach(aCheck => {
+                        if(savedActs.includes(aCheck.value)) aCheck.checked = true;
+                    });
+                }
+            });
+        }
+        document.getElementById('btn_guardar_rol').onclick = guardarRol;
+        document.getElementById('modalRol').style.display = 'block';
+    }
+
     function toggleAccionesRol(modId, checked) {
         const div = document.getElementById(`div_acts_${modId}`);
-        if(!div) return;
         div.style.opacity = checked ? "1" : "0.3";
         div.style.pointerEvents = checked ? "auto" : "none";
         if(!checked) div.querySelectorAll('input').forEach(i => i.checked = false);
     }
 
-    async function eliminarMnt(coll, eid, mid) { if(confirm("¿Eliminar mantenimiento?")) { await db.collection(coll).doc(eid).collection("mantenimientos").doc(mid).delete(); cargarGestionMantenimientos(); } }
+    async function guardarRol() {
+        const nombre = document.getElementById('rol_nombre').value.trim();
+        const modulosChecks = document.querySelectorAll('.chk-rol-mod:checked');
+        const modulos = Array.from(modulosChecks).map(c => c.value);
+        
+        if(!nombre) return alert("Ingrese el nombre del rol");
+        if(modulos.length === 0) return alert("Seleccione al menos un módulo");
 
-    function abrirMantenimiento(id) { selectedId = id; document.getElementById('modalMantenimiento').style.display='block'; }
-    
-    async function guardarMantenimiento() {
-        const f = document.getElementById('mnt_fecha').value; const t = document.getElementById('mnt_tipo').value; const d = document.getElementById('mnt_desc').value;
-        if(!f || !d) return alert("Complete los campos");
-        await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ fecha: f, tipo: t, desc: d });
-        cerrarModales(); alert("Mantenimiento guardado");
+        let accionesPermitidas = {};
+        modulos.forEach(mId => {
+            const accionesChecks = document.querySelectorAll(`.chk-act-rol[data-mod="${mId}"]:checked`);
+            accionesPermitidas[mId] = Array.from(accionesChecks).map(a => a.value);
+        });
+
+        const data = { nombre, modulos, accionesPermitidas };
+
+        try {
+            if(modoModal === 'nuevo') {
+                await db.collection("roles").add(data);
+            } else {
+                await db.collection("roles").doc(selectedId).update(data);
+            }
+            cerrarModales(); 
+            alert("Rol guardado con éxito");
+            // Llamamos a verificarRol para que los cambios se vean sin recargar
+            verificarRol();
+        } catch (e) {
+            alert("Error al guardar: " + e.message);
+        }
     }
 
+    function renderTablaRoles() {
+        const tb = document.getElementById('tbody_roles');
+        if(!tb) return;
+        tb.innerHTML = "";
+        listaRolesGlobal.forEach(r => {
+            // Validación para evitar errores de lectura si los datos vienen mal de BD
+            const modulosCount = r.modulos ? r.modulos.length : 0;
+            
+            tb.innerHTML += `<tr>
+                <td><b>${r.nombre}</b></td>
+                <td>${modulosCount} módulos asignados</td>
+                <td>
+                    <button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')" title="Editar"><i class="fas fa-edit"></i></button>
+                    <button class="btn-acc bg-d-red" onclick="eliminarRol('${r.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`;
+        });
+    }
+
+    async function eliminarRol(id) {
+        if(confirm("¿Eliminar este rol?")) await db.collection("roles").doc(id).delete();
+    }
+
+    // Funciones de Tickets
+    async function enviarTicket() {
+        const nom = document.getElementById('tk_nom_user').value;
+        const d = document.getElementById('tk_desc').value;
+        if(!nom || !d) return alert("Complete los campos.");
+        let asig = "Pendiente";
+        if(listaGestoresGlobal.length > 0) asig = listaGestoresGlobal[Math.floor(Math.random() * listaGestoresGlobal.length)].nom;
+        await db.collection("tickets").add({ 
+            solicitante: nom, 
+            usuario: user.email, 
+            campus: document.getElementById('tk_campus').value, 
+            prioridad: document.getElementById('tk_prioridad').value, 
+            dependencia: document.getElementById('tk_dep').value, 
+            tipo: document.getElementById('tk_tipo').value, 
+            desc: d, 
+            estado: "Abierto", 
+            asignado: asig, 
+            fecha: new Date().toLocaleString() 
+        });
+        alert("Ticket enviado exitosamente"); volver();
+    }
+
+    function cargarTicketsAdmin() {
+        const tb = document.getElementById('tbody_admin_tickets');
+        db.collection("tickets").onSnapshot(snap => {
+            tb.innerHTML = ""; 
+            snap.forEach(doc => {
+                const t = doc.data(); 
+                if(t.estado === "Cerrado") return;
+                if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
+                
+                let btnDet = checkPermission("card_admin_tickets", "Ver Detalle") ? `<button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>` : "";
+                let btnEdit = checkPermission("card_admin_tickets", "Editar") ? `<button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>` : "";
+                let btnRe = checkPermission("card_admin_tickets", "Reasignar") ? `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : "";
+                let btnFin = checkPermission("card_admin_tickets", "Finalizar") ? `<button class="btn-acc bg-c-green" onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>` : "";
+                let btnDel = checkPermission("card_admin_tickets", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : "";
+                
+                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado}</td><td>${btnDet}${btnEdit}${btnRe}${btnFin}${btnDel}</td></tr>`;
+            });
+        });
+    }
+
+    async function verDetalleTicket(id) { 
+        const doc = await db.collection("tickets").doc(id).get(); 
+        const t = doc.data(); 
+        document.getElementById('detalle_content').innerHTML = `
+            <div style="text-align:left; line-height:1.6;">
+                <p><b>ID Ticket:</b> #${id}</p>
+                <p><b>Solicitado por:</b> ${t.solicitante}</p>
+                <p><b>Campus:</b> ${t.campus}</p>
+                <p><b>Dependencia:</b> ${t.dependencia}</p>
+                <p><b>Tipo:</b> ${t.tipo}</p>
+                <p><b>Prioridad:</b> ${t.prioridad}</p>
+                <p><b>Descripción:</b> ${t.desc}</p>
+                <hr>
+                <p><b>Gestor Asignado:</b> ${t.asignado}</p>
+                <p><b>Estado:</b> <span style="color:var(--primary); font-weight:bold;">${t.estado}</span></p>
+                <p><b>Fecha Reporte:</b> ${t.fecha}</p>
+                <p><b>Solución / Respuesta:</b><br><span style="color:var(--success);">${t.respuesta || 'Sin respuesta aún.'}</span></p>
+                ${t.fecha_cierre ? `<p><b>Fecha Cierre:</b> ${t.fecha_cierre}</p>` : ''}
+            </div>`; 
+        document.getElementById('modalVerTicket').style.display = 'block'; 
+    }
+
+    async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
+    
+    function abrirModalCierre(id) { selectedId = id; document.getElementById('tk_respuesta_cierre').value = ""; document.getElementById('modalCerrarTicket').style.display = 'block'; }
+    
+    async function ejecutarCierreConComentario() { 
+        const r = document.getElementById('tk_respuesta_cierre').value; 
+        if(!r) return alert("Por favor escriba la solución.");
+        await db.collection("tickets").doc(selectedId).update({ 
+            estado: "Cerrado", 
+            respuesta: r, 
+            fecha_cierre: new Date().toLocaleString() 
+        }); 
+        cerrarModales(); 
+        alert("Ticket cerrado correctamente.");
+    }
+
+    async function eliminar(id, coll) { 
+        if(confirm("¿Seguro que desea eliminar este registro permanentemente?")) {
+            await db.collection(coll || currentColl).doc(id).delete();
+            alert("Eliminado con éxito");
+        }
+    }
+
+    // Funciones Maestras (Inventarios, Usuarios, etc.)
+    function renderTablaMaestra(dataFiltrada = null) {
+        const b = document.getElementById('m_tbody'); b.innerHTML = "";
+        const h = document.getElementById('m_thead');
+        const displayData = dataFiltrada || localData;
+        const modId = localStorage.getItem('activeModulo') === 'mod_maestro' ? `card_${currentColl}` : "";
+        
+        if(currentColl === 'extensiones') {
+            h.innerHTML = `<tr><th>Nombre</th><th>Dependencia</th><th>Extensión</th><th>Tipo</th><th>Acciones</th></tr>`;
+            displayData.forEach(e => {
+                let btns = `<button class="btn-acc bg-v-gray" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
+                if(checkPermission("card_extensiones", "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
+                b.innerHTML += `<tr><td><b>${e.nom}</b></td><td>${e.dep}</td><td>${e.ext}</td><td>${e.tipo_ext}</td><td>${btns}</td></tr>`;
+            });
+        } else if(currentColl === 'usuarios') {
+            h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
+            displayData.forEach(e => { 
+                let btns = `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
+                b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td><td>${btns}</td></tr>`; 
+            });
+        } else {
+            h.innerHTML = `<tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Serial</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Acciones</th></tr>`;
+            displayData.forEach(e => {
+                let btns = `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
+                btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
+                if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
+                b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
+            });
+        }
+    }
+
+    function verOjitoExtension(id) {
+        const d = localData.find(x => x.id === id);
+        document.getElementById('ver_gral_titulo').innerText = "Información de Extensión";
+        document.getElementById('ver_gral_contenido').innerHTML = `<p><b>Nombre:</b> ${d.nom}</p><p><b>Dependencia:</b> ${d.dep}</p><p><b>Extensión:</b> ${d.ext}</p><p><b>Tipo:</b> ${d.tipo_ext}</p>`;
+        document.getElementById('modalVerGeneral').style.display = 'block';
+    }
+
+    function abrirModalRegistro(modo, id = null) {
+        modoModal = modo; selectedId = id;
+        const f = document.getElementById('form_dinamico');
+        f.innerHTML = "";
+        let fields = [];
+        if(currentColl === 'extensiones') {
+            fields = [["Nombre","nom"],["Dependencia","dep"],["Extensión (4 dígitos)","ext"],["Tipo Extensión","tipo_ext","select",["Zoiper","Telefono fijo"]]];
+        } else if(currentColl === 'usuarios') {
+            const roles = ["Admin", "Gestor", "Usuario", ...listaRolesGlobal.map(r => r.nombre)];
+            fields = [["Nombre","nom"],["Correo","cor"],["Rol","rol","select", [...new Set(roles)]]];
+        } else {
+            fields = [["Nombre Equipo","nom"],["Tipo","tip"],["Modelo","mod"],["Serial","ser"],["Responsable","res"],["Dependencia","dep"],["Campus","cam","select",["Bucaramanga","Bogotá","Tunja"]]];
+        }
+
+        fields.forEach(x => {
+            let inp = x[2] === "select" ? `<select id="${x[1]}">${x[3].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>` : `<input type="text" id="${x[1]}" placeholder="${x[0]}">`;
+            f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${inp}</div>`;
+        });
+
+        if(modo==='editar') {
+            const d = localData.find(x=>x.id===id);
+            setTimeout(()=>Object.keys(d).forEach(k=>{if(document.getElementById(k)) document.getElementById(k).value=d[k]}),50);
+        }
+        document.getElementById('modalRegistro').style.display='block';
+    }
+
+    async function guardarDatoMaestro() {
+        let o = {};
+        document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => o[i.id] = i.value);
+        if(modoModal === 'editar') await db.collection(currentColl).doc(selectedId).update(o);
+        else await db.collection(currentColl).add(o);
+        cerrarModales(); alert("Registro guardado");
+    }
+
+    // Estadísticas
+    async function cargarGraficaActualizada() {
+        const f = document.getElementById('filtro_stats').value;
+        const ctx = document.getElementById('miGrafica').getContext('2d');
+        if(miChart) miChart.destroy();
+        const snap = await db.collection("tickets").get();
+        let conteo = {};
+        snap.forEach(doc => { let val = doc.data()[f] || "N/A"; conteo[val] = (conteo[val] || 0) + 1; });
+        miChart = new Chart(ctx, { 
+            type: 'doughnut', 
+            data: { labels: Object.keys(conteo), datasets: [{ data: Object.values(conteo), backgroundColor: ['#2563eb', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#00bcd4'] }] },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+
+    // Calendario y Mantenimientos
+    async function inicializarCalendario() {
+        const calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth', locale: 'es',
+            events: async function(info, success) {
+                const evs = [];
+                const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti"];
+                for(let coll of colecciones) {
+                    const snapEquipos = await db.collection(coll).get();
+                    for(let docE of snapEquipos.docs) {
+                        const mnts = await db.collection(coll).doc(docE.id).collection("mantenimientos").get();
+                        mnts.forEach(m => {
+                            const d = m.data();
+                            evs.push({ title: `${d.tipo}: ${docE.data().nom || 'Equipo'}`, start: d.fecha, backgroundColor: d.tipo === 'Preventivo' ? '#8b5cf6' : '#ef4444' });
+                        });
+                    }
+                }
+                success(evs);
+            }
+        });
+        calendar.render();
+    }
+
+    async function cargarGestionMantenimientos() {
+        const tb = document.getElementById('tbody_gest_mantenimientos');
+        tb.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando mantenimientos...</td></tr>";
+        const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti"];
+        let htmlContent = "";
+
+        for(let coll of colecciones) {
+            const equipos = await db.collection(coll).get();
+            for(let equip of equipos.docs) {
+                const eData = equip.data();
+                const mnts = await db.collection(coll).doc(equip.id).collection("mantenimientos").get();
+                mnts.forEach(m => {
+                    const mData = m.data();
+                    
+                    // Botón Editar: Visible para Admin y Gestores
+                    let btnEdit = (userRole === "Admin" || userRole === "Gestor") ? 
+                        `<button class="btn-acc bg-info-e" onclick="abrirEditarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-edit"></i></button>` : "";
+                    
+                    // Botón Eliminar: SOLO Administradores
+                    let btnDel = (userRole === "Admin") ? 
+                        `<button class="btn-acc bg-d-red" onclick="eliminarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-trash"></i></button>` : "";
+                    
+                    htmlContent += `<tr>
+                        <td>${mData.fecha}</td>
+                        <td><b>${eData.nom || 'S/N'}</b></td>
+                        <td>${coll.replace('_', ' ').toUpperCase()}</td>
+                        <td>${mData.tipo}</td>
+                        <td>${mData.desc}</td>
+                        <td>${btnEdit}${btnDel}</td>
+                    </tr>`;
+                });
+            }
+        }
+        tb.innerHTML = htmlContent || "<tr><td colspan='6' style='text-align:center;'>No hay registros</td></tr>";
+    }
+
+    async function eliminarMnt(coll, eid, mid) { if(confirm("¿Eliminar mantenimiento?")) { await db.collection(coll).doc(eid).collection("mantenimientos").doc(mid).delete(); cargarGestionMantenimientos(); } }
+
+    async function verHistorial(id) {
+        const content = document.getElementById('historial_content');
+        const snap = await db.collection(currentColl).doc(id).collection("mantenimientos").orderBy("fecha","desc").get();
+        content.innerHTML = snap.empty ? "<p>Sin registros</p>" : "";
+        snap.forEach(doc => { const d = doc.data(); content.innerHTML += `<div class="mantenimiento-item"><b>${d.fecha}</b> - ${d.tipo}<br>${d.desc}</div>`; });
+        document.getElementById('modalHistorial').style.display='block';
+    }
+
+    function abrirMantenimiento(id) { selectedId = id; document.getElementById('modalMantenimiento').style.display='block'; }
+    async function guardarMantenimiento() {
+        const f = document.getElementById('mnt_fecha').value; const t = document.getElementById('mnt_tipo').value; const d = document.getElementById('mnt_desc').value;
+        await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ fecha: f, tipo: t, desc: d });
+        cerrarModales(); alert("Guardado");
+    }
+
+    // Auxiliares
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { localStorage.clear(); auth.signOut().then(() => location.reload()); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
@@ -581,27 +948,40 @@
     function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); document.getElementById('modalReasignar').style.display = 'block'; }
     async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); }
 
+   // Función para cargar datos en el modal de edición
     async function abrirEditarMnt(coll, equipId, mntId) {
-        selectedCollMnt = coll; selectedEquipIdMnt = equipId; selectedMntId = mntId;
+        selectedCollMnt = coll; 
+        selectedEquipIdMnt = equipId; 
+        selectedMntId = mntId;
+        
         const doc = await db.collection(coll).doc(equipId).collection("mantenimientos").doc(mntId).get();
         const d = doc.data();
+        
         document.getElementById('mnt_fecha').value = d.fecha;
         document.getElementById('mnt_tipo').value = d.tipo;
         document.getElementById('mnt_desc').value = d.desc;
+        
         document.getElementById('mnt_modal_title').innerText = "Editar Mantenimiento";
+        // Cambiamos el comportamiento del botón guardar del modal
         document.getElementById('btn_guardar_mnt').onclick = ejecutarUpdateMnt;
         document.getElementById('modalMantenimiento').style.display = 'block';
     }
 
+    // Función para ejecutar la actualización en Firebase
     async function ejecutarUpdateMnt() {
         const f = document.getElementById('mnt_fecha').value;
         const t = document.getElementById('mnt_tipo').value;
         const d = document.getElementById('mnt_desc').value;
+
         if(!f || !d) return alert("Por favor complete todos los campos.");
-        await db.collection(selectedCollMnt).doc(selectedEquipIdMnt).collection("mantenimientos").doc(selectedMntId).update({ fecha: f, tipo: t, desc: d });
+
+        await db.collection(selectedCollMnt).doc(selectedEquipIdMnt).collection("mantenimientos").doc(selectedMntId).update({
+            fecha: f, tipo: t, desc: d
+        });
+
         cerrarModales();
-        alert("Mantenimiento actualizado");
-        cargarGestionMantenimientos();
+        alert("Mantenimiento actualizado correctamente");
+        cargarGestionMantenimientos(); // Recargar la tabla
     }
 </script>
 </body>
