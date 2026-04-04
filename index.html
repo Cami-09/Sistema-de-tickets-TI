@@ -590,6 +590,29 @@
 
         if(modo === 'editar') {
             const r = listaRolesGlobal.find(x => x.id === id);
+            if(r) {
+                document.getElementById('rol_nombre').value = r.nombre;
+                // Usamos un pequeño timeout para asegurar que el DOM se renderizó antes de marcar
+                setTimeout(() => {
+                    document.querySelectorAll('.chk-rol-mod').forEach(chk => {
+                        if(r.modulos && r.modulos.includes(chk.value)) {
+                            chk.checked = true;
+                            toggleAccionesRol(chk.value, true);
+                            const savedActs = r.accionesPermitidas ? r.accionesPermitidas[chk.value] || [] : [];
+                            document.querySelectorAll(`.chk-act-rol[data-mod="${chk.value}"]`).forEach(aCheck => {
+                                if(savedActs.includes(aCheck.value)) aCheck.checked = true;
+                            });
+                        }
+                    });
+                }, 50);
+            }
+        }
+        document.getElementById('btn_guardar_rol').onclick = guardarRol;
+        document.getElementById('modalRol').style.display = 'block';
+    }
+
+        if(modo === 'editar') {
+            const r = listaRolesGlobal.find(x => x.id === id);
             document.getElementById('rol_nombre').value = r.nombre;
             document.querySelectorAll('.chk-rol-mod').forEach(chk => {
                 if(r.modulos.includes(chk.value)) {
@@ -615,17 +638,36 @@
 
     async function guardarRol() {
         const nombre = document.getElementById('rol_nombre').value;
-        const modulos = Array.from(document.querySelectorAll('.chk-rol-mod:checked')).map(c => c.value);
+        const modulosChecks = document.querySelectorAll('.chk-rol-mod:checked');
+        const modulos = Array.from(modulosChecks).map(c => c.value);
+        
         if(!nombre) return alert("Ingrese el nombre del rol");
+        if(modulos.length === 0) return alert("Seleccione al menos un módulo");
+
         let accionesPermitidas = {};
-        modulos.forEach(m => {
-            accionesPermitidas[m] = Array.from(document.querySelectorAll(`.chk-act-rol[data-mod="${m}"]:checked`)).map(a => a.value);
+        modulos.forEach(mId => {
+            const accionesChecks = document.querySelectorAll(`.chk-act-rol[data-mod="${mId}"]:checked`);
+            accionesPermitidas[mId] = Array.from(accionesChecks).map(a => a.value);
         });
-        const data = { nombre, modulos, accionesPermitidas };
-        if(modoModal === 'nuevo') await db.collection("roles").add(data);
-        else await db.collection("roles").doc(selectedId).update(data);
-        cerrarModales(); 
-        alert("Rol guardado con éxito");
+
+        const data = { 
+            nombre: nombre, 
+            modulos: modulos, 
+            accionesPermitidas: accionesPermitidas 
+        };
+
+        try {
+            if(modoModal === 'nuevo') {
+                await db.collection("roles").add(data);
+            } else {
+                await db.collection("roles").doc(selectedId).update(data);
+            }
+            cerrarModales(); 
+            alert("Rol guardado y aplicado con éxito");
+        } catch (error) {
+            console.error("Error al guardar rol:", error);
+            alert("Error al guardar en la base de datos");
+        }
     }
 
     function renderTablaRoles() {
@@ -633,15 +675,13 @@
         if(!tb) return;
         tb.innerHTML = "";
         listaRolesGlobal.forEach(r => {
-            // Validación para evitar errores de lectura si los datos vienen mal de BD
-            const modulosCount = r.modulos ? r.modulos.length : 0;
-            
+            const modulosNombres = r.modulos ? r.modulos.length : 0;
             tb.innerHTML += `<tr>
                 <td><b>${r.nombre}</b></td>
-                <td>${modulosCount} módulos asignados</td>
+                <td><span class="tk-status bg-p-orange" style="position:static;">${modulosNombres} Módulos</span></td>
                 <td>
-                    <button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')" title="Editar"><i class="fas fa-edit"></i></button>
-                    <button class="btn-acc bg-d-red" onclick="eliminarRol('${r.id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    <button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')" title="Editar Rol"><i class="fas fa-edit"></i></button>
+                    <button class="btn-acc bg-d-red" onclick="eliminarRol('${r.id}')" title="Eliminar Rol"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>`;
         });
