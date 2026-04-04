@@ -564,18 +564,40 @@
         localStorage.setItem('activeParams', JSON.stringify({coll: mColl, tit: mTit}));
 
         if(mColl) {
-            currentColl = mColl; document.getElementById('m_titulo').innerText = mTit;
+            currentColl = mColl; 
+            document.getElementById('m_titulo').innerText = mTit;
+            
+            // --- CORRECCIÓN AQUÍ: Controlar visibilidad del botón Nuevo ---
+            const btnNuevo = document.getElementById('btn_maestro_nuevo');
+            const currentModId = `card_${currentColl === 'inventario' ? 'inv_admin' : (currentColl === 'inventario_salas' ? 'inv_salas' : currentColl)}`;
+            
+            if(btnNuevo) {
+                // Si tiene permiso de "Crear" o es Admin, se muestra. Si no, se oculta.
+                btnNuevo.style.display = checkPermission(currentModId, "Crear") ? 'flex' : 'none';
+            }
+            // --------------------------------------------------------------
+
             const searchBar = document.getElementById('m_search_container');
             searchBar.style.display = 'flex';
-            db.collection(currentColl).onSnapshot(s => { localData = []; s.forEach(d => localData.push({id: d.id, ...d.data()})); renderTablaMaestra(); });
+            db.collection(currentColl).onSnapshot(s => { 
+                localData = []; 
+                s.forEach(d => localData.push({id: d.id, ...d.data()})); 
+                renderTablaMaestra(); 
+            });
         }
+        
         if(id === 'mod_mis_tickets') cargarMisTickets();
         if(id === 'mod_admin_tickets') cargarTicketsAdmin();
         if(id === 'mod_historico_cerrados') cargarHistoricoCerrados();
         if(id === 'mod_stats') setTimeout(cargarGraficaActualizada, 350);
         if(id === 'mod_calendario') setTimeout(inicializarCalendario, 300);
         if(id === 'mod_gest_mantenimientos') cargarGestionMantenimientos();
-    }
+        if(id === 'mod_enviar_ticket') {
+            const btnEnviarTk = document.querySelector('#mod_enviar_ticket .btn-agregar-master');
+            if(btnEnviarTk) {
+                btnEnviarTk.style.display = checkPermission("card_enviar_ticket", "Crear") ? 'flex' : 'none';
+            }
+        }
 
     function volver() { 
         localStorage.removeItem('activeModulo');
