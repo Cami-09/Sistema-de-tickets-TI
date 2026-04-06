@@ -611,6 +611,32 @@
         }
     } 
 
+    // --- CORRECCIÓN: Función para visualizar tarjetas en Mis Tickets ---
+    function cargarMisTickets() {
+        const container = document.getElementById('mis_tk_container');
+        if (!container) return;
+        
+        db.collection("tickets").where("usuario", "==", user.email).onSnapshot(snap => {
+            container.innerHTML = "";
+            if (snap.empty) {
+                container.innerHTML = "<p style='text-align:center; grid-column: 1/-1;'>No tienes tickets registrados.</p>";
+                return;
+            }
+            snap.forEach(doc => {
+                const t = doc.data();
+                const col = t.estado === "Abierto" ? "var(--primary)" : (t.estado === "Cerrado" ? "var(--success)" : "var(--warning)");
+                container.innerHTML += `
+                    <div class="card tk-card" style="display:block;" onclick="verDetalleTicket('${doc.id}')">
+                        <div class="tk-status" style="background:${col}">${t.estado}</div>
+                        <strong>#${doc.id.substring(0,6)}</strong><br>
+                        <small><b>Tipo:</b> ${t.tipo}</small><br>
+                        <small><b>Fecha:</b> ${t.fecha}</small>
+                        <p style="font-size:0.75rem; margin-top:10px;">${t.desc.substring(0,80)}...</p>
+                    </div>`;
+            });
+        });
+    }
+    
     function volver() { 
         localStorage.removeItem('activeModulo');
         localStorage.removeItem('activeParams');
