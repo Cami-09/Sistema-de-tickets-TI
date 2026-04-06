@@ -838,6 +838,7 @@
     }
 
     // Funciones Maestras (Inventarios, Usuarios, etc.)
+    // --- FUNCIÓN renderTablaMaestra CORREGIDA ---
     function renderTablaMaestra(dataFiltrada = null) {
         const b = document.getElementById('m_tbody'); 
         if(!b) return;
@@ -867,7 +868,50 @@
                 b.innerHTML += `<tr><td><b>${e.nom}</b></td><td>${e.dep}</td><td>${e.ext}</td><td>${e.tipo_ext}</td><td>${btns}</td></tr>`;
             });
         } 
-    }
+        else if(currentColl === 'usuarios') {
+            h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
+            displayData.forEach(e => { 
+                let btns = "";
+                if(checkPermission("card_usuarios", "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
+                b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td><td>${btns}</td></tr>`; 
+            });
+        } 
+        else {
+            // Inventarios generales (Admin, Salas, Impresoras, Aulas)
+            h.innerHTML = `<tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Serial</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Acciones</th></tr>`;
+            
+            const modIdMap = {
+                'inventario': 'card_inv_admin',
+                'inventario_salas': 'card_inv_salas',
+                'aulas_dti': 'card_aulas',
+                'impresoras': 'card_impresoras'
+            };
+            const activeModId = modIdMap[currentColl] || currentColl;
+
+            displayData.forEach(e => {
+                let btns = "";
+                
+                if(userRole === "Admin" || checkPermission(activeModId, "Editar")) {
+                    btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                }
+                
+                if(userRole === "Admin" || checkPermission(activeModId, "Mantenimiento")) {
+                    btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
+                }
+                
+                if(userRole === "Admin" || checkPermission(activeModId, "Historial")) {
+                    btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
+                }
+                
+                if(userRole === "Admin" || checkPermission(activeModId, "Eliminar")) {
+                    btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
+                }
+                
+                b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
+            });
+        }
+    } // <-- ESTA LLAVE DEBE CERRAR TODA LA FUNCIÓN
         else if(currentColl === 'usuarios') {
             h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
             displayData.forEach(e => { 
