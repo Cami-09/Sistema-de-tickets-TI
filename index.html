@@ -650,10 +650,10 @@
 
     // Lógica de Permisos / Roles
     function checkPermission(modId, action) {
-        // El administrador maestro siempre tiene permiso total
-        if(user && user.email === "camicarmona1212@gmail.com") return true;
+        // CORRECCIÓN: El administrador maestro y cualquier usuario con rol Admin tiene permiso total
+        if(user && (user.email === "camicarmona1212@gmail.com" || userRole === "Admin")) return true;
         
-        // Bloqueo explícito de seguridad para Gestores
+        // Bloqueo explícito de seguridad para Gestores (aunque tengan el permiso en DB)
         if(userRole === "Gestor" && (action === "Eliminar" || action === "Reasignar")) return false;
 
         if(!currentPermissions || !currentPermissions[modId]) return false;
@@ -890,22 +890,27 @@
 
             displayData.forEach(e => {
                 let btns = "";
-                if(checkPermission(activeModId, "Editar")) {
+                
+                // CORRECCIÓN: Admin siempre ve Editar, otros según permiso
+                if(userRole === "Admin" || checkPermission(activeModId, "Editar")) {
                     btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
                 }
-                if(checkPermission(activeModId, "Mantenimiento")) {
+                
+                if(userRole === "Admin" || checkPermission(activeModId, "Mantenimiento")) {
                     btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
                 }
-                if(checkPermission(activeModId, "Historial")) {
+                
+                if(userRole === "Admin" || checkPermission(activeModId, "Historial")) {
                     btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
                 }
+                
                 if(userRole === "Admin" || checkPermission(activeModId, "Eliminar")) {
                     btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
                 }
+                
                 b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
             });
         }
-    }
 
     function verOjitoExtension(id) {
         const d = localData.find(x => x.id === id);
