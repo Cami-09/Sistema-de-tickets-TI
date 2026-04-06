@@ -319,13 +319,13 @@
     const auth = firebase.auth();
 
     let user, userRole, currentColl, localData = [], selectedId, modoModal = "nuevo", miChart = null, listaGestoresGlobal = [], nombreRealUsuario = "";
-    let listaRolesGlobal = [], dataHistoricoCerrados = [], currentPermissions = {}; 
+    let listaRolesGlobal = [], currentPermissions = {}; 
 
     const MODULOS_SISTEMA = [
         {id: "card_mis_tickets", nom: "Mis Tickets", acts: ["Ver Detalle"]},
         {id: "card_enviar_ticket", nom: "Enviar Ticket", acts: ["Crear"]},
         {id: "card_admin_tickets", nom: "Admin Tickets", acts: ["Editar", "Reasignar", "Finalizar", "Eliminar", "Ver Detalle"]},
-        {id: "card_historico_cerrados", nom: "Histórico Tickets Cerrados", acts: ["Ver Detalle", "Eliminar"]},
+        {id: "card_historico_cerrados", nom: "Histórico Cerrados", acts: ["Ver Detalle", "Eliminar"]},
         {id: "card_inv_admin", nom: "Equipos Administrativos", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
         {id: "card_inv_salas", nom: "Equipos Salas", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
         {id: "card_extensiones", nom: "Extensiones TI", acts: ["Crear", "Editar", "Eliminar", "Ver Detalle"]},
@@ -387,20 +387,20 @@
             currentPermissions = {}; 
             MODULOS_SISTEMA.forEach(m => document.getElementById(m.id).style.display = 'block');
         } else if (userRole === "Gestor" && !rolDB) {
-            // PERMISOS POR DEFECTO DEL GESTOR (CON TODAS LAS ACCIONES HABILITADAS)
+            // PERMISOS POR DEFECTO DEL GESTOR (SIN ELIMINAR NI REASIGNAR)
             currentPermissions = {
                 "card_mis_tickets": ["Ver Detalle"],
                 "card_enviar_ticket": ["Crear"],
-                "card_admin_tickets": ["Editar", "Reasignar", "Finalizar", "Eliminar", "Ver Detalle"],
-                "card_historico_cerrados": ["Ver Detalle", "Eliminar"],
-                "card_inv_admin": ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"],
-                "card_inv_salas": ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"],
-                "card_extensiones": ["Crear", "Editar", "Eliminar", "Ver Detalle"],
+                "card_admin_tickets": ["Editar", "Finalizar", "Ver Detalle"],
+                "card_historico_cerrados": ["Ver Detalle"],
+                "card_inv_admin": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_inv_salas": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_extensiones": ["Crear", "Editar", "Ver Detalle"],
                 "card_calendario": ["Ver"],
                 "card_stats": ["Ver"],
-                "card_aulas": ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"],
-                "card_impresoras": ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"],
-                "card_gest_mantenimientos": ["Editar", "Eliminar"]
+                "card_aulas": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_impresoras": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_gest_mantenimientos": ["Editar"]
             };
             Object.keys(currentPermissions).forEach(id => {
                 const el = document.getElementById(id);
@@ -468,11 +468,11 @@
             snap.forEach(doc => {
                 const t = doc.data(); if(t.estado === "Cerrado") return;
                 if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
-                let btns = `<button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')" title="Ver Detalle"><i class="fas fa-eye"></i></button>`;
-                if(checkPermission("card_admin_tickets", "Editar")) btns += `<button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')" title="Procesar"><i class="fas fa-clock"></i></button>`;
-                if(checkPermission("card_admin_tickets", "Reasignar")) btns += `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>`;
-                if(checkPermission("card_admin_tickets", "Finalizar")) btns += `<button class="btn-acc bg-c-green" onclick="abrirModalCierre('${doc.id}')" title="Cerrar"><i class="fas fa-check-circle"></i></button>`;
-                if(checkPermission("card_admin_tickets", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>`;
+                let btns = `<button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>`;
+                if(checkPermission("card_admin_tickets", "Editar")) btns += `<button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>`;
+                if(checkPermission("card_admin_tickets", "Reasignar")) btns += `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>`;
+                if(checkPermission("card_admin_tickets", "Finalizar")) btns += `<button class="btn-acc bg-c-green" onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>`;
+                if(checkPermission("card_admin_tickets", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>`;
                 tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante}</td><td>${t.tipo}</td><td>${t.estado}</td><td>${t.asignado}</td><td>${btns}</td></tr>`;
             });
         });
@@ -482,13 +482,54 @@
         const doc = await db.collection("tickets").doc(id).get(); const t = doc.data();
         document.getElementById('detalle_content').innerHTML = `
             <p><b>Usuario:</b> ${t.solicitante}</p>
-            <p><b>Campus:</b> ${t.campus}</p>
-            <p><b>Descripción:</b><br>${t.desc}</p>
-            <p><b>Respuesta:</b><br><span style="color:var(--success);">${t.respuesta || 'En espera'}</span></p>`;
+            <p><b>Sede:</b> ${t.campus}</p>
+            <p><b>Problema:</b> ${t.desc}</p>
+            <p><b>Respuesta:</b> ${t.respuesta || 'En espera'}</p>`;
         document.getElementById('modalVerTicket').style.display='block';
     }
 
-    // --- MAESTROS ---
+    // --- ROLES ---
+    function abrirModalRol(modo, id = null) {
+        modoModal = modo; selectedId = id;
+        document.getElementById('rol_nombre').value = "";
+        const container = document.getElementById('chk_modulos_container'); container.innerHTML = "";
+        MODULOS_SISTEMA.forEach(m => {
+            container.innerHTML += `<div class="role-block"><label class="role-option"><input type="checkbox" class="chk-rol-mod" value="${m.id}" onchange="toggleAccionesRol('${m.id}', this.checked)"> ${m.nom}</label>
+                <div class="actions-sub-grid" id="div_acts_${m.id}" style="opacity:0.3; pointer-events:none;">
+                ${m.acts.map(a => `<label class="action-item"><input type="checkbox" class="chk-act-rol" data-mod="${m.id}" value="${a}"> ${a}</label>`).join('')}</div></div>`;
+        });
+        if(modo === 'editar') {
+            const r = listaRolesGlobal.find(x => x.id === id);
+            document.getElementById('rol_nombre').value = r.nombre;
+            setTimeout(() => {
+                r.modulos.forEach(mId => {
+                    const chk = container.querySelector(`.chk-rol-mod[value="${mId}"]`);
+                    if(chk) { chk.checked = true; toggleAccionesRol(mId, true); }
+                    if(r.accionesPermitidas && r.accionesPermitidas[mId]) {
+                        r.accionesPermitidas[mId].forEach(act => {
+                            const aChk = container.querySelector(`.chk-act-rol[data-mod="${mId}"][value="${act}"]`);
+                            if(aChk) aChk.checked = true;
+                        });
+                    }
+                });
+            }, 100);
+        }
+        document.getElementById('btn_guardar_rol').onclick = guardarRol;
+        document.getElementById('modalRol').style.display = 'block';
+    }
+
+    async function guardarRol() {
+        const nombre = document.getElementById('rol_nombre').value;
+        const modulos = Array.from(document.querySelectorAll('.chk-rol-mod:checked')).map(c => c.value);
+        let accionesPermitidas = {};
+        modulos.forEach(m => accionesPermitidas[m] = Array.from(document.querySelectorAll(`.chk-act-rol[data-mod="${m}"]:checked`)).map(a => a.value));
+        const data = { nombre, modulos, accionesPermitidas };
+        if(modoModal === 'nuevo') await db.collection("roles").add(data);
+        else await db.collection("roles").doc(selectedId).update(data);
+        cerrarModales();
+    }
+
+    // --- TABLAS MAESTRAS ---
     function renderTablaMaestra() {
         const b = document.getElementById('m_tbody'); b.innerHTML = "";
         const h = document.getElementById('m_thead'); h.innerHTML = "";
@@ -503,7 +544,7 @@
                 b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td><td>${btns}</td></tr>`;
             });
         } else if(currentColl === 'extensiones') {
-            h.innerHTML = `<tr><th>Nombre</th><th>Ext</th><th>Dep</th><th>Acciones</th></tr>`;
+            h.innerHTML = `<tr><th>Responsable</th><th>Ext</th><th>Dep</th><th>Acciones</th></tr>`;
             localData.forEach(e => {
                 let btns = `<button class="btn-acc bg-v-gray" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
                 if(checkPermission(activeModId, "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
@@ -511,14 +552,14 @@
                 b.innerHTML += `<tr><td>${e.nom}</td><td>${e.ext}</td><td>${e.dep}</td><td>${btns}</td></tr>`;
             });
         } else {
-            h.innerHTML = `<tr><th>Recurso</th><th>Serial</th><th>Encargado</th><th>Acciones</th></tr>`;
+            h.innerHTML = `<tr><th>Nombre</th><th>Modelo</th><th>Serial</th><th>Acciones</th></tr>`;
             localData.forEach(e => {
                 let btns = "";
                 if(checkPermission(activeModId, "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
                 if(checkPermission(activeModId, "Mantenimiento")) btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
                 if(checkPermission(activeModId, "Historial")) btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
                 if(checkPermission(activeModId, "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
-                b.innerHTML += `<tr><td><b>${e.nom}</b></td><td>${e.ser || 'N/A'}</td><td>${e.res || 'N/A'}</td><td>${btns}</td></tr>`;
+                b.innerHTML += `<tr><td>${e.nom}</td><td>${e.mod || 'N/A'}</td><td>${e.ser || 'N/A'}</td><td>${btns}</td></tr>`;
             });
         }
     }
@@ -536,7 +577,7 @@
                     const md = m.data();
                     let btns = `<button class="btn-acc bg-info-e" onclick="abrirMntEdit('${c}','${dE.id}','${m.id}')"><i class="fas fa-edit"></i></button>`;
                     if(checkPermission("card_gest_mantenimientos", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminarMnt('${c}','${dE.id}','${m.id}')"><i class="fas fa-trash"></i></button>`;
-                    html += `<tr><td>${md.fecha}</td><td>${dE.data().nom}</td><td>${md.tipo}</td><td>${md.desc}</td><td>${btns}</td></tr>`;
+                    html += `<tr><td>${md.fecha}</td><td><b>${dE.data().nom}</b></td><td>${md.tipo}</td><td>${md.desc}</td><td>${btns}</td></tr>`;
                 });
             }
         }
@@ -557,7 +598,7 @@
         document.getElementById('modalMantenimiento').style.display = 'block';
     }
 
-    // --- UTILIDADES ---
+    // --- AUX ---
     function abrir(id, mColl = null, mTit = null) {
         document.getElementById('panel-principal').style.display = 'none';
         document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none');
@@ -568,7 +609,6 @@
         }
         if(id === 'mod_mis_tickets') cargarMisTickets();
         if(id === 'mod_admin_tickets') cargarTicketsAdmin();
-        if(id === 'mod_historico_cerrados') cargarHistoricoCerrados();
         if(id === 'mod_gest_mantenimientos') cargarGestionMantenimientos();
         if(id === 'mod_stats') setTimeout(cargarGraficaActualizada, 300);
         if(id === 'mod_calendario') setTimeout(inicializarCalendario, 300);
@@ -579,35 +619,26 @@
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { auth.signOut().then(() => location.reload()); }
     function toggleAccionesRol(id, ch) { const d = document.getElementById('div_acts_'+id); d.style.opacity = ch ? "1":"0.3"; d.style.pointerEvents = ch ? "auto":"none"; }
-    async function eliminar(id, col) { if(confirm("¿Eliminar este registro?")) await db.collection(col).doc(id).delete(); }
-    async function eliminarMnt(c, eid, mid) { if(confirm("¿Eliminar mantenimiento?")) { await db.collection(c).doc(eid).collection("mantenimientos").doc(mid).delete(); cargarGestionMantenimientos(); } }
-    
+    async function eliminar(id, col) { if(confirm("¿Eliminar?")) await db.collection(col).doc(id).delete(); }
+    async function eliminarMnt(c, eid, mid) { if(confirm("¿Eliminar?")) { await db.collection(c).doc(eid).collection("mantenimientos").doc(mid).delete(); cargarGestionMantenimientos(); } }
     function abrirMantenimiento(id) { selectedId = id; document.getElementById('modalMantenimiento').style.display='block'; }
     async function guardarMantenimiento() {
-        await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ 
-            fecha: document.getElementById('mnt_fecha').value, 
-            tipo: document.getElementById('mnt_tipo').value, 
-            desc: document.getElementById('mnt_desc').value 
-        });
-        cerrarModales(); alert("Guardado");
+        await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ fecha: document.getElementById('mnt_fecha').value, tipo: document.getElementById('mnt_tipo').value, desc: document.getElementById('mnt_desc').value });
+        cerrarModales(); alert("Mantenimiento programado.");
     }
-
     async function verHistorial(id) {
         const snap = await db.collection(currentColl).doc(id).collection("mantenimientos").orderBy("fecha","desc").get();
         let h = ""; snap.forEach(doc => h += `<p><b>${doc.data().fecha}</b>: ${doc.data().desc}</p>`);
-        document.getElementById('historial_content').innerHTML = h || "Sin datos.";
+        document.getElementById('historial_content').innerHTML = h || "Vacío.";
         document.getElementById('modalHistorial').style.display='block';
     }
-
     function cargarGraficaActualizada() {
         const ctx = document.getElementById('miGrafica').getContext('2d'); if(miChart) miChart.destroy();
         db.collection("tickets").get().then(snap => {
-            let c = {Abierto:0, Cerrado:0, "En Proceso":0}; 
-            snap.forEach(d => { let s=d.data().estado; if(c[s]!==undefined) c[s]++; });
+            let c = {Abierto:0, Cerrado:0, "En Proceso":0}; snap.forEach(d => { let s=d.data().estado; if(c[s]!==undefined) c[s]++; });
             miChart = new Chart(ctx, { type:'doughnut', data:{ labels:Object.keys(c), datasets:[{data:Object.values(c), backgroundColor:['#2563eb','#22c55e','#f59e0b']}] } });
         });
     }
-
     function inicializarCalendario() {
         const cal = new FullCalendar.Calendar(document.getElementById('calendar'), {
             initialView: 'dayGridMonth', locale: 'es',
@@ -625,21 +656,17 @@
         });
         cal.render();
     }
-
     function observarContadores() {
         db.collection("tickets").onSnapshot(snap => {
             let a=0, p=0, c=0; snap.forEach(d => { let s=d.data().estado; if(s==="Abierto") a++; else if(s==="En Proceso") p++; else c++; });
             document.getElementById('count_abiertos').innerText=a; document.getElementById('count_proceso').innerText=p; document.getElementById('count_cerrados').innerText=c;
         });
     }
-
     function cargarGestores() { db.collection("usuarios").where("rol","==","Gestor").get().then(q => { listaGestoresGlobal = []; q.forEach(d => listaGestoresGlobal.push(d.data())); }); }
-    
     function renderTablaRoles() {
         const tb = document.getElementById('tbody_roles'); tb.innerHTML = "";
         listaRolesGlobal.forEach(r => { tb.innerHTML += `<tr><td><b>${r.nombre}</b></td><td>${r.modulos.length} módulos</td><td><button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')"><i class="fas fa-edit"></i></button></td></tr>`; });
     }
-
     async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
     function abrirModalCierre(id) { selectedId = id; document.getElementById('tk_respuesta_cierre').value = ""; document.getElementById('modalCerrarTicket').style.display = 'block'; }
     async function ejecutarCierreConComentario() { 
@@ -656,8 +683,7 @@
         let fields = [];
         if(currentColl === 'extensiones') fields = [["Responsable","nom"],["Dep","dep"],["Ext","ext"],["Tipo","tipo_ext","select",["Zoiper","Telefono fijo"]]];
         else if(currentColl === 'usuarios') fields = [["Nombre","nom"],["Correo","cor"],["Rol","rol","select",["Admin","Gestor","Usuario",...listaRolesGlobal.map(r=>r.nombre)]]];
-        else fields = [["Nombre","nom"],["Tipo","tip"],["Modelo","mod"],["Serial","ser"],["Encargado","res"],["Sede","cam","select",["Bucaramanga","Bogotá","Tunja"]]];
-        
+        else fields = [["Nombre","nom"],["Tipo","tip"],["Modelo","mod"],["Serial","ser"],["Responsable","res"],["Dep","dep"],["Sede","cam","select",["Bucaramanga","Bogotá","Tunja"]]];
         fields.forEach(x => {
             let inp = x[2] === "select" ? `<select id="${x[1]}">${x[3].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>` : `<input type="text" id="${x[1]}" placeholder="${x[0]}">`;
             f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${inp}</div>`;
@@ -670,13 +696,12 @@
         let o = {}; document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => o[i.id] = i.value);
         if(modoModal === 'editar') await db.collection(currentColl).doc(selectedId).update(o);
         else await db.collection(currentColl).add(o);
-        cerrarModales(); alert("Guardado");
+        cerrarModales(); alert("Guardado.");
     }
 
     function cargarHistoricoCerrados() {
         db.collection("tickets").where("estado", "==", "Cerrado").onSnapshot(snap => {
-            dataHistoricoCerrados = []; snap.forEach(doc => dataHistoricoCerrados.push({id: doc.id, ...doc.data()}));
-            renderTablaHistorico(dataHistoricoCerrados);
+            renderTablaHistorico(snap.docs.map(doc => ({id: doc.id, ...doc.data()})));
         });
     }
 
@@ -691,8 +716,10 @@
 
     function filtrarHistoricoCerrados() {
         const d = document.getElementById('filtro_hist_dep').value.toLowerCase();
-        const f = dataHistoricoCerrados.filter(t => t.solicitante.toLowerCase().includes(d));
-        renderTablaHistorico(f);
+        db.collection("tickets").where("estado", "==", "Cerrado").get().then(snap => {
+            const f = snap.docs.map(doc => ({id: doc.id, ...doc.data()})).filter(t => t.solicitante.toLowerCase().includes(d));
+            renderTablaHistorico(f);
+        });
     }
     
     function abrir_maestro(c, t) { abrir('mod_maestro', c, t); }
