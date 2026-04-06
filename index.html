@@ -282,18 +282,6 @@
         </div>
     </div>
 
-    <div id="mod_historico_cerrados" class="modulo">
-        <button onclick="volver()" class="btn-gray"><i class="fas fa-arrow-left"></i> Volver</button>
-        <h2 style="margin-top:20px;"><i class="fas fa-archive"></i> Historial de Tickets Finalizados</h2>
-        <div class="search-container">
-            <div class="campo-group" style="flex:1;"><label>Dependencia</label><input type="text" id="filtro_hist_dep" placeholder="Buscar dependencia..." onkeyup="filtrarHistoricoCerrados()"></div>
-            <div class="campo-group" style="flex:1;"><label>Sede</label><select id="filtro_hist_campus" onchange="filtrarHistoricoCerrados()"><option value="">Todas las Sedes</option><option>Bucaramanga</option><option>Bogotá</option><option>Tunja</option></select></div>
-        </div>
-        <div style="overflow-x:auto;">
-            <table><thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Campus</th><th>Gestor</th><th>Acciones</th></tr></thead><tbody id="tbody_historico_cerrados"></tbody></table>
-        </div>
-    </div>
-
     <div id="mod_maestro" class="modulo">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <button onclick="volver()" class="btn-gray"><i class="fas fa-arrow-left"></i> Volver</button>
@@ -301,24 +289,6 @@
             <button class="btn-agregar-master" id="btn_maestro_nuevo" onclick="abrirModalRegistro('nuevo')"><i class="fas fa-plus"></i> NUEVO REGISTRO</button>
         </div>
         <div style="overflow-x:auto;"><table id="m_table_full"><thead id="m_thead"></thead><tbody id="m_tbody"></tbody></table></div>
-    </div>
-
-    <div id="mod_gest_mantenimientos" class="modulo">
-        <button onclick="volver()" class="btn-gray"><i class="fas fa-arrow-left"></i> Volver</button>
-        <h2 style="margin-top:20px;"><i class="fas fa-tools"></i> Bitácora General de Mantenimientos</h2>
-        <div style="overflow-x:auto; margin-top:20px;">
-            <table><thead><tr><th>Fecha</th><th>Equipo / Recurso</th><th>Tipo</th><th>Observaciones</th><th>Acciones</th></tr></thead><tbody id="tbody_gest_mantenimientos"></tbody></table>
-        </div>
-    </div>
-
-    <div id="mod_stats" class="modulo">
-        <button onclick="volver()" class="btn-gray"><i class="fas fa-arrow-left"></i> Volver</button>
-        <div style="position: relative; height:400px; width:100%; max-width:600px; margin: 0 auto; display:flex; justify-content:center;"><canvas id="miGrafica"></canvas></div>
-    </div>
-
-    <div id="mod_calendario" class="modulo">
-        <button onclick="volver()" class="btn-gray"><i class="fas fa-arrow-left"></i> Volver</button>
-        <div id="calendar" style="margin-top:15px; border-radius:15px; overflow:hidden; border:1px solid #eee;"></div>
     </div>
 
     <div id="mod_preferencias" class="modulo">
@@ -333,12 +303,12 @@
     </div>
 
     <div id="modalRol" class="modal"><div class="modal-content"><h3>Configuración de Rol</h3><div class="grid-bonito" style="grid-template-columns:1fr;"><div class="campo-group"><label>Nombre del Rol</label><input type="text" id="rol_nombre"></div><div class="roles-chk-grid" id="chk_modulos_container"></div></div><div style="display:flex; gap:15px; margin-top:20px;"><button class="btn-gray" onclick="cerrarModales()" style="flex:1;">CANCELAR</button><button class="btn-agregar-master" id="btn_guardar_rol" style="flex:1; justify-content:center;">GUARDAR</button></div></div></div>
-    <div id="modalMantenimiento" class="modal"><div class="modal-content" style="max-width:450px;"><h3 id="mnt_modal_title">Programar Mantenimiento</h3><input type="date" id="mnt_fecha"><select id="mnt_tipo"><option>Preventivo</option><option>Correctivo</option></select><textarea id="mnt_desc" rows="4"></textarea><button id="btn_guardar_mnt" class="btn-agregar-master">GUARDAR MANTENIMIENTO</button></div></div>
-    <div id="modalVerTicket" class="modal"><div class="modal-content"><h3>Detalles de la Solicitud</h3><div id="detalle_content" style="background:#f8fafc; padding:20px; border-radius:15px;"></div><button class="btn-gray" onclick="cerrarModales()">CERRAR</button></div></div>
-    <div id="modalCerrarTicket" class="modal"><div class="modal-content" style="max-width:500px;"><h3>Finalizar Atención</h3><textarea id="tk_respuesta_cierre" rows="5" placeholder="Solución brindada..."></textarea><button onclick="ejecutarCierreConComentario()" class="btn-agregar-master">CONFIRMAR CIERRE</button></div></div>
-    <div id="modalReasignar" class="modal"><div class="modal-content" style="max-width:400px;"><h3>Reasignar a otro Gestor</h3><select id="re_gestor_new" style="width:100%;"></select><button onclick="ejecutarReasignar()" class="btn-agregar-master">CONFIRMAR</button></div></div>
-    <div id="modalRegistro" class="modal"><div class="modal-content"><h3>Formulario de Registro</h3><div id="form_dinamico" class="grid-bonito"></div><button class="btn-agregar-master" onclick="guardarDatoMaestro()">GUARDAR DATOS</button></div></div>
-    <div id="modalHistorial" class="modal"><div class="modal-content"><h3>Historial de Intervenciones</h3><div id="historial_content"></div><button class="btn-gray" onclick="cerrarModales()">CERRAR</button></div></div>
+    <div id="modalMantenimiento" class="modal"><div class="modal-content" style="max-width:450px;"><h3 id="mnt_modal_title">Programar</h3><input type="date" id="mnt_fecha"><select id="mnt_tipo"><option>Preventivo</option><option>Correctivo</option></select><textarea id="mnt_desc" rows="4"></textarea><button id="btn_guardar_mnt" class="btn-agregar-master">GUARDAR</button></div></div>
+    <div id="modalVerTicket" class="modal"><div class="modal-content"><h3>Detalles</h3><div id="detalle_content" style="background:#f8fafc; padding:20px; border-radius:15px;"></div><button class="btn-gray" onclick="cerrarModales()">CERRAR</button></div></div>
+    <div id="modalCerrarTicket" class="modal"><div class="modal-content" style="max-width:500px;"><h3>Finalizar Atención</h3><textarea id="tk_respuesta_cierre" rows="5"></textarea><button onclick="ejecutarCierreConComentario()" class="btn-agregar-master">CONFIRMAR CIERRE</button></div></div>
+    <div id="modalReasignar" class="modal"><div class="modal-content" style="max-width:400px;"><h3>Reasignar Técnico</h3><select id="re_gestor_new" style="width:100%;"></select><button onclick="ejecutarReasignar()" class="btn-agregar-master">CONFIRMAR</button></div></div>
+    <div id="modalRegistro" class="modal"><div class="modal-content"><h3>Registro Maestro</h3><div id="form_dinamico" class="grid-bonito"></div><button class="btn-agregar-master" onclick="guardarDatoMaestro()">GUARDAR</button></div></div>
+    <div id="modalHistorial" class="modal"><div class="modal-content"><h3>Historial</h3><div id="historial_content"></div><button class="btn-gray" onclick="cerrarModales()">CERRAR</button></div></div>
     <div id="modalVerGeneral" class="modal"><div class="modal-content"><h3 id="ver_gral_titulo"></h3><div id="ver_gral_contenido" style="background:#f8fafc; padding:20px; border-radius:15px;"></div><button class="btn-gray" onclick="cerrarModales()">CERRAR</button></div></div>
 </div>
 
@@ -355,7 +325,7 @@
         {id: "card_mis_tickets", nom: "Mis Tickets", acts: ["Ver Detalle"]},
         {id: "card_enviar_ticket", nom: "Enviar Ticket", acts: ["Crear"]},
         {id: "card_admin_tickets", nom: "Admin Tickets", acts: ["Editar", "Reasignar", "Finalizar", "Eliminar", "Ver Detalle"]},
-        {id: "card_historico_cerrados", nom: "Histórico Cerrados", acts: ["Ver Detalle", "Eliminar"]},
+        {id: "card_historico_cerrados", nom: "Histórico Tickets Cerrados", acts: ["Ver Detalle", "Eliminar"]},
         {id: "card_inv_admin", nom: "Equipos Administrativos", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
         {id: "card_inv_salas", nom: "Equipos Salas", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
         {id: "card_extensiones", nom: "Extensiones TI", acts: ["Crear", "Editar", "Eliminar", "Ver Detalle"]},
@@ -417,19 +387,20 @@
             currentPermissions = {}; 
             MODULOS_SISTEMA.forEach(m => document.getElementById(m.id).style.display = 'block');
         } else if (userRole === "Gestor" && !rolDB) {
+            // PERMISOS POR DEFECTO DEL GESTOR (CON TODAS LAS ACCIONES HABILITADAS)
             currentPermissions = {
                 "card_mis_tickets": ["Ver Detalle"],
                 "card_enviar_ticket": ["Crear"],
-                "card_admin_tickets": ["Editar", "Reasignar", "Finalizar", "Ver Detalle"],
-                "card_historico_cerrados": ["Ver Detalle"],
-                "card_inv_admin": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_inv_salas": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_extensiones": ["Crear", "Editar", "Ver Detalle"],
+                "card_admin_tickets": ["Editar", "Reasignar", "Finalizar", "Eliminar", "Ver Detalle"],
+                "card_historico_cerrados": ["Ver Detalle", "Eliminar"],
+                "card_inv_admin": ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"],
+                "card_inv_salas": ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"],
+                "card_extensiones": ["Crear", "Editar", "Eliminar", "Ver Detalle"],
                 "card_calendario": ["Ver"],
                 "card_stats": ["Ver"],
-                "card_aulas": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_impresoras": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_gest_mantenimientos": ["Editar"]
+                "card_aulas": ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"],
+                "card_impresoras": ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"],
+                "card_gest_mantenimientos": ["Editar", "Eliminar"]
             };
             Object.keys(currentPermissions).forEach(id => {
                 const el = document.getElementById(id);
@@ -497,11 +468,11 @@
             snap.forEach(doc => {
                 const t = doc.data(); if(t.estado === "Cerrado") return;
                 if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
-                let btns = `<button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>`;
-                if(checkPermission("card_admin_tickets", "Editar")) btns += `<button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>`;
-                if(checkPermission("card_admin_tickets", "Reasignar")) btns += `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>`;
-                if(checkPermission("card_admin_tickets", "Finalizar")) btns += `<button class="btn-acc bg-c-green" onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>`;
-                if(checkPermission("card_admin_tickets", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>`;
+                let btns = `<button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')" title="Ver Detalle"><i class="fas fa-eye"></i></button>`;
+                if(checkPermission("card_admin_tickets", "Editar")) btns += `<button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')" title="Procesar"><i class="fas fa-clock"></i></button>`;
+                if(checkPermission("card_admin_tickets", "Reasignar")) btns += `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>`;
+                if(checkPermission("card_admin_tickets", "Finalizar")) btns += `<button class="btn-acc bg-c-green" onclick="abrirModalCierre('${doc.id}')" title="Cerrar"><i class="fas fa-check-circle"></i></button>`;
+                if(checkPermission("card_admin_tickets", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>`;
                 tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante}</td><td>${t.tipo}</td><td>${t.estado}</td><td>${t.asignado}</td><td>${btns}</td></tr>`;
             });
         });
@@ -509,52 +480,15 @@
 
     async function verDetalleTicket(id) {
         const doc = await db.collection("tickets").doc(id).get(); const t = doc.data();
-        document.getElementById('detalle_content').innerHTML = `<p><b>Usuario:</b> ${t.solicitante}</p><p><b>Sede:</b> ${t.campus}</p><p><b>Problema:</b> ${t.desc}</p><p><b>Respuesta:</b> ${t.respuesta || 'En espera'}</p>`;
+        document.getElementById('detalle_content').innerHTML = `
+            <p><b>Usuario:</b> ${t.solicitante}</p>
+            <p><b>Campus:</b> ${t.campus}</p>
+            <p><b>Descripción:</b><br>${t.desc}</p>
+            <p><b>Respuesta:</b><br><span style="color:var(--success);">${t.respuesta || 'En espera'}</span></p>`;
         document.getElementById('modalVerTicket').style.display='block';
     }
 
-    // --- ROLES ---
-    function abrirModalRol(modo, id = null) {
-        modoModal = modo; selectedId = id;
-        document.getElementById('rol_nombre').value = "";
-        const container = document.getElementById('chk_modulos_container'); container.innerHTML = "";
-        MODULOS_SISTEMA.forEach(m => {
-            container.innerHTML += `<div class="role-block"><label class="role-option"><input type="checkbox" class="chk-rol-mod" value="${m.id}" onchange="toggleAccionesRol('${m.id}', this.checked)"> ${m.nom}</label>
-                <div class="actions-sub-grid" id="div_acts_${m.id}" style="opacity:0.3; pointer-events:none;">
-                ${m.acts.map(a => `<label class="action-item"><input type="checkbox" class="chk-act-rol" data-mod="${m.id}" value="${a}"> ${a}</label>`).join('')}</div></div>`;
-        });
-        if(modo === 'editar') {
-            const r = listaRolesGlobal.find(x => x.id === id);
-            document.getElementById('rol_nombre').value = r.nombre;
-            setTimeout(() => {
-                r.modulos.forEach(mId => {
-                    const chk = container.querySelector(`.chk-rol-mod[value="${mId}"]`);
-                    if(chk) { chk.checked = true; toggleAccionesRol(mId, true); }
-                    if(r.accionesPermitidas && r.accionesPermitidas[mId]) {
-                        r.accionesPermitidas[mId].forEach(act => {
-                            const aChk = container.querySelector(`.chk-act-rol[data-mod="${mId}"][value="${act}"]`);
-                            if(aChk) aChk.checked = true;
-                        });
-                    }
-                });
-            }, 100);
-        }
-        document.getElementById('btn_guardar_rol').onclick = guardarRol;
-        document.getElementById('modalRol').style.display = 'block';
-    }
-
-    async function guardarRol() {
-        const nombre = document.getElementById('rol_nombre').value;
-        const modulos = Array.from(document.querySelectorAll('.chk-rol-mod:checked')).map(c => c.value);
-        let accionesPermitidas = {};
-        modulos.forEach(m => accionesPermitidas[m] = Array.from(document.querySelectorAll(`.chk-act-rol[data-mod="${m}"]:checked`)).map(a => a.value));
-        const data = { nombre, modulos, accionesPermitidas };
-        if(modoModal === 'nuevo') await db.collection("roles").add(data);
-        else await db.collection("roles").doc(selectedId).update(data);
-        cerrarModales();
-    }
-
-    // --- TABLAS MAESTRAS ---
+    // --- MAESTROS ---
     function renderTablaMaestra() {
         const b = document.getElementById('m_tbody'); b.innerHTML = "";
         const h = document.getElementById('m_thead'); h.innerHTML = "";
@@ -565,26 +499,26 @@
             h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
             localData.forEach(e => {
                 let btns = `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-                if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
+                if(checkPermission("card_usuarios", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
                 b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td><td>${btns}</td></tr>`;
             });
         } else if(currentColl === 'extensiones') {
-            h.innerHTML = `<tr><th>Responsable</th><th>Ext</th><th>Dep</th><th>Acciones</th></tr>`;
+            h.innerHTML = `<tr><th>Nombre</th><th>Ext</th><th>Dep</th><th>Acciones</th></tr>`;
             localData.forEach(e => {
                 let btns = `<button class="btn-acc bg-v-gray" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
                 if(checkPermission(activeModId, "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-                if(userRole === "Admin" || checkPermission(activeModId, "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
+                if(checkPermission(activeModId, "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
                 b.innerHTML += `<tr><td>${e.nom}</td><td>${e.ext}</td><td>${e.dep}</td><td>${btns}</td></tr>`;
             });
         } else {
-            h.innerHTML = `<tr><th>Nombre</th><th>Modelo</th><th>Serial</th><th>Acciones</th></tr>`;
+            h.innerHTML = `<tr><th>Recurso</th><th>Serial</th><th>Encargado</th><th>Acciones</th></tr>`;
             localData.forEach(e => {
                 let btns = "";
                 if(checkPermission(activeModId, "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
                 if(checkPermission(activeModId, "Mantenimiento")) btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
                 if(checkPermission(activeModId, "Historial")) btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
-                if(userRole === "Admin" || checkPermission(activeModId, "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
-                b.innerHTML += `<tr><td>${e.nom}</td><td>${e.mod || 'N/A'}</td><td>${e.ser || 'N/A'}</td><td>${btns}</td></tr>`;
+                if(checkPermission(activeModId, "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
+                b.innerHTML += `<tr><td><b>${e.nom}</b></td><td>${e.ser || 'N/A'}</td><td>${e.res || 'N/A'}</td><td>${btns}</td></tr>`;
             });
         }
     }
@@ -600,9 +534,9 @@
                 const snapM = await db.collection(c).doc(dE.id).collection("mantenimientos").get();
                 snapM.forEach(m => {
                     const md = m.data();
-                    html += `<tr><td>${md.fecha}</td><td><b>${dE.data().nom}</b></td><td>${md.tipo}</td><td>${md.desc}</td><td>
-                        <button class="btn-acc bg-info-e" onclick="abrirMntEdit('${c}','${dE.id}','${m.id}')"><i class="fas fa-edit"></i></button>
-                        <button class="btn-acc bg-d-red" onclick="eliminarMnt('${c}','${dE.id}','${m.id}')"><i class="fas fa-trash"></i></button></td></tr>`;
+                    let btns = `<button class="btn-acc bg-info-e" onclick="abrirMntEdit('${c}','${dE.id}','${m.id}')"><i class="fas fa-edit"></i></button>`;
+                    if(checkPermission("card_gest_mantenimientos", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminarMnt('${c}','${dE.id}','${m.id}')"><i class="fas fa-trash"></i></button>`;
+                    html += `<tr><td>${md.fecha}</td><td>${dE.data().nom}</td><td>${md.tipo}</td><td>${md.desc}</td><td>${btns}</td></tr>`;
                 });
             }
         }
@@ -618,12 +552,12 @@
             await db.collection(selectedCollMnt).doc(selectedEquipIdMnt).collection("mantenimientos").doc(selectedId).update({
                 fecha: document.getElementById('mnt_fecha').value, tipo: document.getElementById('mnt_tipo').value, desc: document.getElementById('mnt_desc').value
             });
-            cerrarModales(); cargarGestionMantenimientos();
+            cerrarModales(); alert("Actualizado"); cargarGestionMantenimientos();
         };
         document.getElementById('modalMantenimiento').style.display = 'block';
     }
 
-    // --- AUX ---
+    // --- UTILIDADES ---
     function abrir(id, mColl = null, mTit = null) {
         document.getElementById('panel-principal').style.display = 'none';
         document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none');
@@ -645,26 +579,35 @@
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { auth.signOut().then(() => location.reload()); }
     function toggleAccionesRol(id, ch) { const d = document.getElementById('div_acts_'+id); d.style.opacity = ch ? "1":"0.3"; d.style.pointerEvents = ch ? "auto":"none"; }
-    async function eliminar(id, col) { if(confirm("¿Eliminar?")) await db.collection(col).doc(id).delete(); }
-    async function eliminarMnt(c, eid, mid) { if(confirm("¿Eliminar?")) { await db.collection(c).doc(eid).collection("mantenimientos").doc(mid).delete(); cargarGestionMantenimientos(); } }
+    async function eliminar(id, col) { if(confirm("¿Eliminar este registro?")) await db.collection(col).doc(id).delete(); }
+    async function eliminarMnt(c, eid, mid) { if(confirm("¿Eliminar mantenimiento?")) { await db.collection(c).doc(eid).collection("mantenimientos").doc(mid).delete(); cargarGestionMantenimientos(); } }
+    
     function abrirMantenimiento(id) { selectedId = id; document.getElementById('modalMantenimiento').style.display='block'; }
     async function guardarMantenimiento() {
-        await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ fecha: document.getElementById('mnt_fecha').value, tipo: document.getElementById('mnt_tipo').value, desc: document.getElementById('mnt_desc').value });
-        cerrarModales(); alert("Mantenimiento programado.");
+        await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ 
+            fecha: document.getElementById('mnt_fecha').value, 
+            tipo: document.getElementById('mnt_tipo').value, 
+            desc: document.getElementById('mnt_desc').value 
+        });
+        cerrarModales(); alert("Guardado");
     }
+
     async function verHistorial(id) {
         const snap = await db.collection(currentColl).doc(id).collection("mantenimientos").orderBy("fecha","desc").get();
         let h = ""; snap.forEach(doc => h += `<p><b>${doc.data().fecha}</b>: ${doc.data().desc}</p>`);
-        document.getElementById('historial_content').innerHTML = h || "Vacío.";
+        document.getElementById('historial_content').innerHTML = h || "Sin datos.";
         document.getElementById('modalHistorial').style.display='block';
     }
+
     function cargarGraficaActualizada() {
         const ctx = document.getElementById('miGrafica').getContext('2d'); if(miChart) miChart.destroy();
         db.collection("tickets").get().then(snap => {
-            let c = {Abierto:0, Cerrado:0, "En Proceso":0}; snap.forEach(d => { let s=d.data().estado; if(c[s]!==undefined) c[s]++; });
+            let c = {Abierto:0, Cerrado:0, "En Proceso":0}; 
+            snap.forEach(d => { let s=d.data().estado; if(c[s]!==undefined) c[s]++; });
             miChart = new Chart(ctx, { type:'doughnut', data:{ labels:Object.keys(c), datasets:[{data:Object.values(c), backgroundColor:['#2563eb','#22c55e','#f59e0b']}] } });
         });
     }
+
     function inicializarCalendario() {
         const cal = new FullCalendar.Calendar(document.getElementById('calendar'), {
             initialView: 'dayGridMonth', locale: 'es',
@@ -682,17 +625,21 @@
         });
         cal.render();
     }
+
     function observarContadores() {
         db.collection("tickets").onSnapshot(snap => {
             let a=0, p=0, c=0; snap.forEach(d => { let s=d.data().estado; if(s==="Abierto") a++; else if(s==="En Proceso") p++; else c++; });
             document.getElementById('count_abiertos').innerText=a; document.getElementById('count_proceso').innerText=p; document.getElementById('count_cerrados').innerText=c;
         });
     }
+
     function cargarGestores() { db.collection("usuarios").where("rol","==","Gestor").get().then(q => { listaGestoresGlobal = []; q.forEach(d => listaGestoresGlobal.push(d.data())); }); }
+    
     function renderTablaRoles() {
         const tb = document.getElementById('tbody_roles'); tb.innerHTML = "";
-        listaRolesGlobal.forEach(r => { tb.innerHTML += `<tr><td><b>${r.nombre}</b></td><td>${r.modulos.length}</td><td><button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')"><i class="fas fa-edit"></i></button></td></tr>`; });
+        listaRolesGlobal.forEach(r => { tb.innerHTML += `<tr><td><b>${r.nombre}</b></td><td>${r.modulos.length} módulos</td><td><button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')"><i class="fas fa-edit"></i></button></td></tr>`; });
     }
+
     async function actEstado(id, est) { await db.collection("tickets").doc(id).update({estado: est}); }
     function abrirModalCierre(id) { selectedId = id; document.getElementById('tk_respuesta_cierre').value = ""; document.getElementById('modalCerrarTicket').style.display = 'block'; }
     async function ejecutarCierreConComentario() { 
@@ -709,7 +656,8 @@
         let fields = [];
         if(currentColl === 'extensiones') fields = [["Responsable","nom"],["Dep","dep"],["Ext","ext"],["Tipo","tipo_ext","select",["Zoiper","Telefono fijo"]]];
         else if(currentColl === 'usuarios') fields = [["Nombre","nom"],["Correo","cor"],["Rol","rol","select",["Admin","Gestor","Usuario",...listaRolesGlobal.map(r=>r.nombre)]]];
-        else fields = [["Nombre","nom"],["Tipo","tip"],["Modelo","mod"],["Serial","ser"],["Responsable","res"],["Dep","dep"],["Sede","cam","select",["Bucaramanga","Bogotá","Tunja"]]];
+        else fields = [["Nombre","nom"],["Tipo","tip"],["Modelo","mod"],["Serial","ser"],["Encargado","res"],["Sede","cam","select",["Bucaramanga","Bogotá","Tunja"]]];
+        
         fields.forEach(x => {
             let inp = x[2] === "select" ? `<select id="${x[1]}">${x[3].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>` : `<input type="text" id="${x[1]}" placeholder="${x[0]}">`;
             f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${inp}</div>`;
@@ -722,7 +670,7 @@
         let o = {}; document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => o[i.id] = i.value);
         if(modoModal === 'editar') await db.collection(currentColl).doc(selectedId).update(o);
         else await db.collection(currentColl).add(o);
-        cerrarModales(); alert("Guardado.");
+        cerrarModales(); alert("Guardado");
     }
 
     function cargarHistoricoCerrados() {
@@ -734,12 +682,16 @@
 
     function renderTablaHistorico(data) {
         const tb = document.getElementById('tbody_historico_cerrados'); tb.innerHTML = "";
-        data.forEach(t => { tb.innerHTML += `<tr><td>#${t.id.substring(0,5)}</td><td>${t.solicitante}</td><td>${t.tipo}</td><td>${t.campus}</td><td>${t.asignado}</td><td><button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${t.id}')"><i class="fas fa-eye"></i></button></td></tr>`; });
+        data.forEach(t => { 
+            let btns = `<button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${t.id}')"><i class="fas fa-eye"></i></button>`;
+            if(checkPermission("card_historico_cerrados", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${t.id}', 'tickets')"><i class="fas fa-trash"></i></button>`;
+            tb.innerHTML += `<tr><td>#${t.id.substring(0,5)}</td><td>${t.solicitante}</td><td>${t.tipo}</td><td>${t.campus}</td><td>${t.asignado}</td><td>${btns}</td></tr>`; 
+        });
     }
 
     function filtrarHistoricoCerrados() {
         const d = document.getElementById('filtro_hist_dep').value.toLowerCase();
-        const f = dataHistoricoCerrados.filter(t => t.dependencia.toLowerCase().includes(d));
+        const f = dataHistoricoCerrados.filter(t => t.solicitante.toLowerCase().includes(d));
         renderTablaHistorico(f);
     }
     
