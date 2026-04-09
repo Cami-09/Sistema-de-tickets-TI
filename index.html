@@ -343,15 +343,6 @@
         <div style="display:flex; gap:10px; margin-top:20px;">
             <button class="btn-gray" onclick="cerrarModales()" style="flex:1;">Cerrar</button>
             <button class="btn-agregar-master" onclick="ejecutarReasignar()" style="flex:1; justify-content:center;">Confirmar</button>
-
-<div id="modalDetalleEvento" class="modal">
-    <div class="modal-content" style="max-width:450px; border-top: 5px solid var(--primary);">
-        <h3 id="det_ev_titulo" style="margin-top:0; color: var(--primary);">Detalles del Mantenimiento</h3>
-        <hr>
-        <div id="det_ev_contenido" style="text-align:left; line-height:1.6; font-size: 0.9rem;">
-            </div>
-        <div style="margin-top:20px; text-align:right;">
-            <button class="btn-gray" onclick="cerrarModales()">Cerrar</button>
         </div>
     </div>
 </div>
@@ -978,59 +969,28 @@
 
     // Calendario y Mantenimientos
     async function inicializarCalendario() {
-    const calendarEl = document.getElementById('calendar');
-    if (!calendarEl) return;
-
-    const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'es',
-        headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,dayGridWeek' },
-        eventClick: function(info) {
-            mostrarDetalleEvento(info.event.extendedProps);
-        },
-        events: async function(info, success) {
-            const evs = [];
-            const hoy = new Date();
-            hoy.setHours(0,0,0,0);
-            
-            const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti"];
-            
-            for(let coll of colecciones) {
-                const snapEquipos = await db.collection(coll).get();
-                for(let docE of snapEquipos.docs) {
-                    const equipo = docE.data();
-                    const mnts = await db.collection(coll).doc(docE.id).collection("mantenimientos").get();
-                    
-                    mnts.forEach(m => {
-                        const d = m.data();
-                        const fechaMnt = new Date(d.fecha + "T00:00:00"); // Forzar hora local
-                        
-                        // Lógica de colores: Negro si ya pasó o es hoy (realizado), Azul si es futuro (programado)
-                        const esPasado = fechaMnt <= hoy;
-                        const colorEvento = esPasado ? "#000000" : "#2563eb";
-
-                        evs.push({
-                            title: `${equipo.nom || 'Equipo'}`,
-                            start: d.fecha,
-                            backgroundColor: colorEvento,
-                            borderColor: colorEvento,
-                            extendedProps: {
-                                equipo: equipo.nom,
-                                tipo: d.tipo,
-                                fecha: d.fecha,
-                                descripcion: d.desc,
-                                ubicacion: coll.replace('_', ' ').toUpperCase(),
-                                estado: esPasado ? "REALIZADO" : "PROGRAMADO"
-                            }
+        const calendarEl = document.getElementById('calendar');
+        if (!calendarEl) return;
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth', locale: 'es',
+            events: async function(info, success) {
+                const evs = [];
+                const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti"];
+                for(let coll of colecciones) {
+                    const snapEquipos = await db.collection(coll).get();
+                    for(let docE of snapEquipos.docs) {
+                        const mnts = await db.collection(coll).doc(docE.id).collection("mantenimientos").get();
+                        mnts.forEach(m => {
+                            const d = m.data();
+                            evs.push({ title: `${d.tipo}: ${docE.data().nom || 'Equipo'}`, start: d.fecha, backgroundColor: d.tipo === 'Preventivo' ? '#8b5cf6' : '#ef4444' });
                         });
-                    });
+                    }
                 }
+                success(evs);
             }
-            success(evs);
-        }
-    });
-    calendar.render();
-}
+        });
+        calendar.render();
+    }
 
     async function cargarGestionMantenimientos() {
         const tb = document.getElementById('tbody_gest_mantenimientos');
@@ -1125,30 +1085,6 @@
     function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); document.getElementById('modalReasignar').style.display = 'block'; }
     async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); }
 
-    function mostrarDetalleEvento(data) {
-    const contenido = document.getElementById('det_ev_contenido');
-    const titulo = document.getElementById('det_ev_titulo');
-    
-    // Cambiar color del título según el estado
-    titulo.style.color = data.estado === "REALIZADO" ? "#000000" : "#2563eb";
-    document.getElementById('modalDetalleEvento').children[0].style.borderColor = data.estado === "REALIZADO" ? "#000000" : "#2563eb";
-
-    contenido.innerHTML = `
-        <p><strong><i class="fas fa-laptop"></i> Equipo:</strong> ${data.equipo}</p>
-        <p><strong><i class="fas fa-info-circle"></i> Tipo:</strong> ${data.tipo}</p>
-        <p><strong><i class="fas fa-calendar-day"></i> Fecha:</strong> ${data.fecha}</p>
-        <p><strong><i class="fas fa-map-marker-alt"></i> Ubicación:</strong> ${data.ubicacion}</p>
-        <p><strong><i class="fas fa-align-left"></i> Descripción:</strong><br> 
-           <span style="color: #555; font-style: italic;">${data.descripcion || 'Sin descripción detallada.'}</span>
-        </p>
-        <div style="text-align:center; margin-top:10px; font-weight:bold; color: ${data.estado === "REALIZADO" ? 'black' : '#2563eb'}">
-            ESTADO: ${data.estado}
-        </div>
-    `;
-    
-    document.getElementById('modalDetalleEvento').style.display = 'block';
-}
-    
 </script>
 </body>
 </html>
