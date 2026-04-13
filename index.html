@@ -752,25 +752,56 @@
 
     // Funciones de Tickets
     async function enviarTicket() {
-        const nom = document.getElementById('tk_nom_user').value;
-        const d = document.getElementById('tk_desc').value;
-        if(!nom || !d) return alert("Complete los campos.");
-        let asig = "Pendiente";
-        if(listaGestoresGlobal.length > 0) asig = listaGestoresGlobal[Math.floor(Math.random() * listaGestoresGlobal.length)].nom;
-        await db.collection("tickets").add({ 
-            solicitante: nom, 
-            usuario: user.email, 
-            campus: document.getElementById('tk_campus').value, 
-            prioridad: document.getElementById('tk_prioridad').value, 
-            dependencia: document.getElementById('tk_dep').value, 
-            tipo: document.getElementById('tk_tipo').value, 
-            desc: d, 
-            estado: "Abierto", 
-            asignado: asig, 
-            fecha: new Date().toLocaleString() 
+    const nom = document.getElementById('tk_nom_user').value;
+    const d = document.getElementById('tk_desc').value;
+    
+    if(!nom || !d) return alert("Por favor, complete todos los campos.");
+
+    try {
+        const contadorRef = db.collection("configuracion").doc("contadores");
+        
+        // Transacción para asegurar que el número sea único y secuencial
+        await db.runTransaction(async (transaction) => {
+            const contadorDoc = await transaction.get(contadorRef);
+            
+            if (!contadorDoc.exists) {
+                throw "El documento de contadores no existe.";
+            }
+
+            // Incrementar el número
+            const nuevoIdNum = contadorDoc.data().ticket_actual + 1;
+            transaction.update(contadorRef, { ticket_actual: nuevoIdNum });
+
+            let asig = "Pendiente";
+            if(listaGestoresGlobal.length > 0) {
+                asig = listaGestoresGlobal[Math.floor(Math.random() * listaGestoresGlobal.length)].nom;
+            }
+
+            // Crear el ticket usando el número como ID del documento (convertido a String)
+            const nuevoTicketRef = db.collection("tickets").doc(nuevoIdNum.toString());
+            
+            transaction.set(nuevoTicketRef, {
+                ticket_id_numerico: nuevoIdNum, // Guardamos el número también como campo
+                solicitante: nom,
+                usuario: user.email,
+                campus: document.getElementById('tk_campus').value,
+                prioridad: document.getElementById('tk_prioridad').value,
+                dependencia: document.getElementById('tk_dep').value,
+                tipo: document.getElementById('tk_tipo').value,
+                desc: d,
+                estado: "Abierto",
+                asignado: asig,
+                fecha: new Date().toLocaleString()
+            });
         });
-        alert("Ticket enviado exitosamente"); volver();
+
+        alert("Ticket enviado exitosamente.");
+        volver();
+    } catch (e) {
+        console.error("Error al crear ticket: ", e);
+        alert("Error al generar el número de ticket.");
     }
+}
 
     function cargarTicketsAdmin() {
         const tb = document.getElementById('tbody_admin_tickets');
@@ -787,7 +818,7 @@
                 let btnFin = checkPermission("card_admin_tickets", "Finalizar") ? `<button class="btn-acc bg-c-green" onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>` : "";
                 let btnDel = checkPermission("card_admin_tickets", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : "";
                 
-                tb.innerHTML += `<tr><td>#${doc.id.substring(0,4)}</td><td>${t.solicitante}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado}</td><td>${btnDet}${btnEdit}${btnRe}${btnFin}${btnDel}</td></tr>`;
+                tb.innerHTML += `<tr><td>#${doc.id}</td><td>${t.solicitante}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado}</td><td>${btnDet}${btnEdit}${btnRe}${btnFin}${btnDel}</td></tr>`;
             });
         });
     }
