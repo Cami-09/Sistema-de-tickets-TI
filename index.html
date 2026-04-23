@@ -76,14 +76,14 @@
 <header>
     <strong>SISTEMA DE TICKETS E INVENTARIO STI - UNICIENCIA</strong>
     <div style="display:flex; align-items:center; gap:15px;">
-        <span id="user_info" style="font-size: 0.75rem; font-weight: 600; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 20px;"></span>
-        <button onclick="logout()" style="background:var(--danger); color:white; border:none; padding:6px 15px; border-radius:8px; cursor:pointer; font-weight:bold;">Salir</button>
+        <span id="user_info" style="font-size: 0.75rem; font-weight: 600; background: rgba(255, 255, 255, 0.1); padding: 5px 12px; border-radius: 20px;"></span>
+        <button onclick="logout()" style="background:var(--danger); color:rgb(255, 255, 255); border:none; padding:6px 15px; border-radius:8px; cursor:pointer; font-weight:bold;">Salir</button>
     </div>
 </header>
 
 <div id="login">
-    <div style="text-align:center; background:white; padding:50px; border-radius:30px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); width: 320px;">
-        <i class="fas fa-shield-alt fa-3x" style="color:var(--primary); margin-bottom:15px;"></i>
+    <div style="text-align:center; background:white; padding:50px; border-radius:30px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); width: 320px;">
+        <i class="fas fa-shield-alt fa-5x" style="color:var(--primary); margin-bottom:15px;"></i>
         <h2>STI UNICIENCIA</h2>
         <button class="btn-agregar-master" onclick="login()" style="width:100%; justify-content:center;"><i class="fab fa-google"></i> Iniciar Sesión</button>
     </div>
@@ -218,7 +218,7 @@
     </div>
 
     <div id="mod_admin_tickets" class="modulo">
-        <button onclick="volver()" class="btn-gray">Volver</button>
+        <button onclick="volver()" class="btn-gray">⬅ Volver</button>
         <div style="overflow-x:auto; margin-top:15px;"><table><thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Estado</th><th>Gestor</th><th>Acciones</th></tr></thead><tbody id="tbody_admin_tickets"></tbody></table></div>
     </div>
 
@@ -241,7 +241,7 @@
     </div>
 
     <div id="mod_calendario" class="modulo">
-        <button onclick="volver()" class="btn-gray">Volver</button>
+        <button onclick="volver()" class="btn-gray">⬅ Volver</button>
         <h3 style="margin-top:15px; color:var(--dark);"><i class="fas fa-tools"></i> Cronograma de Mantenimientos</h3>
         <div id="calendar" style="margin-top:10px;"></div>
     </div>
@@ -437,64 +437,77 @@
     }
 
     async function verificarRol() {
-    document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
-    const statsHeader = document.getElementById('stats_contadores_visibles');
-    if(statsHeader) statsHeader.style.display = 'none';
+        // 1. Limpiar estado visual
+        document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
+        const statsHeader = document.getElementById('stats_contadores_visibles');
+        if(statsHeader) statsHeader.style.display = 'none';
 
-    if (!user) return;
+        if (!user) return;
 
-    const q = await db.collection("usuarios").where("cor", "==", user.email).get();
-    if (user.email === "camicarmona1212@gmail.com") {
-        userRole = "Admin";
-        nombreRealUsuario = "Admin Maestro";
-    } else if(!q.empty) {
-        const d = q.docs[0].data(); 
-        userRole = d.rol; 
-        nombreRealUsuario = d.nom;
-    } else {
-        userRole = "Usuario"; 
-        nombreRealUsuario = "Invitado";
+        // 2. Identificar Usuario y Rol
+        const q = await db.collection("usuarios").where("cor", "==", user.email).get();
+        if (user.email === "camicarmona1212@gmail.com") {
+            userRole = "Admin";
+            nombreRealUsuario = "Admin Maestro";
+        } else if(!q.empty) {
+            const d = q.docs[0].data(); 
+            userRole = d.rol; 
+            nombreRealUsuario = d.nom;
+        } else {
+            userRole = "Usuario"; 
+            nombreRealUsuario = "Invitado";
+        }
+
+        document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
+        
+        // 3. Cargar permisos (Prioridad: Base de Datos > Por Defecto)
+        const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
+        
+        if (rolDB && rolDB.accionesPermitidas) {
+            currentPermissions = rolDB.accionesPermitidas;
+        } else if (userRole === "Gestor") {
+            // ACCIONES POR DEFECTO PARA GESTOR (Sin Eliminar ni Reasignar)
+            currentPermissions = {
+                "card_mis_tickets": ["Ver Detalle"],
+                "card_enviar_ticket": ["Crear"],
+                "card_admin_tickets": ["Editar", "Finalizar", "Ver Detalle"],
+                "card_historico_cerrados": ["Ver Detalle"],
+                "card_inv_admin": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_inv_salas": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_extensiones": ["Crear", "Editar", "Ver Detalle"],
+                "card_calendario": ["Ver"],
+                "card_aulas": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_impresoras": ["Crear", "Editar", "Mantenimiento", "Historial"],
+                "card_gest_mantenimientos": ["Editar"]
+            };
+        } else {
+            currentPermissions = {};
+        }
+
+        // 4. Determinar Módulos a mostrar
+        let modulosPermitidos = [];
+        if(userRole === "Admin") {
+            modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
+        } else if(rolDB && rolDB.modulos) {
+            modulosPermitidos = rolDB.modulos;
+        } else {
+            const vDefault = { 
+                "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_historico_cerrados", "card_inv_admin", "card_inv_salas", "card_extensiones", "card_calendario", "card_aulas", "card_impresoras", "card_gest_mantenimientos"],
+                "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
+            };
+            modulosPermitidos = vDefault[userRole] || vDefault["Usuario"];
+        }
+
+        // 5. Mostrar módulos
+        modulosPermitidos.forEach(id => { 
+            const el = document.getElementById(id);
+            if(el) el.style.display = 'block'; 
+        });
+
+        if(userRole !== "Usuario" && statsHeader) {
+            statsHeader.style.display = 'flex';
+        }
     }
-
-    document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
-    
-    // CARGA DE PERMISOS DESDE BD
-    const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
-    
-    if (rolDB && rolDB.accionesPermitidas) {
-        currentPermissions = rolDB.accionesPermitidas;
-    } else if (userRole === "Admin") {
-        currentPermissions = "ALL"; // Comodín para admin
-    } else if (userRole === "Usuario") {
-        // Permisos mínimos garantizados para el rol básico
-        currentPermissions = {
-            "card_mis_tickets": ["Ver Detalle"],
-            "card_enviar_ticket": ["Crear"]
-        };
-    } else {
-        currentPermissions = {};
-    }
-
-    // MODULOS VISIBLES
-    let modulosPermitidos = [];
-    if(userRole === "Admin") {
-        modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
-    } else if(rolDB && rolDB.modulos) {
-        modulosPermitidos = rolDB.modulos;
-    } else {
-        // Si es usuario nuevo sin rol en BD, solo ve estos dos
-        modulosPermitidos = ["card_mis_tickets", "card_enviar_ticket"];
-    }
-
-    modulosPermitidos.forEach(id => { 
-        const el = document.getElementById(id);
-        if(el) el.style.display = 'block'; 
-    });
-
-    if(userRole !== "Usuario" && statsHeader) {
-        statsHeader.style.display = 'flex';
-    }
-}
     // Lógica para Histórico de Cerrados
     async function cargarHistoricoCerrados() {
         const tb = document.getElementById('tbody_historico_cerrados');
@@ -637,20 +650,17 @@
 
     // Lógica de Permisos / Roles
     function checkPermission(modId, action) {
-    if(!user) return false;
-    
-    // Super Admin total
-    if(user.email === "camicarmona1212@gmail.com") return true;
-    
-    // Si los permisos están en modo ALL (para el rol Admin local)
-    if(currentPermissions === "ALL") return true;
+        // CORRECCIÓN: El administrador maestro y cualquier usuario con rol Admin tiene permiso total
+        if(user && (user.email === "camicarmona1212@gmail.com" || userRole === "Admin")) return true;
+        
+        // Bloqueo explícito de seguridad para Gestores (aunque tengan el permiso en DB)
+        if(userRole === "Gestor" && (action === "Eliminar" || action === "Reasignar")) return false;
 
-    // Si no hay permisos cargados para el módulo
-    if(!currentPermissions || !currentPermissions[modId]) return false;
-    
-    const modPerms = currentPermissions[modId];
-    return Array.isArray(modPerms) && modPerms.includes(action);
-}
+        if(!currentPermissions || !currentPermissions[modId]) return false;
+        
+        const modPerms = currentPermissions[modId];
+        return Array.isArray(modPerms) && modPerms.includes(action);
+    }
 
     function abrirModalRol(modo, id = null) {
         modoModal = modo; selectedId = id;
@@ -908,33 +918,30 @@
             };
             const activeModId = modIdMap[currentColl] || currentColl;
 
-            // ... dentro de renderTablaMaestra, en el else de inventarios generales ...
-displayData.forEach(e => {
-    let btns = "";
-    
-    // Solo mostrar Editar si tiene permiso explícito
-    if(checkPermission(activeModId, "Editar")) {
-        btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-    }
-    
-    // Solo mostrar Mantenimiento si tiene permiso explícito
-    if(checkPermission(activeModId, "Mantenimiento")) {
-        btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
-    }
-    
-    // Solo mostrar Historial si tiene permiso explícito
-    if(checkPermission(activeModId, "Historial")) {
-        btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
-    }
-    
-    // Solo mostrar Eliminar si tiene permiso explícito
-    if(checkPermission(activeModId, "Eliminar")) {
-        btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
-    }
-    
-    b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
-});
-        
+            displayData.forEach(e => {
+                let btns = "";
+                
+                if(userRole === "Admin" || checkPermission(activeModId, "Editar")) {
+                    btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                }
+                
+                if(userRole === "Admin" || checkPermission(activeModId, "Mantenimiento")) {
+                    btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
+                }
+                
+                if(userRole === "Admin" || checkPermission(activeModId, "Historial")) {
+                    btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
+                }
+                
+                if(userRole === "Admin" || checkPermission(activeModId, "Eliminar")) {
+                    btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
+                }
+                
+                b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
+            });
+        }
+    } // <-- ESTA LLAVE DEBE CERRAR TODA LA FUNCIÓN
+
     function verOjitoExtension(id) {
         const d = localData.find(x => x.id === id);
         document.getElementById('ver_gral_titulo').innerText = "Información de Extensión";
