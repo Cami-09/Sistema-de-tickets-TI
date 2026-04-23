@@ -437,77 +437,64 @@
     }
 
     async function verificarRol() {
-        // 1. Limpiar estado visual
-        document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
-        const statsHeader = document.getElementById('stats_contadores_visibles');
-        if(statsHeader) statsHeader.style.display = 'none';
+    document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
+    const statsHeader = document.getElementById('stats_contadores_visibles');
+    if(statsHeader) statsHeader.style.display = 'none';
 
-        if (!user) return;
+    if (!user) return;
 
-        // 2. Identificar Usuario y Rol
-        const q = await db.collection("usuarios").where("cor", "==", user.email).get();
-        if (user.email === "camicarmona1212@gmail.com") {
-            userRole = "Admin";
-            nombreRealUsuario = "Admin Maestro";
-        } else if(!q.empty) {
-            const d = q.docs[0].data(); 
-            userRole = d.rol; 
-            nombreRealUsuario = d.nom;
-        } else {
-            userRole = "Usuario"; 
-            nombreRealUsuario = "Invitado";
-        }
-
-        document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
-        
-        // 3. Cargar permisos (Prioridad: Base de Datos > Por Defecto)
-        const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
-        
-        if (rolDB && rolDB.accionesPermitidas) {
-            currentPermissions = rolDB.accionesPermitidas;
-        } else if (userRole === "Gestor") {
-            // ACCIONES POR DEFECTO PARA GESTOR (Sin Eliminar ni Reasignar)
-            currentPermissions = {
-                "card_mis_tickets": ["Ver Detalle"],
-                "card_enviar_ticket": ["Crear"],
-                "card_admin_tickets": ["Editar", "Finalizar", "Ver Detalle"],
-                "card_historico_cerrados": ["Ver Detalle"],
-                "card_inv_admin": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_inv_salas": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_extensiones": ["Crear", "Editar", "Ver Detalle"],
-                "card_calendario": ["Ver"],
-                "card_aulas": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_impresoras": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_gest_mantenimientos": ["Editar"]
-            };
-        } else {
-            currentPermissions = {};
-        }
-
-        // 4. Determinar Módulos a mostrar
-        let modulosPermitidos = [];
-        if(userRole === "Admin") {
-            modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
-        } else if(rolDB && rolDB.modulos) {
-            modulosPermitidos = rolDB.modulos;
-        } else {
-            const vDefault = { 
-                "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_historico_cerrados", "card_inv_admin", "card_inv_salas", "card_extensiones", "card_calendario", "card_aulas", "card_impresoras", "card_gest_mantenimientos"],
-                "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
-            };
-            modulosPermitidos = vDefault[userRole] || vDefault["Usuario"];
-        }
-
-        // 5. Mostrar módulos
-        modulosPermitidos.forEach(id => { 
-            const el = document.getElementById(id);
-            if(el) el.style.display = 'block'; 
-        });
-
-        if(userRole !== "Usuario" && statsHeader) {
-            statsHeader.style.display = 'flex';
-        }
+    const q = await db.collection("usuarios").where("cor", "==", user.email).get();
+    if (user.email === "camicarmona1212@gmail.com") {
+        userRole = "Admin";
+        nombreRealUsuario = "Admin Maestro";
+    } else if(!q.empty) {
+        const d = q.docs[0].data(); 
+        userRole = d.rol; 
+        nombreRealUsuario = d.nom;
+    } else {
+        userRole = "Usuario"; 
+        nombreRealUsuario = "Invitado";
     }
+
+    document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
+    
+    // CARGA DE PERMISOS DESDE BD
+    const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
+    
+    if (rolDB && rolDB.accionesPermitidas) {
+        currentPermissions = rolDB.accionesPermitidas;
+    } else if (userRole === "Admin") {
+        currentPermissions = "ALL"; // Comodín para admin
+    } else if (userRole === "Usuario") {
+        // Permisos mínimos garantizados para el rol básico
+        currentPermissions = {
+            "card_mis_tickets": ["Ver Detalle"],
+            "card_enviar_ticket": ["Crear"]
+        };
+    } else {
+        currentPermissions = {};
+    }
+
+    // MODULOS VISIBLES
+    let modulosPermitidos = [];
+    if(userRole === "Admin") {
+        modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
+    } else if(rolDB && rolDB.modulos) {
+        modulosPermitidos = rolDB.modulos;
+    } else {
+        // Si es usuario nuevo sin rol en BD, solo ve estos dos
+        modulosPermitidos = ["card_mis_tickets", "card_enviar_ticket"];
+    }
+
+    modulosPermitidos.forEach(id => { 
+        const el = document.getElementById(id);
+        if(el) el.style.display = 'block'; 
+    });
+
+    if(userRole !== "Usuario" && statsHeader) {
+        statsHeader.style.display = 'flex';
+    }
+}
     // Lógica para Histórico de Cerrados
     async function cargarHistoricoCerrados() {
         const tb = document.getElementById('tbody_historico_cerrados');
@@ -650,17 +637,20 @@
 
     // Lógica de Permisos / Roles
     function checkPermission(modId, action) {
-        // CORRECCIÓN: El administrador maestro y cualquier usuario con rol Admin tiene permiso total
-        if(user && (user.email === "camicarmona1212@gmail.com" || userRole === "Admin")) return true;
-        
-        // Bloqueo explícito de seguridad para Gestores (aunque tengan el permiso en DB)
-        if(userRole === "Gestor" && (action === "Eliminar" || action === "Reasignar")) return false;
+    if(!user) return false;
+    
+    // Super Admin total
+    if(user.email === "camicarmona1212@gmail.com") return true;
+    
+    // Si los permisos están en modo ALL (para el rol Admin local)
+    if(currentPermissions === "ALL") return true;
 
-        if(!currentPermissions || !currentPermissions[modId]) return false;
-        
-        const modPerms = currentPermissions[modId];
-        return Array.isArray(modPerms) && modPerms.includes(action);
-    }
+    // Si no hay permisos cargados para el módulo
+    if(!currentPermissions || !currentPermissions[modId]) return false;
+    
+    const modPerms = currentPermissions[modId];
+    return Array.isArray(modPerms) && modPerms.includes(action);
+}
 
     function abrirModalRol(modo, id = null) {
         modoModal = modo; selectedId = id;
@@ -918,30 +908,33 @@
             };
             const activeModId = modIdMap[currentColl] || currentColl;
 
-            displayData.forEach(e => {
-                let btns = "";
-                
-                if(userRole === "Admin" || checkPermission(activeModId, "Editar")) {
-                    btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-                }
-                
-                if(userRole === "Admin" || checkPermission(activeModId, "Mantenimiento")) {
-                    btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
-                }
-                
-                if(userRole === "Admin" || checkPermission(activeModId, "Historial")) {
-                    btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
-                }
-                
-                if(userRole === "Admin" || checkPermission(activeModId, "Eliminar")) {
-                    btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
-                }
-                
-                b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
-            });
-        }
-    } // <-- ESTA LLAVE DEBE CERRAR TODA LA FUNCIÓN
-
+            // ... dentro de renderTablaMaestra, en el else de inventarios generales ...
+displayData.forEach(e => {
+    let btns = "";
+    
+    // Solo mostrar Editar si tiene permiso explícito
+    if(checkPermission(activeModId, "Editar")) {
+        btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+    }
+    
+    // Solo mostrar Mantenimiento si tiene permiso explícito
+    if(checkPermission(activeModId, "Mantenimiento")) {
+        btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
+    }
+    
+    // Solo mostrar Historial si tiene permiso explícito
+    if(checkPermission(activeModId, "Historial")) {
+        btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
+    }
+    
+    // Solo mostrar Eliminar si tiene permiso explícito
+    if(checkPermission(activeModId, "Eliminar")) {
+        btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
+    }
+    
+    b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
+});
+        
     function verOjitoExtension(id) {
         const d = localData.find(x => x.id === id);
         document.getElementById('ver_gral_titulo').innerText = "Información de Extensión";
