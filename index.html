@@ -1431,12 +1431,11 @@ renderTablaRoles();
         h.innerHTML = `<tr><th>Nombre/Aula</th><th>Tipo</th><th>Modelo/Ubicación</th><th>Serial/ID</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Acciones</th></tr>`;
     }
 
-    // RENDERIZADO DE FILAS
+    // RENDERIZADO DE FILAS UNIFICADO
     displayData.forEach(e => {
         let btns = "";
         let rowHTML = "";
 
-        // Lógica de botones según permisos y colección
         if(currentColl === 'extensiones') {
             if(checkPermission("card_extensiones", "Ver Detalle")) btns += `<button class="btn-acc bg-v-gray" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
             if(checkPermission("card_extensiones", "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
@@ -1451,9 +1450,10 @@ renderTablaRoles();
             rowHTML = `<tr><td>${e.nom || ''}</td><td>${e.cor || ''}</td><td>${e.rol || ''}</td><td>${btns}</td></tr>`;
         
         } else {
-            // Caso para Inventarios, Aulas e Impresoras
+            // Inventarios, Aulas e Impresoras
             if(checkPermission(activeModId, "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>`;
             
+            // BOTÓN DE CHEQUEO (Exclusivo de Aulas)
             if(currentColl === 'aulas_dti') {
                 btns += `<button class="btn-acc bg-c-green" onclick="abrirModalChequeo('${e.id}', '${e.nom}')" title="Registrar Chequeo"><i class="fas fa-check-double"></i></button>`;
             }
@@ -1474,20 +1474,9 @@ renderTablaRoles();
 
             rowHTML = `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
         }
-
         b.innerHTML += rowHTML;
     });
 }
-
-
-            displayData.forEach(e => {
-                let btns = "";
-                if(checkPermission(activeModId, "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-                if(checkPermission(activeModId, "Mantenimiento")) btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
-                if(checkPermission(activeModId, "Historial")) btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
-                if(checkPermission(activeModId, "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
-                b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
-            });
 
     async function verHistorialAulas(id, nombreAula) {
     const container = document.getElementById('hist_chequeos_container');
