@@ -8,6 +8,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-storage.js"></script>
 
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
@@ -69,8 +70,125 @@
         .role-option { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; color: var(--primary); cursor: pointer; border-bottom: 1px solid #f1f5f9; padding-bottom: 5px; margin-bottom: 5px; }
         .actions-sub-grid { display: flex; flex-wrap: wrap; gap: 10px; padding-left: 10px; }
         .action-item { font-size: 11px; display: flex; align-items: center; gap: 4px; color: var(--gray); font-weight: 600; cursor: pointer; }
+
+        /* Mejora de la fuente en el área de descripción */
+    #tk_desc {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 16px; /* Aumentamos el tamaño */
+        line-height: 1.5;
+        padding: 12px;
+        border: 2px solid #e2e8f0;
+        transition: border-color 0.3s;
+    }
+
+    #tk_desc:focus {
+        border-color: var(--primary);
+        outline: none;
+    }
+
+    /* Diseño mejorado para el contenedor del formulario de tickets */
+    #mod_enviar_ticket .grid-bonito {
+        background: #ffffff;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        border: 1px solid #edf2f7;
+    }
+
+    #mod_enviar_ticket h2 {
+        font-size: 1.8rem;
+        margin-bottom: 25px;
+        letter-spacing: -0.5px;
+    }
+
+    /* Estilo para los iconos en las etiquetas */
+    .campo-group label i {
+        margin-right: 8px;
+        color: var(--primary);
+        width: 18px;
+        text-align: center;
+    }
+
+    /* Estilos para el Modal de Notificación */
+.modal-notif {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(5px);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-notif-content {
+    background: white;
+    padding: 40px;
+    border-radius: 24px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalSlideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes modalSlideUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.icon-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin: 0 auto 20px;
+}
+
+.icon-circle.success {
+    background: #ecfdf5;
+    color: #10b981;
+    border: 4px solid #f0fdf4;
+}
+
+.btn-confirm {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px 40px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    font-size: 1rem;
+    transition: all 0.3s;
+    margin-top: 10px;
+}
+
+.btn-confirm:hover {
+    background: #1e40af;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
+}
+
     </style>
 </head>
+<div id="customAlert" class="modal-notif">
+    <div class="modal-notif-content">
+        <div class="icon-circle success">
+            <i class="fas fa-check"></i>
+        </div>
+        <h3 id="alertTitle">¡Operación Exitosa!</h3>
+        <p id="alertMessage">El ticket se ha enviado correctamente al equipo de TI.</p>
+        <button onclick="cerrarAlertaPersonalizada()" class="btn-confirm">Aceptar</button>
+    </div>
+</div>
 <body>
 
 <header>
@@ -256,11 +374,22 @@
                     <div class="campo-group"><label><i class="fas fa-map-marker-alt"></i> Campus</label><select id="tk_campus"><option>Bucaramanga</option><option>Bogotá</option><option>Tunja</option></select></div>
                     <div class="campo-group"><label><i class="fas fa-exclamation-triangle"></i> Prioridad</label><select id="tk_prioridad"><option>Baja</option><option>Media</option><option>Alta</option></select></div>
                 </div>
-                <div class="campo-group"><label><i class="fas fa-building"></i> Dependencia / Área</label><select id="tk_dep"><option>Seleccione Dependencia</option><option>Sistemas</option><option>Contabilidad</option><option>Tesorería</option><option>Cartera</option><option>Coordinación Administrativa y Financiana</option><option>Registro y Control</option><option>Talento Humano</option><option>Rectoría</option><option>Infraestructura</option><option>Planeación Académica</option><option>Planeación Estratégica</option><option>Decanatura de Ingenierías</option><option>Decanatura de Derecho</option><option>Decanatura de Ciencias Económicas y Empresariales (CEE)</option><option>Reintegro</option><option>Mercadeo</option><option>Cise</option><option>Consultorio G-Púrpura</option><option>Consultorio Jurídico Asesores (Planta)</option><option>Extensión e Internacionalización</option><option>Idiomas</option><option>Egresados</option><option>Centro de Conciliacion</option><option>Biblioteca</option><option>Audiovisuales</option><option>Bienestar Universitario</option><option>Consultorio Jurídico (Asesores)</option><option>Asignación y Reparto</option></select></div>
+                <div class="campo-group"><label><i class="fas fa-building"></i> Dependencia / Área</label><select id="tk_dep"><option>Seleccione Dependencia</option><option>Sistemas</option><option>Contabilidad</option><option>Tesorería</option><option>Cartera</option><option>Coordinación Administrativa y Financiana</option><option>Registro y Control</option><option>Talento Humano</option><option>Rectoría</option><option>Infraestructura</option><option>Planeación Académica</option><option>Planeación Estratégica</option><option>Decanatura de Ingenierías</option><option>Decanatura de Derecho</option><option>Decanatura de Ciencias Económicas y Empresariales (CEE)</option><option>Reintegro</option><option>Mercadeo</option><option>Cise</option><option>Consultorio G-Púrpura</option><option>Consultorio Jurídico Asesores (Planta)</option><option>Extensión e Internacionalización</option><option>Idiomas</option><option>Egresados</option><option>Centro de Conciliacion</option><option>Biblioteca</option><option>Audiovisuales</option><option>Bienestar Universitario</option><option>Consultorio Jurídico (Asesores)</option><option>Asignación y Reparto</option><option>Centro de Conciliación</option></select></div>
                 <div class="campo-group"><label><i class="fas fa-tools"></i> Tipo de Requerimiento</label><select id="tk_tipo"><option>Seleccione</option><option>Mantenimiento Preventivo/Correctivo</option><option>Instalación o traslado de equipo</option><option>Instalación o licenciamiento de Office</option><option>Problemas con el Wifi</option><option>Problemas con la red cableada</option><option>Problemas con la impresora</option><option>Instalación o configuración de impresora</option><option>Acompañamiento en evento</option><option>Soporte remoto</option><option>Otro tipo de soporte</option></select></div>
-                <div class="campo-group"><label><i class="fas fa-comment-dots"></i> Descripción del Problema</label><textarea id="tk_desc" rows="4" placeholder="Describa detalladamente su solicitud..."></textarea></div>
-                <button class="btn-agregar-master" onclick="enviarTicket()" style="justify-content:center; margin-top:10px; padding:15px;">Enviar Ticket</button>
-            </div>
+                <div class="campo-group"><label><i class="fas fa-comment-dots"></i> Descripción del Problema</label><textarea id="tk_desc" rows="10" placeholder="Describa detalladamente su solicitud..."></textarea></div>
+                
+                <div class="campo-group">
+                    <label><i class="fas fa-image"></i> Adjuntar Evidencia (Opcional)</label>
+                    <input type="file" id="tk_archivo" accept="image/*" style="font-size: 0.8rem; padding: 10px; background: #fff; border-radius: 8px; border: 1px dashed var(--primary);">
+                    <div id="upload_progress" style="font-size: 11px; color: var(--primary); font-weight: bold; margin-top: 5px; display: none;">Subiendo imagen... 0%</div>
+                </div>
+
+                <div style="margin-top: 25px; display: flex; flex-direction: column; align-items: center;">
+        <button class="btn-agregar-master" onclick="enviarTicket()" style="width: 100%; justify-content: center; padding: 18px; font-size: 1rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);">
+            <i class="fas fa-paper-plane"></i> ENVIAR SOLICITUD AHORA
+        </button>
+        <small style="margin-top: 10px; color: var(--gray);">Su solicitud será asignada a un gestor automáticamente.</small>
+          </div>
         </div>
     </div>
 </div>
@@ -348,10 +477,17 @@
 </div>
 
 <script>
-    const firebaseConfig = { apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw", authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com", projectId: "sistema-de-tickets-ti-b12f5" };
+    const firebaseConfig = { 
+        apiKey: "AIzaSyDLucWQMOgeUx3e5H8AbFCml7AosZ2eVHw", 
+        authDomain: "sistema-de-tickets-ti-b12f5.firebaseapp.com", 
+        projectId: "sistema-de-tickets-ti-b12f5",
+        storageBucket: "sistema-de-tickets-ti-b12f5.firebasestorage.app"
+    };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const auth = firebase.auth();
+    const storage = firebase.storage();
 
     let user, userRole, currentColl, localData = [], selectedId, modoModal = "nuevo", miChart = null, listaGestoresGlobal = [], nombreRealUsuario = "";
     let selectedMntId = null, selectedCollMnt = null, selectedEquipIdMnt = null;
@@ -427,87 +563,91 @@
         const q = await db.collection("usuarios").where("rol", "==", "Gestor").get();
         listaGestoresGlobal = []; 
         const selectHistorico = document.getElementById('filtro_hist_gestor');
-        selectHistorico.innerHTML = '<option value="">Todos los Gestores</option>';
+        if(selectHistorico) selectHistorico.innerHTML = '<option value="">Todos los Gestores</option>';
         
         q.forEach(doc => {
             const d = doc.data();
             listaGestoresGlobal.push(d);
-            selectHistorico.innerHTML += `<option value="${d.nom}">${d.nom}</option>`;
+            if(selectHistorico) selectHistorico.innerHTML += `<option value="${d.nom}">${d.nom}</option>`;
         });
     }
 
-    async function verificarRol() {
-        // 1. Limpiar estado visual
-        document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
-        const statsHeader = document.getElementById('stats_contadores_visibles');
-        if(statsHeader) statsHeader.style.display = 'none';
+   async function verificarRol() {
+    document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
+    const statsHeader = document.getElementById('stats_contadores_visibles');
+    if(statsHeader) statsHeader.style.display = 'none';
 
-        if (!user) return;
+    if (!user) return;
 
-        // 2. Identificar Usuario y Rol
-        const q = await db.collection("usuarios").where("cor", "==", user.email).get();
-        if (user.email === "camicarmona1212@gmail.com") {
-            userRole = "Admin";
-            nombreRealUsuario = "Admin Maestro";
-        } else if(!q.empty) {
-            const d = q.docs[0].data(); 
-            userRole = d.rol; 
-            nombreRealUsuario = d.nom;
-        } else {
-            userRole = "Usuario"; 
-            nombreRealUsuario = "Invitado";
-        }
-
-        document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
-        
-        // 3. Cargar permisos (Prioridad: Base de Datos > Por Defecto)
-        const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
-        
-        if (rolDB && rolDB.accionesPermitidas) {
-            currentPermissions = rolDB.accionesPermitidas;
-        } else if (userRole === "Gestor") {
-            // ACCIONES POR DEFECTO PARA GESTOR (Sin Eliminar ni Reasignar)
-            currentPermissions = {
-                "card_mis_tickets": ["Ver Detalle"],
-                "card_enviar_ticket": ["Crear"],
-                "card_admin_tickets": ["Editar", "Finalizar", "Ver Detalle"],
-                "card_historico_cerrados": ["Ver Detalle"],
-                "card_inv_admin": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_inv_salas": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_extensiones": ["Crear", "Editar", "Ver Detalle"],
-                "card_calendario": ["Ver"],
-                "card_aulas": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_impresoras": ["Crear", "Editar", "Mantenimiento", "Historial"],
-                "card_gest_mantenimientos": ["Editar"]
-            };
-        } else {
-            currentPermissions = {};
-        }
-
-        // 4. Determinar Módulos a mostrar
-        let modulosPermitidos = [];
-        if(userRole === "Admin") {
-            modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
-        } else if(rolDB && rolDB.modulos) {
-            modulosPermitidos = rolDB.modulos;
-        } else {
-            const vDefault = { 
-                "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_historico_cerrados", "card_inv_admin", "card_inv_salas", "card_extensiones", "card_calendario", "card_aulas", "card_impresoras", "card_gest_mantenimientos"],
-                "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
-            };
-            modulosPermitidos = vDefault[userRole] || vDefault["Usuario"];
-        }
-
-        // 5. Mostrar módulos
-        modulosPermitidos.forEach(id => { 
-            const el = document.getElementById(id);
-            if(el) el.style.display = 'block'; 
-        });
-
-        if(userRole !== "Usuario" && statsHeader) {
-            statsHeader.style.display = 'flex';
-        }
+    const q = await db.collection("usuarios").where("cor", "==", user.email).get();
+    if (user.email === "camicarmona1212@gmail.com") {
+        userRole = "Admin";
+        nombreRealUsuario = "Admin Maestro";
+    } else if(!q.empty) {
+        const d = q.docs[0].data(); 
+        userRole = d.rol; 
+        nombreRealUsuario = d.nom;
+    } else {
+        userRole = "Usuario"; 
+        nombreRealUsuario = "Invitado";
     }
+
+    document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
+    
+    // CARGA DE PERMISOS DESDE BD
+    const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
+    
+    if (rolDB && rolDB.accionesPermitidas) {
+        currentPermissions = rolDB.accionesPermitidas;
+    } else if (userRole === "Admin") {
+        currentPermissions = "ALL";
+    } else if (userRole === "Usuario") {
+        currentPermissions = {
+            "card_mis_tickets": ["Ver Detalle"],
+            "card_enviar_ticket": ["Crear"]
+        };
+    } else if (userRole === "Gestor") {
+        currentPermissions = {
+            "card_mis_tickets": ["Ver Detalle"],
+            "card_enviar_ticket": ["Crear"],
+            "card_admin_tickets": ["Editar", "Finalizar", "Ver Detalle"],
+            "card_historico_cerrados": ["Ver Detalle"],
+            "card_inv_admin": ["Crear", "Editar", "Mantenimiento", "Historial"],
+            "card_inv_salas": ["Crear", "Editar", "Mantenimiento", "Historial"],
+            "card_extensiones": ["Crear", "Editar", "Ver Detalle"],
+            "card_calendario": ["Ver"],
+            "card_aulas": ["Crear", "Editar", "Mantenimiento", "Historial"],
+            "card_impresoras": ["Crear", "Editar", "Mantenimiento", "Historial"],
+            "card_gest_mantenimientos": ["Editar"]
+        };
+    } else {
+        currentPermissions = {};
+    }
+
+    let modulosPermitidos = [];
+    if(userRole === "Admin") {
+        modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
+    } else if(rolDB && rolDB.modulos) {
+        modulosPermitidos = rolDB.modulos;
+    } else {
+        const vDefault = { 
+            "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_historico_cerrados", "card_inv_admin", "card_inv_salas", "card_extensiones", "card_calendario", "card_aulas", "card_impresoras", "card_gest_mantenimientos"],
+            "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
+        };
+        modulosPermitidos = vDefault[userRole] || vDefault["Usuario"];
+    }
+
+    modulosPermitidos.forEach(id => { 
+        const el = document.getElementById(id);
+        if(el) el.style.display = 'block'; 
+    });
+
+    if(userRole !== "Usuario" && statsHeader) {
+        statsHeader.style.display = 'flex';
+    }
+renderTablaRoles();
+}
+
     // Lógica para Histórico de Cerrados
     async function cargarHistoricoCerrados() {
         const tb = document.getElementById('tbody_historico_cerrados');
@@ -548,20 +688,16 @@
 
         const filtrados = dataHistoricoCerrados.filter(t => {
             return (t.dependencia.toLowerCase().includes(dep)) &&
-                   (campus === "" || t.campus === campus) &&
-                   (gestor === "" || t.asignado === gestor);
+                    (campus === "" || t.campus === campus) &&
+                    (gestor === "" || t.asignado === gestor);
         });
         renderTablaHistorico(filtrados);
     }
 
-    // Navegación
-    // Navegación
     function abrir(id, mColl = null, mTit = null) {
-        // Ocultar panel principal y todos los módulos
         document.getElementById('panel-principal').style.display = 'none';
         document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none');
         
-        // Mostrar el módulo seleccionado
         const moduloDestino = document.getElementById(id);
         if(moduloDestino) moduloDestino.style.display = 'block';
         
@@ -572,7 +708,6 @@
             currentColl = mColl; 
             document.getElementById('m_titulo').innerText = mTit;
             
-            // Control del botón NUEVO según permiso
             const btnNuevo = document.getElementById('btn_maestro_nuevo');
             const modIdMap = {
                 'inventario': 'card_inv_admin',
@@ -594,15 +729,24 @@
             });
         }
         
-        // Cargas específicas
         if(id === 'mod_mis_tickets') cargarMisTickets();
         if(id === 'mod_admin_tickets') cargarTicketsAdmin();
         if(id === 'mod_historico_cerrados') cargarHistoricoCerrados();
         if(id === 'mod_stats') setTimeout(cargarGraficaActualizada, 350);
         if(id === 'mod_calendario') setTimeout(inicializarCalendario, 300);
-        if(id === 'mod_gest_mantenimientos') cargarGestionMantenimientos();
+        if(id === 'mod_gest_mantenimientos') {
+            document.getElementById('tbody_gest_mantenimientos').innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando...</td></tr>";
+            cargarGestionMantenimientos();
+        }
+
+        // Control del botón AGREGAR ROL en Preferencias
+        if(id === 'mod_preferencias') {
+            const btnNuevoRol = document.querySelector('#mod_preferencias .btn-agregar-master');
+            if(btnNuevoRol) {
+                btnNuevoRol.style.display = checkPermission("card_preferencias", "Crear") ? 'flex' : 'none';
+            }
+        }
         
-        // --- CONTROL DE BOTÓN ENVIAR TICKET ---
         if(id === 'mod_enviar_ticket') {
             const btnEnviarTk = document.querySelector('#mod_enviar_ticket .btn-agregar-master');
             if(btnEnviarTk) {
@@ -611,7 +755,6 @@
         }
     } 
 
-    // --- CORRECCIÓN: Función para visualizar tarjetas en Mis Tickets ---
     function cargarMisTickets() {
         const container = document.getElementById('mis_tk_container');
         if (!container) return;
@@ -631,7 +774,7 @@
                         <strong>#${doc.id.substring(0,6)}</strong><br>
                         <small><b>Tipo:</b> ${t.tipo}</small><br>
                         <small><b>Fecha:</b> ${t.fecha}</small>
-                        <p style="font-size:0.75rem; margin-top:10px;">${t.desc.substring(0,80)}...</p>
+                        <p style="font-size:0.75rem; margin-top:10px;">${(t.desc || '').substring(0,80)}...</p>
                     </div>`;
             });
         });
@@ -643,21 +786,15 @@
         document.getElementById('panel-principal').style.display = 'grid'; 
         document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none'); 
         
-        // Resetear visibilidad de botones al volver al panel para evitar errores visuales
         const btnNuevo = document.getElementById('btn_maestro_nuevo');
         if(btnNuevo) btnNuevo.style.display = 'none';
     }
 
-    // Lógica de Permisos / Roles
     function checkPermission(modId, action) {
-        // CORRECCIÓN: El administrador maestro y cualquier usuario con rol Admin tiene permiso total
-        if(user && (user.email === "camicarmona1212@gmail.com" || userRole === "Admin")) return true;
-        
-        // Bloqueo explícito de seguridad para Gestores (aunque tengan el permiso en DB)
-        if(userRole === "Gestor" && (action === "Eliminar" || action === "Reasignar")) return false;
-
+        if(!user) return false;
+        if(user.email === "camicarmona1212@gmail.com") return true;
+        if(currentPermissions === "ALL") return true;
         if(!currentPermissions || !currentPermissions[modId]) return false;
-        
         const modPerms = currentPermissions[modId];
         return Array.isArray(modPerms) && modPerms.includes(action);
     }
@@ -685,16 +822,13 @@
             const r = listaRolesGlobal.find(x => x.id === id);
             if(r) {
                 document.getElementById('rol_nombre').value = r.nombre;
-                // Pequeño delay para que el HTML se termine de dibujar antes de marcar los checks
                 setTimeout(() => {
                     const modsGuardados = r.modulos || [];
                     const permsGuardados = r.accionesPermitidas || {};
-
                     document.querySelectorAll('.chk-rol-mod').forEach(chk => {
                         if(modsGuardados.includes(chk.value)) {
                             chk.checked = true;
                             toggleAccionesRol(chk.value, true);
-                            
                             const acts = permsGuardados[chk.value] || [];
                             document.querySelectorAll(`.chk-act-rol[data-mod="${chk.value}"]`).forEach(aCheck => {
                                 if(acts.includes(aCheck.value)) aCheck.checked = true;
@@ -732,80 +866,145 @@
 
     function renderTablaRoles() {
         const tb = document.getElementById('tbody_roles');
-        if(!tb) return;
+        if (!tb) return;
         tb.innerHTML = "";
+
         listaRolesGlobal.forEach(r => {
-            tb.innerHTML += `<tr>
-                <td><b>${r.nombre}</b></td>
-                <td>${r.modulos.length} módulos asignados</td>
-                <td>
-                    <button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')"><i class="fas fa-edit"></i></button>
-                    <button class="btn-acc bg-d-red" onclick="eliminarRol('${r.id}')"><i class="fas fa-trash"></i></button>
-                </td>
-            </tr>`;
+            // 1. Verificamos permisos específicamente para el módulo de Preferencias
+            const puedeEditar = checkPermission("card_preferencias", "Editar");
+            const puedeEliminar = checkPermission("card_preferencias", "Eliminar");
+
+            // 2. Construimos los botones solo si el permiso existe
+            let btnEdit = puedeEditar ? 
+                `<button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')" title="Editar Rol"><i class="fas fa-edit"></i></button>` : "";
+            
+            let btnDel = puedeEliminar ? 
+                `<button class="btn-acc bg-d-red" onclick="eliminarRol('${r.id}')" title="Eliminar Rol"><i class="fas fa-trash"></i></button>` : "";
+
+            // 3. Renderizamos la fila
+            tb.innerHTML += `
+                <tr>
+                    <td><b>${r.nombre}</b></td>
+                    <td>${(r.modulos || []).length} módulos asignados</td>
+                    <td>
+                        <div style="display: flex; gap: 5px;">
+                            ${btnEdit}
+                            ${btnDel}
+                        </div>
+                    </td>
+                </tr>`;
         });
+
+        if (listaRolesGlobal.length === 0) {
+            tb.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No hay roles configurados</td></tr>";
+        }
     }
 
     async function eliminarRol(id) {
         if(confirm("¿Eliminar este rol?")) await db.collection("roles").doc(id).delete();
     }
 
-    // Funciones de Tickets
+    // CORRECCIÓN: FUNCIÓN ENVIAR TICKET CON SOPORTE DE IMAGEN
     async function enviarTicket() {
-    const nom = document.getElementById('tk_nom_user').value;
-    const d = document.getElementById('tk_desc').value;
-    
-    if(!nom || !d) return alert("Por favor, complete todos los campos.");
-
-    try {
-        const contadorRef = db.collection("configuracion").doc("contadores");
+        const nom = document.getElementById('tk_nom_user').value;
+        const d = document.getElementById('tk_desc').value;
+        const archivoInput = document.getElementById('tk_archivo');
+        const progressDiv = document.getElementById('upload_progress');
         
-        // Transacción para asegurar que el número sea único y secuencial
-        await db.runTransaction(async (transaction) => {
-            const contadorDoc = await transaction.get(contadorRef);
-            
-            if (!contadorDoc.exists) {
-                throw "El documento de contadores no existe.";
+        if(!nom || !d) return alert("Por favor, complete todos los campos obligatorios.");
+
+        try {
+            let urlDescarga = "";
+
+            // 1. Subida de imagen (si existe)
+            if (archivoInput && archivoInput.files[0]) {
+                const file = archivoInput.files[0];
+                const fileName = `tickets/${Date.now()}_${file.name}`;
+                const storageRef = storage.ref(fileName);
+                
+                if(progressDiv) progressDiv.style.display = "block";
+                
+                const task = storageRef.put(file);
+
+                await new Promise((resolve, reject) => {
+                    task.on('state_changed', 
+                        (snapshot) => {
+                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            if(progressDiv) progressDiv.innerText = `Subiendo imagen... ${Math.round(progress)}%`;
+                        }, 
+                        (error) => {
+                            console.error("Error en Storage:", error);
+                            reject("Error al subir la imagen.");
+                        }, 
+                        async () => {
+                            urlDescarga = await task.snapshot.ref.getDownloadURL();
+                            resolve();
+                        }
+                    );
+                });
             }
 
-            // Incrementar el número
-            const nuevoIdNum = contadorDoc.data().ticket_actual + 1;
-            transaction.update(contadorRef, { ticket_actual: nuevoIdNum });
-
-            let asig = "Pendiente";
-            if(listaGestoresGlobal.length > 0) {
-                asig = listaGestoresGlobal[Math.floor(Math.random() * listaGestoresGlobal.length)].nom;
-            }
-
-            // Crear el ticket usando el número como ID del documento (convertido a String)
-            const nuevoTicketRef = db.collection("tickets").doc(nuevoIdNum.toString());
+            // 2. Guardado en Firestore con Transacción para ID numérico
+            const contadorRef = db.collection("configuracion").doc("contadores");
             
-            transaction.set(nuevoTicketRef, {
-                ticket_id_numerico: nuevoIdNum, // Guardamos el número también como campo
-                solicitante: nom,
-                usuario: user.email,
-                campus: document.getElementById('tk_campus').value,
-                prioridad: document.getElementById('tk_prioridad').value,
-                dependencia: document.getElementById('tk_dep').value,
-                tipo: document.getElementById('tk_tipo').value,
-                desc: d,
-                estado: "Abierto",
-                asignado: asig,
-                fecha: new Date().toLocaleString()
+            await db.runTransaction(async (transaction) => {
+                const contadorDoc = await transaction.get(contadorRef);
+                if (!contadorDoc.exists) throw "Error: Documento de contadores no encontrado.";
+                
+                const nuevoIdNum = contadorDoc.data().ticket_actual + 1;
+                transaction.update(contadorRef, { ticket_actual: nuevoIdNum });
+
+                let asig = "Pendiente";
+                if(listaGestoresGlobal.length > 0) {
+                    asig = listaGestoresGlobal[Math.floor(Math.random() * listaGestoresGlobal.length)].nom;
+                }
+
+                transaction.set(db.collection("tickets").doc(nuevoIdNum.toString()), {
+                    ticket_id_numerico: nuevoIdNum,
+                    solicitante: nom,
+                    usuario: user.email,
+                    campus: document.getElementById('tk_campus').value,
+                    prioridad: document.getElementById('tk_prioridad').value,
+                    dependencia: document.getElementById('tk_dep').value,
+                    tipo: document.getElementById('tk_tipo').value,
+                    desc: d,
+                    imagen: urlDescarga,
+                    estado: "Abierto",
+                    asignado: asig,
+                    fecha: new Date().toLocaleString()
+                });
             });
-        });
 
-        alert("Ticket enviado exitosamente.");
-        volver();
-    } catch (e) {
-        console.error("Error al crear ticket: ", e);
-        alert("Error al generar el número de ticket.");
+            // 3. Notificación de Éxito Personalizada
+            if (typeof mostrarAlertaPersonalizada === 'function') {
+                mostrarAlertaPersonalizada("¡Envío Exitoso!", "Tu ticket ha sido registrado correctamente.");
+            } else {
+                mostrarAlertaPersonalizada("¡Envío Exitoso!", "Tu ticket ha sido registrado. El personal de TI revisará tu solicitud pronto.");
+            }
+            
+            // 4. Limpieza de campos
+            document.getElementById('tk_nom_user').value = "";
+            document.getElementById('tk_desc').value = "";
+            document.getElementById('tk_campus').selectedIndex = 0;
+            document.getElementById('tk_prioridad').selectedIndex = 0;
+            document.getElementById('tk_dep').selectedIndex = 0;
+            document.getElementById('tk_tipo').selectedIndex = 0;
+            
+            if(archivoInput) archivoInput.value = "";
+            if(progressDiv) progressDiv.style.display = "none";
+
+            volver();
+            
+        } catch (e) {
+            console.error("Error completo:", e);
+            alert("Error al enviar ticket: " + e);
+        }
     }
-}
 
     function cargarTicketsAdmin() {
         const tb = document.getElementById('tbody_admin_tickets');
         db.collection("tickets").onSnapshot(snap => {
+            if(!tb) return;
             tb.innerHTML = ""; 
             snap.forEach(doc => {
                 const t = doc.data(); 
@@ -826,6 +1025,15 @@
     async function verDetalleTicket(id) { 
         const doc = await db.collection("tickets").doc(id).get(); 
         const t = doc.data(); 
+        
+        let imgHTML = t.imagen ? `
+            <div style="margin-top:15px;">
+                <p><b>Evidencia Adjunta:</b></p>
+                <a href="${t.imagen}" target="_blank">
+                    <img src="${t.imagen}" style="max-width:100%; border-radius:10px; border:1px solid #ddd; cursor: zoom-in;">
+                </a>
+            </div>` : '<p><i>Sin evidencia adjunta.</i></p>';
+
         document.getElementById('detalle_content').innerHTML = `
             <div style="text-align:left; line-height:1.6;">
                 <p><b>ID Ticket:</b> #${id}</p>
@@ -835,6 +1043,8 @@
                 <p><b>Tipo:</b> ${t.tipo}</p>
                 <p><b>Prioridad:</b> ${t.prioridad}</p>
                 <p><b>Descripción:</b> ${t.desc}</p>
+                <hr>
+                ${imgHTML} 
                 <hr>
                 <p><b>Gestor Asignado:</b> ${t.asignado}</p>
                 <p><b>Estado:</b> <span style="color:var(--primary); font-weight:bold;">${t.estado}</span></p>
@@ -869,35 +1079,23 @@
     }
 
     function renderTablaMaestra(dataFiltrada = null) {
-        const b = document.getElementById('m_tbody'); 
-        if(!b) return;
+        const b = document.getElementById('m_tbody'); if(!b) return;
         b.innerHTML = "";
-        const h = document.getElementById('m_thead');
-        if(!h) return;
+        const h = document.getElementById('m_thead'); if(!h) return;
         h.innerHTML = "";
-        
         const displayData = dataFiltrada || localData;
-        
-        // Obtenemos el ID del módulo actual para validar permisos
         const currentModId = `card_${currentColl === 'inventario' ? 'inv_admin' : (currentColl === 'inventario_salas' ? 'inv_salas' : currentColl)}`;
 
         if(currentColl === 'extensiones') {
             h.innerHTML = `<tr><th>Nombre</th><th>Dependencia</th><th>Extensión</th><th>Tipo</th><th>Acciones</th></tr>`;
             displayData.forEach(e => {
                 let btns = "";
-                if(checkPermission("card_extensiones", "Ver Detalle")) {
-                    btns += `<button class="btn-acc bg-v-gray" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
-                }
-                if(checkPermission("card_extensiones", "Editar")) {
-                    btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-                }
-                if(userRole === "Admin" || checkPermission("card_extensiones", "Eliminar")) {
-                    btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
-                }
+                if(checkPermission("card_extensiones", "Ver Detalle")) btns += `<button class="btn-acc bg-v-gray" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
+                if(checkPermission("card_extensiones", "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                if(userRole === "Admin" || checkPermission("card_extensiones", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
                 b.innerHTML += `<tr><td><b>${e.nom}</b></td><td>${e.dep}</td><td>${e.ext}</td><td>${e.tipo_ext}</td><td>${btns}</td></tr>`;
             });
-        } 
-        else if(currentColl === 'usuarios') {
+        } else if(currentColl === 'usuarios') {
             h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
             displayData.forEach(e => { 
                 let btns = "";
@@ -905,42 +1103,21 @@
                 if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
                 b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td><td>${btns}</td></tr>`; 
             });
-        } 
-        else {
-            // Inventarios generales (Admin, Salas, Impresoras, Aulas)
+        } else {
             h.innerHTML = `<tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Serial</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Acciones</th></tr>`;
-            
-            const modIdMap = {
-                'inventario': 'card_inv_admin',
-                'inventario_salas': 'card_inv_salas',
-                'aulas_dti': 'card_aulas',
-                'impresoras': 'card_impresoras'
-            };
+            const modIdMap = { 'inventario': 'card_inv_admin', 'inventario_salas': 'card_inv_salas', 'aulas_dti': 'card_aulas', 'impresoras': 'card_impresoras' };
             const activeModId = modIdMap[currentColl] || currentColl;
 
             displayData.forEach(e => {
                 let btns = "";
-                
-                if(userRole === "Admin" || checkPermission(activeModId, "Editar")) {
-                    btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-                }
-                
-                if(userRole === "Admin" || checkPermission(activeModId, "Mantenimiento")) {
-                    btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
-                }
-                
-                if(userRole === "Admin" || checkPermission(activeModId, "Historial")) {
-                    btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
-                }
-                
-                if(userRole === "Admin" || checkPermission(activeModId, "Eliminar")) {
-                    btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
-                }
-                
+                if(checkPermission(activeModId, "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                if(checkPermission(activeModId, "Mantenimiento")) btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')"><i class="fas fa-tools"></i></button>`;
+                if(checkPermission(activeModId, "Historial")) btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')"><i class="fas fa-history"></i></button>`;
+                if(checkPermission(activeModId, "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
                 b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
             });
         }
-    } // <-- ESTA LLAVE DEBE CERRAR TODA LA FUNCIÓN
+    }
 
     function verOjitoExtension(id) {
         const d = localData.find(x => x.id === id);
@@ -953,18 +1130,44 @@
         modoModal = modo; selectedId = id;
         const f = document.getElementById('form_dinamico');
         f.innerHTML = "";
+        
+        // Configuramos el estilo de la cuadrícula a 3 columnas para inventarios
+        if (currentColl === 'inventario' || currentColl === 'inventario_salas') {
+            f.style.gridTemplateColumns = "repeat(3, 1fr)";
+        } else {
+            f.style.gridTemplateColumns = "repeat(2, 1fr)";
+        }
+
         let fields = [];
         if(currentColl === 'extensiones') {
             fields = [["Nombre","nom"],["Dependencia","dep"],["Extensión (4 dígitos)","ext"],["Tipo Extensión","tipo_ext","select",["Zoiper","Telefono fijo"]]];
         } else if(currentColl === 'usuarios') {
             const roles = ["Admin", "Gestor", "Usuario", ...listaRolesGlobal.map(r => r.nombre)];
             fields = [["Nombre","nom"],["Correo","cor"],["Rol","rol","select", [...new Set(roles)]]];
+        } else if(currentColl === 'inventario' || currentColl === 'inventario_salas') {
+            // CAMPOS SEGÚN LA IMAGEN DE REFERENCIA
+            fields = [
+                ["Pc", "nom"], ["Tipo", "tip", "select", ["Portátil", "Todo en Uno", "Torre"]], ["Modelo", "mod"],
+                ["Inventario", "inv_num"], ["Sistema Operativo", "so", "select", ["Windows 10", "Windows 11", "Linux", "MacOS"]], ["Procesador", "proc"],
+                ["Memoria RAM", "ram", "select", ["4GB", "8GB", "12GB", "16GB", "32GB"]], ["Disco", "disco"], ["Ip", "ip"],
+                ["Terminal", "term"], ["Responsable", "res"], ["Dependencia", "dep", "select", ["Sistemas", "Contabilidad", "Tesorería", "Cartera", "Rectoría", "Talento Humano"]],
+                ["Correo", "cor_res"], ["Campus", "cam", "select", ["Bucaramanga", "Bogotá", "Tunja"]], ["Sede", "sede", "select", ["A", "C", "D"]],
+                ["Extension", "ext_tel"], ["Fecha Compra/Ingreso", "f_ingreso", "date"]
+            ];
         } else {
-            fields = [["Nombre Equipo","nom"],["Tipo","tip"],["Modelo","mod"],["Serial","ser"],["Responsable","res"],["Dependencia","dep"],["Campus","cam","select",["Bucaramanga","Bogotá","Tunja"]]];
+            // Campos genéricos para otros maestros (Aulas, Impresoras)
+            fields = [["Nombre","nom"],["Tipo","tip"],["Modelo","mod"],["Serial","ser"],["Responsable","res"],["Dependencia","dep"],["Campus","cam","select",["Bucaramanga","Bogotá","Tunja"]]];
         }
 
         fields.forEach(x => {
-            let inp = x[2] === "select" ? `<select id="${x[1]}">${x[3].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>` : `<input type="text" id="${x[1]}" placeholder="${x[0]}">`;
+            let inp = "";
+            if (x[2] === "select") {
+                inp = `<select id="${x[1]}"><option value="">Seleccione ${x[0]}</option>${x[3].map(o=>`<option value="${o}">${o}</option>`).join('')}</select>`;
+            } else if (x[2] === "date") {
+                inp = `<input type="date" id="${x[1]}">`;
+            } else {
+                inp = `<input type="text" id="${x[1]}" placeholder="${x[0]}">`;
+            }
             f.innerHTML += `<div class="campo-group"><label>${x[0]}</label>${inp}</div>`;
         });
 
@@ -983,7 +1186,6 @@
         cerrarModales(); alert("Registro guardado");
     }
 
-    // Estadísticas
     async function cargarGraficaActualizada() {
         const f = document.getElementById('filtro_stats').value;
         const ctx = document.getElementById('miGrafica').getContext('2d');
@@ -998,7 +1200,6 @@
         });
     }
 
-    // Calendario y Mantenimientos
     async function inicializarCalendario() {
         const calendarEl = document.getElementById('calendar');
         if (!calendarEl) return;
@@ -1025,37 +1226,72 @@
 
     async function cargarGestionMantenimientos() {
         const tb = document.getElementById('tbody_gest_mantenimientos');
-        tb.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando mantenimientos...</td></tr>";
+        if(!tb) return;
+        
+        // Si ya hay datos previos, no mostramos el "Cargando" para que no parpadee
+        if(tb.innerHTML === "") tb.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando mantenimientos...</td></tr>";
         
         const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti"];
+        let promesasGlobales = [];
+
+        try {
+            // Ejecutamos la lectura de todas las colecciones al mismo tiempo
+            for(let coll of colecciones) {
+                promesasGlobales.push(db.collection(coll).get().then(async (equipos) => {
+                    let mantenimientosDeEstaColl = [];
+                    
+                    // Usamos Promise.all para leer todos los mantenimientos de esta colección en paralelo
+                    const mntPromesas = equipos.docs.map(async (equip) => {
+                        const eData = equip.data();
+                        const mnts = await db.collection(coll).doc(equip.id).collection("mantenimientos").get();
+                        return mnts.docs.map(m => ({
+                            id: m.id,
+                            equipId: equip.id,
+                            coll: coll,
+                            nom: eData.nom || 'S/N',
+                            ...m.data()
+                        }));
+                    });
+                    
+                    const resultados = await Promise.all(mntPromesas);
+                    return resultados.flat();
+                }));
+            }
+
+            const todosLosMantenimientos = (await Promise.all(promesasGlobales)).flat();
+            
+            // Ordenar por fecha (más reciente primero) antes de renderizar
+            todosLosMantenimientos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+
+            renderizarMantenimientosOptimizado(todosLosMantenimientos);
+
+        } catch (error) {
+            console.error("Error cargando mantenimientos:", error);
+            tb.innerHTML = "<tr><td colspan='6' style='text-align:center; color:red;'>Error al cargar datos.</td></tr>";
+        }
+    }
+
+    function renderizarMantenimientosOptimizado(data) {
+        const tb = document.getElementById('tbody_gest_mantenimientos');
         let htmlRows = "";
 
-        for(let coll of colecciones) {
-            const equipos = await db.collection(coll).get();
-            for(let equip of equipos.docs) {
-                const eData = equip.data();
-                const mnts = await db.collection(coll).doc(equip.id).collection("mantenimientos").get();
-                
-                mnts.forEach(m => {
-                    const mData = m.data();
-                    // Validar permisos para los botones
-                    let btnEdit = checkPermission("card_gest_mantenimientos", "Editar") ? 
-                        `<button class="btn-acc bg-info-e" onclick="abrirMantenimientoEdicion('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-edit"></i></button>` : "";
-                    
-                    let btnDel = (userRole === "Admin") ? 
-                        `<button class="btn-acc bg-d-red" onclick="eliminarMnt('${coll}', '${equip.id}', '${m.id}')"><i class="fas fa-trash"></i></button>` : "";
+        data.forEach(m => {
+            let btnEdit = checkPermission("card_gest_mantenimientos", "Editar") ? 
+                `<button class="btn-acc bg-info-e" onclick="abrirMantenimientoEdicion('${m.coll}', '${m.equipId}', '${m.id}')"><i class="fas fa-edit"></i></button>` : "";
+            
+            let btnDel = (userRole === "Admin") ? 
+                `<button class="btn-acc bg-d-red" onclick="eliminarMnt('${m.coll}', '${m.equipId}', '${m.id}')"><i class="fas fa-trash"></i></button>` : "";
+            
+            htmlRows += `<tr>
+                <td>${m.fecha}</td>
+                <td><b>${m.nom}</b></td>
+                <td>${m.coll.replace('_', ' ').toUpperCase()}</td>
+                <td>${m.tipo}</td>
+                <td>${m.desc}</td>
+                <td>${btnEdit}${btnDel}</td>
+            </tr>`;
+        });
 
-                    htmlRows += `<tr>
-                        <td>${mData.fecha}</td>
-                        <td><b>${eData.nom || 'S/N'}</b></td>
-                        <td>${coll.replace('_', ' ').toUpperCase()}</td>
-                        <td>${mData.tipo}</td>
-                        <td>${mData.desc}</td>
-                        <td>${btnEdit}${btnDel}</td>
-                    </tr>`;
-                });
-            }
-        }
         tb.innerHTML = htmlRows || "<tr><td colspan='6' style='text-align:center;'>No hay mantenimientos registrados</td></tr>";
     }
 
@@ -1066,15 +1302,12 @@
         selectedId = mntId;
         selectedCollMnt = coll;
         selectedEquipIdMnt = equipId;
-        
         const doc = await db.collection(coll).doc(equipId).collection("mantenimientos").doc(mntId).get();
         const data = doc.data();
-        
         document.getElementById('mnt_modal_title').innerText = "Editar Mantenimiento";
         document.getElementById('mnt_fecha').value = data.fecha;
         document.getElementById('mnt_tipo').value = data.tipo;
         document.getElementById('mnt_desc').value = data.desc;
-        
         document.getElementById('btn_guardar_mnt').onclick = guardarMantenimientoEditado;
         document.getElementById('modalMantenimiento').style.display = 'block';
     }
@@ -1083,14 +1316,8 @@
         const f = document.getElementById('mnt_fecha').value;
         const t = document.getElementById('mnt_tipo').value;
         const d = document.getElementById('mnt_desc').value;
-        
-        await db.collection(selectedCollMnt).doc(selectedEquipIdMnt).collection("mantenimientos").doc(selectedId).update({
-            fecha: f, tipo: t, desc: d
-        });
-        
-        cerrarModales();
-        alert("Mantenimiento actualizado");
-        cargarGestionMantenimientos();
+        await db.collection(selectedCollMnt).doc(selectedEquipIdMnt).collection("mantenimientos").doc(selectedId).update({ fecha: f, tipo: t, desc: d });
+        cerrarModales(); alert("Mantenimiento actualizado"); cargarGestionMantenimientos();
     }
     
     async function verHistorial(id) {
@@ -1108,7 +1335,6 @@
         cerrarModales(); alert("Guardado");
     }
 
-    // Auxiliares
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { localStorage.clear(); auth.signOut().then(() => location.reload()); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
@@ -1116,6 +1342,15 @@
     function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); document.getElementById('modalReasignar').style.display = 'block'; }
     async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); }
 
+    function mostrarAlertaPersonalizada(titulo, mensaje) {
+    document.getElementById('alertTitle').innerText = titulo;
+    document.getElementById('alertMessage').innerText = mensaje;
+    document.getElementById('customAlert').style.display = 'flex';
+}
+
+function cerrarAlertaPersonalizada() {
+    document.getElementById('customAlert').style.display = 'none';
+}
 </script>
 </body>
 </html>
