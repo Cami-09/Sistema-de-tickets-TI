@@ -326,10 +326,128 @@
             text-align: center;
         }
     }
+
+    /* Estilos para los selectores de estado en el chequeo */
+.estado-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+.btn-estado {
+    flex: 1;
+    padding: 8px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.75rem;
+    transition: 0.3s;
+    color: var(--gray);
+}
+.btn-estado.active-funcional {
+    background-color: #dcfce7;
+    border-color: #22c55e;
+    color: #166534;
+}
+.btn-estado.active-falla {
+    background-color: #fee2e2;
+    border-color: #ef4444;
+    color: #991b1b;
+}
+.chequeo-item-label {
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--dark);
+    margin-top: 10px;
+    display: block;
+}
+
+.card-chequeo {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+.card-chequeo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+.card-chequeo-header b { font-size: 0.85rem; color: var(--dark); }
+.card-chequeo-header small { color: var(--gray); font-size: 0.75rem; }
+
+.grid-resultados-hist {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+.res-item {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+}
+.res-funcional { background: #dcfce7; color: #166534; }
+.res-falla { background: #fee2e2; color: #991b1b; }
     </style>
 </head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<body>
+<div id="modalChequeoAula" class="modal">
+    <div class="modal-content" style="max-width:500px;">
+        <h2 style="color:var(--primary); text-align:center;"><i class="fas fa-clipboard-check"></i> Registro de Chequeo Técnico</h2>
+        <p id="aula_nombre_chequeo" style="text-align:center; font-weight:bold; color:var(--gray);"></p>
+        <hr>
+        
+        <div id="form_chequeo_dinamico">
+            <label class="chequeo-item-label">Estado de Equipos</label>
+            <div class="estado-selector" data-item="equipos">
+                <button class="btn-estado" onclick="seleccionarEstado(this, 'Funcional')">FUNCIONAL</button>
+                <button class="btn-estado" onclick="seleccionarEstado(this, 'Falla')">CON FALLA</button>
+            </div>
+
+            <label class="chequeo-item-label">Periféricos (Teclado/Mouse)</label>
+            <div class="estado-selector" data-item="perifericos">
+                <button class="btn-estado" onclick="seleccionarEstado(this, 'Funcional')">FUNCIONAL</button>
+                <button class="btn-estado" onclick="seleccionarEstado(this, 'Falla')">CON FALLA</button>
+            </div>
+
+            <label class="chequeo-item-label">Conectividad / Red</label>
+            <div class="estado-selector" data-item="red">
+                <button class="btn-estado" onclick="seleccionarEstado(this, 'Funcional')">FUNCIONAL</button>
+                <button class="btn-estado" onclick="seleccionarEstado(this, 'Falla')">CON FALLA</button>
+            </div>
+
+            <label class="chequeo-item-label">Aseo y Orden</label>
+            <div class="estado-selector" data-item="aseo">
+                <button class="btn-estado" onclick="seleccionarEstado(this, 'Funcional')">FUNCIONAL</button>
+                <button class="btn-estado" onclick="seleccionarEstado(this, 'Falla')">CON FALLA</button>
+            </div>
+
+            <label class="chequeo-item-label">Video Beam / TV</label>
+            <div class="estado-selector" data-item="video">
+                <button class="btn-estado" onclick="seleccionarEstado(this, 'Funcional')">FUNCIONAL</button>
+                <button class="btn-estado" onclick="seleccionarEstado(this, 'Falla')">CON FALLA</button>
+            </div>
+        </div>
+
+        <div class="campo-group" style="margin-top:15px;">
+            <label>Observaciones Técnicas</label>
+            <textarea id="txt_obs_chequeo" rows="3" placeholder="Describa fallas encontradas si aplica..."></textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn-gray" onclick="cerrarModales()" style="flex:1;">Cancelar</button>
+            <button class="btn-agregar-master" onclick="guardarChequeoAula()" style="flex:1; justify-content:center;">Guardar Chequeo</button>
+        </div>
+    </div>
+</div>
+
 <div id="customAlert" class="modal-notif">
     <div class="modal-notif-content">
         <div id="alertIconContainer" class="icon-circle">
@@ -641,6 +759,22 @@
         <h3>Historial de Mantenimientos</h3>
         <div id="historial_content"></div>
         <div style="margin-top:20px; text-align:right;"><button class="btn-gray" onclick="cerrarModales()">Cerrar</button></div>
+    </div>
+</div>
+
+<div id="modalHistorialChequeos" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <h3 style="color: var(--primary); text-align: center; margin-bottom: 5px;">
+            <i class="fas fa-history"></i> Historial de Chequeos
+        </h3>
+        <p id="hist_aula_nombre" style="text-align: center; font-weight: bold; color: var(--gray); margin-bottom: 20px;"></p>
+        
+        <div id="hist_chequeos_container" style="display: flex; flex-direction: column; gap: 15px;">
+            </div>
+
+        <div style="margin-top: 25px; text-align: right;">
+            <button class="btn-gray" onclick="cerrarModales()">Cerrar Historial</button>
+        </div>
     </div>
 </div>
 
@@ -1280,34 +1414,71 @@ renderTablaRoles();
 }
 
     function renderTablaMaestra(dataFiltrada = null) {
-        const b = document.getElementById('m_tbody'); if(!b) return;
-        b.innerHTML = "";
-        const h = document.getElementById('m_thead'); if(!h) return;
-        h.innerHTML = "";
-        const displayData = dataFiltrada || localData;
-        const currentModId = `card_${currentColl === 'inventario' ? 'inv_admin' : (currentColl === 'inventario_salas' ? 'inv_salas' : currentColl)}`;
+    const b = document.getElementById('m_tbody'); if(!b) return;
+    b.innerHTML = "";
+    const h = document.getElementById('m_thead'); if(!h) return;
+    h.innerHTML = "";
+    
+    const displayData = dataFiltrada || localData;
+    const activeModId = `card_${currentColl === 'inventario' ? 'inv_admin' : (currentColl === 'inventario_salas' ? 'inv_salas' : currentColl)}`;
 
+    // CONFIGURACIÓN DE CABECERAS
+    if(currentColl === 'extensiones') {
+        h.innerHTML = `<tr><th>Nombre</th><th>Dependencia</th><th>Extensión</th><th>Tipo</th><th>Acciones</th></tr>`;
+    } else if(currentColl === 'usuarios') {
+        h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
+    } else {
+        h.innerHTML = `<tr><th>Nombre/Aula</th><th>Tipo</th><th>Modelo/Ubicación</th><th>Serial/ID</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Acciones</th></tr>`;
+    }
+
+    // RENDERIZADO DE FILAS
+    displayData.forEach(e => {
+        let btns = "";
+        let rowHTML = "";
+
+        // Lógica de botones según permisos y colección
         if(currentColl === 'extensiones') {
-            h.innerHTML = `<tr><th>Nombre</th><th>Dependencia</th><th>Extensión</th><th>Tipo</th><th>Acciones</th></tr>`;
-            displayData.forEach(e => {
-                let btns = "";
-                if(checkPermission("card_extensiones", "Ver Detalle")) btns += `<button class="btn-acc bg-v-gray" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
-                if(checkPermission("card_extensiones", "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-                if(userRole === "Admin" || checkPermission("card_extensiones", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
-                b.innerHTML += `<tr><td><b>${e.nom}</b></td><td>${e.dep}</td><td>${e.ext}</td><td>${e.tipo_ext}</td><td>${btns}</td></tr>`;
-            });
+            if(checkPermission("card_extensiones", "Ver Detalle")) btns += `<button class="btn-acc bg-v-gray" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
+            if(checkPermission("card_extensiones", "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+            if(userRole === "Admin" || checkPermission("card_extensiones", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
+            
+            rowHTML = `<tr><td><b>${e.nom || ''}</b></td><td>${e.dep || ''}</td><td>${e.ext || ''}</td><td>${e.tipo_ext || ''}</td><td>${btns}</td></tr>`;
+        
         } else if(currentColl === 'usuarios') {
-            h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
-            displayData.forEach(e => { 
-                let btns = "";
-                if(checkPermission("card_usuarios", "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-                if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
-                b.innerHTML += `<tr><td>${e.nom}</td><td>${e.cor}</td><td>${e.rol}</td><td>${btns}</td></tr>`; 
-            });
+            if(checkPermission("card_usuarios", "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+            if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
+            
+            rowHTML = `<tr><td>${e.nom || ''}</td><td>${e.cor || ''}</td><td>${e.rol || ''}</td><td>${btns}</td></tr>`;
+        
         } else {
-            h.innerHTML = `<tr><th>PC</th><th>Tipo</th><th>Modelo</th><th>Serial</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Acciones</th></tr>`;
-            const modIdMap = { 'inventario': 'card_inv_admin', 'inventario_salas': 'card_inv_salas', 'aulas_dti': 'card_aulas', 'impresoras': 'card_impresoras' };
-            const activeModId = modIdMap[currentColl] || currentColl;
+            // Caso para Inventarios, Aulas e Impresoras
+            if(checkPermission(activeModId, "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>`;
+            
+            if(currentColl === 'aulas_dti') {
+                btns += `<button class="btn-acc bg-c-green" onclick="abrirModalChequeo('${e.id}', '${e.nom}')" title="Registrar Chequeo"><i class="fas fa-check-double"></i></button>`;
+            }
+
+            if(checkPermission(activeModId, "Mantenimiento")) btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')" title="Mantenimiento"><i class="fas fa-tools"></i></button>`;
+            
+            if(checkPermission(activeModId, "Historial")) {
+                if(currentColl === 'aulas_dti') {
+                    btns += `<button class="btn-acc bg-v-gray" onclick="verHistorialAulas('${e.id}', '${e.nom}')" title="Historial de Chequeos"><i class="fas fa-history"></i></button>`;
+                } else {
+                    btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')" title="Historial de Mantenimientos"><i class="fas fa-history"></i></button>`;
+                }
+            }
+            
+            if(userRole === "Admin") {
+                btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')" title="Eliminar"><i class="fas fa-trash"></i></button>`;
+            }
+
+            rowHTML = `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
+        }
+
+        b.innerHTML += rowHTML;
+    });
+}
+
 
             displayData.forEach(e => {
                 let btns = "";
@@ -1317,8 +1488,58 @@ renderTablaRoles();
                 if(checkPermission(activeModId, "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')"><i class="fas fa-trash"></i></button>`;
                 b.innerHTML += `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
             });
+
+    async function verHistorialAulas(id, nombreAula) {
+    const container = document.getElementById('hist_chequeos_container');
+    document.getElementById('hist_aula_nombre').innerText = "Aula: " + nombreAula;
+    container.innerHTML = "<p style='text-align:center;'>Cargando historial...</p>";
+    
+    document.getElementById('modalHistorialChequeos').style.display = 'block';
+
+    try {
+        const snap = await db.collection("aulas_dti").doc(id)
+                             .collection("chequeos")
+                             .orderBy("fecha", "desc").get();
+
+        if (snap.empty) {
+            container.innerHTML = "<p style='text-align:center; color:var(--gray);'>No hay registros de chequeo para esta aula.</p>";
+            return;
         }
+
+        container.innerHTML = "";
+        snap.forEach(doc => {
+            const data = doc.data();
+            const res = data.resultados || {};
+            
+            // Función auxiliar para determinar clase de color
+            const getClase = (val) => val === 'Funcional' ? 'res-funcional' : 'res-falla';
+
+            container.innerHTML += `
+                <div class="card-chequeo">
+                    <div class="card-chequeo-header">
+                        <b><i class="fas fa-user-edit"></i> ${data.usuario.split('@')[0]}</b>
+                        <small><i class="far fa-calendar-alt"></i> ${data.fecha}</small>
+                    </div>
+                    <div class="grid-resultados-hist">
+                        <div class="res-item ${getClase(res.equipos)}"><span>Equipos:</span> <span>${res.equipos || 'N/A'}</span></div>
+                        <div class="res-item ${getClase(res.perifericos)}"><span>Periféricos:</span> <span>${res.perifericos || 'N/A'}</span></div>
+                        <div class="res-item ${getClase(res.red)}"><span>Red:</span> <span>${res.red || 'N/A'}</span></div>
+                        <div class="res-item ${getClase(res.aseo)}"><span>Aseo:</span> <span>${res.aseo || 'N/A'}</span></div>
+                        <div class="res-item ${getClase(res.video)}"><span>Video:</span> <span>${res.video || 'N/A'}</span></div>
+                    </div>
+                    ${data.observaciones ? `
+                        <div style="margin-top:10px; font-size:0.75rem; background:#fff; padding:8px; border-radius:6px; border-left:3px solid var(--primary);">
+                            <b>Obs:</b> ${data.observaciones}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        });
+    } catch (error) {
+        console.error("Error al cargar historial:", error);
+        container.innerHTML = "<p style='text-align:center; color:red;'>Error al cargar los datos.</p>";
     }
+}
 
     function verOjitoExtension(id) {
         const d = localData.find(x => x.id === id);
@@ -1617,6 +1838,69 @@ async function guardarDatoMaestro() {
     await db.collection(currentColl).add(o);
     cerrarModales(); 
     mostrarModalStatus("success", "¡Éxito!", "El equipo ha sido registrado correctamente.");
+}
+
+// Variable para guardar los estados seleccionados temporalmente
+let estadosChequeoActual = {};
+
+function abrirModalChequeo(id, nombre) {
+    selectedId = id;
+    document.getElementById('aula_nombre_chequeo').innerText = "Aula: " + nombre;
+    document.getElementById('txt_obs_chequeo').value = "";
+    
+    // Resetear botones y objeto de estados
+    estadosChequeoActual = { equipos: '', perifericos: '', red: '', aseo: '', video: '' };
+    document.querySelectorAll('.btn-estado').forEach(btn => {
+        btn.classList.remove('active-funcional', 'active-falla');
+    });
+    
+    document.getElementById('modalChequeoAula').style.display = 'block';
+}
+
+function seleccionarEstado(elemento, valor) {
+    const contenedor = elemento.parentElement;
+    const itemKey = contenedor.getAttribute('data-item');
+    
+    // Quitar clases activas de los hermanos en ese grupo
+    contenedor.querySelectorAll('.btn-estado').forEach(btn => {
+        btn.classList.remove('active-funcional', 'active-falla');
+    });
+
+    // Agregar clase según el valor
+    if (valor === 'Funcional') {
+        elemento.classList.add('active-funcional');
+    } else {
+        elemento.classList.add('active-falla');
+    }
+
+    // Guardar en el objeto
+    estadosChequeoActual[itemKey] = valor;
+}
+
+async function guardarChequeoAula() {
+    // Validar que se hayan seleccionado todos los estados
+    const incompletos = Object.values(estadosChequeoActual).some(v => v === '');
+    if(incompletos) {
+        mostrarModalStatus("warning", "Faltan datos", "Por favor seleccione el estado de todos los ítems antes de guardar.");
+        return;
+    }
+
+    const obs = document.getElementById('txt_obs_chequeo').value;
+
+    try {
+        await db.collection("aulas_dti").doc(selectedId).collection("chequeos").add({
+            fecha: new Date().toLocaleString(),
+            usuario: user.email,
+            resultados: estadosChequeoActual, // Se guarda como objeto {equipos: "Funcional", ...}
+            observaciones: obs
+        });
+
+        cerrarModales();
+        mostrarModalStatus("success", "¡Chequeo Registrado!", "El historial del aula ha sido actualizado.");
+    } catch (error) {
+        console.error("Error:", error);
+        mostrarModalStatus("danger", "Error", "No se pudo guardar el chequeo.");
+    }
 }
 </script>
 </body>
