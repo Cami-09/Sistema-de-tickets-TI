@@ -239,23 +239,39 @@
 }
 
 /* --- DISEÑO ADAPTATIVO AVANZADO --- */
-#mod_enviar_ticket .modulo {
-    display: flex;
+/* 1. Forzamos que los módulos nazcan ocultos para evitar el parpadeo */
+.modulo {
+    display: none; 
+    background: white;
+    padding: 25px;
+    border-radius: 20px;
+    min-height: 550px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    animation: fadeIn 0.3s ease;
+    width: 100%;
+    box-sizing: border-box; /* Vital para que el padding no desplace el contenido */
+}
+
+#mod_enviar_ticket.modulo {
+    display: none; /* Asegura que no parpadee al cargar */
     flex-direction: column;
     align-items: center;
     background-color: #f8fafc;
+    width: 100%;
+    padding: 20px;
 }
 
-/* Contenedor tipo tarjeta */
+/* Contenedor tipo tarjeta centrado */
 .ticket-card {
     background: white;
     width: 100%;
-    max-width: 850px; /* Ancho ideal para monitores */
+    max-width: 850px; 
     padding: 40px;
     border-radius: 20px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.05);
     border: 1px solid #edf2f7;
-    margin: 20px auto;
+    margin: 20px auto; /* Centrado horizontal en PC */
+    box-sizing: border-box;
 }
 
 /* Sistema de Rejilla para los campos */
