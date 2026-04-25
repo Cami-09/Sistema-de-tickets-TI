@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SISTEMA TIC UNICIENCIA - MASTER FINAL INTEGRAL</title>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -271,30 +271,48 @@
     grid-column: span 2;
 }
 
-/* AJUSTES PARA CELULARES */
-@media (max-width: 768px) {
-    .ticket-card {
-        padding: 20px;
-        margin-top: 10px;
-        box-shadow: none; /* Menos carga visual en móvil */
-        border: none;
-    }
+/* Reglas específicas para Celulares (Centrado Perfecto) */
+    @media (max-width: 768px) {
+        #mod_enviar_ticket {
+            padding: 10px !important; /* Espacio uniforme en los 4 lados */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
-    .ticket-grid {
-        grid-template-columns: 1fr !important; /* 1 Sola columna en móvil */
-        gap: 15px;
-    }
+        #mod_enviar_ticket .ticket-card {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 10px 0 !important; /* Elimina márgenes laterales que puedan empujar */
+            padding: 20px !important;
+            box-sizing: border-box; /* Asegura que el padding no estire el div */
+            border-radius: 15px;
+        }
 
-    .span-full {
-        grid-column: span 1;
-    }
+        #mod_enviar_ticket .grid-bonito, 
+        #mod_enviar_ticket .ticket-grid {
+            grid-template-columns: 1fr !important; 
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important; /* El padding ya lo da la card */
+        }
 
-    #mod_enviar_ticket h2 {
-        font-size: 1.4rem;
+        /* Ajuste para que los inputs no se salgan */
+        #mod_enviar_ticket input, 
+        #mod_enviar_ticket select, 
+        #mod_enviar_ticket textarea {
+            width: 100% !important;
+            box-sizing: border-box;
+        }
+
+        #mod_enviar_ticket h2 {
+            font-size: 1.3rem;
+            text-align: center;
+        }
     }
-}
     </style>
 </head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <body>
 <div id="customAlert" class="modal-notif">
     <div class="modal-notif-content">
