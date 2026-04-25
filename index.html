@@ -294,6 +294,47 @@
     }
 }
 
+/* --- OPTIMIZACIÓN MÓVIL PARA EL FORMULARIO --- */
+@media (max-width: 600px) {
+    /* Ajusta el padding del contenedor principal para ganar espacio */
+    .ticket-card {
+        padding: 15px;
+        margin: 10px auto;
+        border-radius: 12px;
+        width: 95%; /* Ocupa casi todo el ancho */
+    }
+
+    /* Forzar que todos los campos ocupen el 100% del ancho */
+    .ticket-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px; /* Reducir espacio entre campos para evitar scroll infinito */
+    }
+
+    .span-full {
+        grid-column: span 1;
+    }
+
+    /* Aumentar el tamaño de los inputs para mejor UX táctil */
+    .campo-group input, 
+    .campo-group select, 
+    .campo-group textarea {
+        font-size: 16px !important; /* Evita el zoom automático en iOS al enfocar */
+        padding: 12px;
+    }
+
+    /* Ajustar el encabezado del módulo */
+    #mod_enviar_ticket h2 {
+        font-size: 1.2rem;
+        margin-top: 10px;
+    }
+
+    /* Hacer el botón de enviar más grande y fácil de presionar */
+    .btn-agregar-master {
+        padding: 15px;
+        font-size: 0.9rem;
+    }
+}
+
     </style>
 </head>
 <body>
