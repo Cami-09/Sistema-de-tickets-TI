@@ -2060,21 +2060,7 @@ function cerrarModalStatus() {
         modal.style.display = 'none';
     }
 }
-
-// ACTUALIZACIÓN EN ENVIAR TICKET (Validación de campos vacíos)
-async function enviarTicket() {
-    const nom = document.getElementById('tk_nom_user').value;
-    const d = document.getElementById('tk_desc').value;
     
-    // REEMPLAZO DEL ALERT BÁSICO POR EL MODAL MODERNO
-    if(!nom || !d) {
-        mostrarModalStatus("warning", "Campos Incompletos", "Por favor, complete todos los campos obligatorios antes de enviar su solicitud.");
-        return;
-    }
-
-    // ... resto de tu código de envío actual ...
-}
-
 function abrirModalChequeo(id, nombre) {
     selectedId = id;
     document.getElementById('aula_nombre_chequeo').innerText = "Aula: " + nombre;
