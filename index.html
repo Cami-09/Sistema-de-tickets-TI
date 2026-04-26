@@ -396,6 +396,89 @@
 }
 .res-funcional { background: #dcfce7; color: #166534; }
 .res-falla { background: #fee2e2; color: #991b1b; }
+
+/* --- NUEVO DISEÑO PARA PERSONALIZACIÓN VISUAL --- */
+.config-grid-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    padding: 10px 0;
+}
+
+.config-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.config-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 12px;
+}
+
+.config-card-header i {
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    border-radius: 10px;
+}
+
+.config-section-title {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.action-colors-container {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #edf2f7;
+}
+
+.grid-colores-acciones {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Dos columnas de colores */
+    gap: 10px;
+}
+
+.btn-save-config {
+    margin-top: auto;
+    width: 100%;
+    background: var(--dark);
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.3s;
+}
+
+.btn-save-config:hover {
+    background: var(--primary);
+}
     </style>
 </head>
 <div id="modalChequeoAula" class="modal">
@@ -500,6 +583,7 @@
         <div class="card" id="card_impresoras" onclick="abrir_maestro('impresoras', 'Impresoras')"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
         <div class="card" id="card_gest_mantenimientos" onclick="abrir('mod_gest_mantenimientos')"><i class="fas fa-tools"></i><h3>Gestión Mantenimientos</h3></div>
         <div class="card" id="card_preferencias" onclick="abrir('mod_preferencias')"><i class="fas fa-cogs"></i><h3>Gestión Preferencias</h3></div>
+        <div class="card" id="card_config_visual" onclick="abrir('mod_config_visual')"><i class="fas fa-palette"></i><h3>Personalización</h3></div>
     </div>
 
     <div id="mod_historico_cerrados" class="modulo">
@@ -714,6 +798,22 @@
     </div>
 </div>
 
+<div id="mod_config_visual" class="modulo">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap: wrap; gap: 10px;">
+        <button onclick="volver()" class="btn-gray">⬅ Volver</button>
+        <h2 style="margin:0;"><i class="fas fa-palette"></i> Centro de Personalización</h2>
+        <button class="btn-agregar-master" onclick="restablecerConfiguracionPredeterminada()"><i class="fas fa-undo"></i> Resetear a Fábrica</button>
+    </div>
+    
+    <div class="search-container" style="background: #e0f2fe; border: 1px solid #bae6fd;">
+        <p style="font-size: 0.8rem; margin: 0; color: #0369a1;">
+            <i class="fas fa-info-circle"></i> Personaliza el nombre, icono y colores de los botones de cada módulo de forma independiente.
+        </p>
+    </div>
+
+    <div id="container_config_visual" class="config-grid-cards"></div>
+</div>
+
 <div id="modalVerGeneral" class="modal">
     <div class="modal-content">
         <h3 id="ver_gral_titulo">Detalle de Información</h3>
@@ -740,15 +840,39 @@
 </div>
 
 <div id="modalMantenimiento" class="modal">
-    <div class="modal-content" style="max-width:400px;">
-        <h3 id="mnt_modal_title">Registrar Mantenimiento</h3>
-        <div class="grid-bonito" style="grid-template-columns:1fr;">
-            <div class="campo-group"><label>Fecha Programada</label><input type="date" id="mnt_fecha"></div>
-            <div class="campo-group"><label>Tipo</label><select id="mnt_tipo"><option>Preventivo</option><option>Correctivo</option></select></div>
-            <div class="campo-group"><label>Descripción del Trabajo</label><textarea id="mnt_desc" rows="4"></textarea></div>
-            <div style="display:flex; gap:10px; margin-top:10px;">
-                <button class="btn-gray" onclick="cerrarModales()" style="flex:1;">Cerrar</button>
-                <button class="btn-agregar-master" id="btn_guardar_mnt" onclick="guardarMantenimiento()" style="flex:1; justify-content:center;">Guardar</button>
+    <div class="modal-content" style="max-width:450px; border-radius: 20px; padding: 30px;">
+        <h2 id="mnt_modal_title" style="color:var(--primary); text-align:center; margin-bottom: 5px;">
+            <i class="fas fa-tools"></i> Registrar Mantenimiento
+        </h2>
+        <p style="text-align:center; color:var(--gray); font-size:0.8rem; margin-bottom: 25px;">
+            Ingrese los detalles técnicos del servicio realizado o programado.
+        </p>
+        
+        <div class="grid-bonito" style="grid-template-columns:1fr; gap: 20px;">
+            <div class="campo-group">
+                <label><i class="far fa-calendar-alt"></i> Fecha del Servicio</label>
+                <input type="date" id="mnt_fecha" style="width: 100%; box-sizing: border-box;">
+            </div>
+            
+            <div class="campo-group">
+                <label><i class="fas fa-tag"></i> Tipo de Mantenimiento</label>
+                <select id="mnt_tipo" style="width: 100%; box-sizing: border-box;">
+                    <option value="Preventivo">Preventivo</option>
+                    <option value="Correctivo">Correctivo</option>
+                    <option value="Garantía">Garantía / Soporte Externo</option>
+                </select>
+            </div>
+            
+            <div class="campo-group">
+                <label><i class="fas fa-align-left"></i> Descripción del Trabajo</label>
+                <textarea id="mnt_desc" rows="4" placeholder="Describa las acciones realizadas..." style="width: 100%; box-sizing: border-box; resize: none;"></textarea>
+            </div>
+            
+            <div style="display:flex; gap:12px; margin-top:15px;">
+                <button class="btn-gray" onclick="cerrarModales()" style="flex:1; padding: 12px; font-weight: 700;">Cancelar</button>
+                <button class="btn-agregar-master" id="btn_guardar_mnt" onclick="guardarMantenimiento()" style="flex:1; justify-content:center; padding: 12px; font-size: 0.9rem;">
+                    Guardar Registro
+                </button>
             </div>
         </div>
     </div>
@@ -844,7 +968,8 @@
         {id: "card_aulas", nom: "Aulas DTI", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
         {id: "card_impresoras", nom: "Impresoras", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
         {id: "card_gest_mantenimientos", nom: "Gestión Mantenimientos", acts: ["Editar", "Eliminar"]},
-        {id: "card_preferencias", nom: "Gestión Preferencias", acts: ["Crear", "Editar", "Eliminar"]}
+        {id: "card_preferencias", nom: "Gestión Preferencias", acts: ["Crear", "Editar", "Eliminar"]},
+        {id: "card_config_visual", nom: "Personalización Visual", acts: ["Editar"]}
     ];
 
     auth.onAuthStateChanged(async (u) => {
@@ -867,6 +992,15 @@
             document.getElementById('dashboard').style.display = 'none';
         }
     });
+
+    auth.onAuthStateChanged(async (u) => {
+    if(u) {
+        user = u;
+        // ... (tus otras líneas de carga)
+        await cargarYAplicarConfigVisual(); // <--- AÑADE ESTO
+        // ...
+    }
+});
 
     async function cargarRoles() {
         db.collection("roles").onSnapshot(async (snap) => {
@@ -1186,19 +1320,34 @@ renderTablaRoles();
     }
 
     async function guardarRol() {
-        const nombre = document.getElementById('rol_nombre').value;
-        const modulos = Array.from(document.querySelectorAll('.chk-rol-mod:checked')).map(c => c.value);
-        if(!nombre) return alert("Ingrese el nombre del rol");
-        let accionesPermitidas = {};
-        modulos.forEach(m => {
-            accionesPermitidas[m] = Array.from(document.querySelectorAll(`.chk-act-rol[data-mod="${m}"]:checked`)).map(a => a.value);
-        });
-        const data = { nombre, modulos, accionesPermitidas };
-        if(modoModal === 'nuevo') await db.collection("roles").add(data);
-        else await db.collection("roles").doc(selectedId).update(data);
-        cerrarModales(); 
-        alert("Rol guardado con éxito");
+    const nombre = document.getElementById('rol_nombre').value;
+    const modulos = Array.from(document.querySelectorAll('.chk-rol-mod:checked')).map(c => c.value);
+    
+    if(!nombre) {
+        mostrarModalStatus("warning", "Campo Requerido", "Por favor asigne un nombre al nuevo rol.");
+        return;
     }
+
+    let accionesPermitidas = {};
+    modulos.forEach(m => {
+        accionesPermitidas[m] = Array.from(document.querySelectorAll(`.chk-act-rol[data-mod="${m}"]:checked`)).map(a => a.value);
+    });
+
+    const data = { nombre, modulos, accionesPermitidas };
+    
+    try {
+        if(modoModal === 'nuevo') {
+            await db.collection("roles").add(data);
+            mostrarModalStatus("success", "Rol Creado", `El rol "${nombre}" se ha configurado correctamente.`);
+        } else {
+            await db.collection("roles").doc(selectedId).update(data);
+            mostrarModalStatus("success", "Rol Actualizado", `Los permisos del rol "${nombre}" han sido modificados.`);
+        }
+        cerrarModales(); 
+    } catch (e) {
+        mostrarModalStatus("danger", "Error", "No se pudo guardar el rol en la base de datos.");
+    }
+}
 
     function renderTablaRoles() {
         const tb = document.getElementById('tbody_roles');
@@ -1237,122 +1386,129 @@ renderTablaRoles();
     }
 
     async function eliminarRol(id) {
-        if(confirm("¿Eliminar este rol?")) await db.collection("roles").doc(id).delete();
-    }
+    mostrarModalStatus("danger", "¿Eliminar Rol?", "Los usuarios asociados a este rol podrían perder acceso a sus funciones.", async () => {
+        await db.collection("roles").doc(id).delete();
+        setTimeout(() => {
+            mostrarModalStatus("success", "Rol Eliminado", "El rol ha sido removido del sistema.");
+        }, 300);
+    });
+}
 
     // CORRECCIÓN: FUNCIÓN ENVIAR TICKET CON SOPORTE DE IMAGEN
     async function enviarTicket() {
-        const nom = document.getElementById('tk_nom_user').value;
-        const d = document.getElementById('tk_desc').value;
-        const archivoInput = document.getElementById('tk_archivo');
-        const progressDiv = document.getElementById('upload_progress');
+    const nom = document.getElementById('tk_nom_user').value;
+    const d = document.getElementById('tk_desc').value;
+    const archivoInput = document.getElementById('tk_archivo');
+    const progressDiv = document.getElementById('upload_progress');
+    
+    if(!nom || !d) {
+        mostrarModalStatus("warning", "Campos Incompletos", "Por favor, complete su nombre y la descripción antes de enviar.");
+        return;
+    }
+
+    try {
+        let urlDescarga = "";
+
+        // 1. Subida de imagen (si existe)
+        if (archivoInput && archivoInput.files[0]) {
+            const file = archivoInput.files[0];
+            const fileName = `tickets/${Date.now()}_${file.name}`;
+            const storageRef = storage.ref(fileName);
+            
+            if(progressDiv) progressDiv.style.display = "block";
+            
+            const task = storageRef.put(file);
+
+            await new Promise((resolve, reject) => {
+                task.on('state_changed', 
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        if(progressDiv) progressDiv.innerText = `Subiendo imagen... ${Math.round(progress)}%`;
+                    }, 
+                    (error) => {
+                        reject("Error al subir la imagen.");
+                    }, 
+                    async () => {
+                        urlDescarga = await task.snapshot.ref.getDownloadURL();
+                        resolve();
+                    }
+                );
+            });
+        }
+
+        // 2. Guardado en Firestore
+        const contadorRef = db.collection("configuracion").doc("contadores");
         
-        if(!nom || !d) return alert("Por favor, complete todos los campos obligatorios.");
+        await db.runTransaction(async (transaction) => {
+            const contadorDoc = await transaction.get(contadorRef);
+            const nuevoIdNum = contadorDoc.data().ticket_actual + 1;
+            transaction.update(contadorRef, { ticket_actual: nuevoIdNum });
 
-        try {
-            let urlDescarga = "";
-
-            // 1. Subida de imagen (si existe)
-            if (archivoInput && archivoInput.files[0]) {
-                const file = archivoInput.files[0];
-                const fileName = `tickets/${Date.now()}_${file.name}`;
-                const storageRef = storage.ref(fileName);
-                
-                if(progressDiv) progressDiv.style.display = "block";
-                
-                const task = storageRef.put(file);
-
-                await new Promise((resolve, reject) => {
-                    task.on('state_changed', 
-                        (snapshot) => {
-                            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                            if(progressDiv) progressDiv.innerText = `Subiendo imagen... ${Math.round(progress)}%`;
-                        }, 
-                        (error) => {
-                            console.error("Error en Storage:", error);
-                            reject("Error al subir la imagen.");
-                        }, 
-                        async () => {
-                            urlDescarga = await task.snapshot.ref.getDownloadURL();
-                            resolve();
-                        }
-                    );
-                });
+            let asig = "Pendiente";
+            if(listaGestoresGlobal.length > 0) {
+                asig = listaGestoresGlobal[Math.floor(Math.random() * listaGestoresGlobal.length)].nom;
             }
 
-            // 2. Guardado en Firestore con Transacción para ID numérico
-            const contadorRef = db.collection("configuracion").doc("contadores");
-            
-            await db.runTransaction(async (transaction) => {
-                const contadorDoc = await transaction.get(contadorRef);
-                if (!contadorDoc.exists) throw "Error: Documento de contadores no encontrado.";
-                
-                const nuevoIdNum = contadorDoc.data().ticket_actual + 1;
-                transaction.update(contadorRef, { ticket_actual: nuevoIdNum });
-
-                let asig = "Pendiente";
-                if(listaGestoresGlobal.length > 0) {
-                    asig = listaGestoresGlobal[Math.floor(Math.random() * listaGestoresGlobal.length)].nom;
-                }
-
-                transaction.set(db.collection("tickets").doc(nuevoIdNum.toString()), {
-                    ticket_id_numerico: nuevoIdNum,
-                    solicitante: nom,
-                    usuario: user.email,
-                    campus: document.getElementById('tk_campus').value,
-                    prioridad: document.getElementById('tk_prioridad').value,
-                    dependencia: document.getElementById('tk_dep').value,
-                    tipo: document.getElementById('tk_tipo').value,
-                    desc: d,
-                    imagen: urlDescarga,
-                    estado: "Abierto",
-                    asignado: asig,
-                    fecha: new Date().toLocaleString()
-                });
-            });
-
-            // 3. Notificación de Éxito Unificada
-            mostrarModalStatus("success", "¡Envío Exitoso!", "Tu ticket ha sido registrado. El personal de TI revisará tu solicitud pronto.");
-            
-            // 4. Limpieza de campos
-            document.getElementById('tk_nom_user').value = "";
-            document.getElementById('tk_desc').value = "";
-            document.getElementById('tk_campus').selectedIndex = 0;
-            document.getElementById('tk_prioridad').selectedIndex = 0;
-            document.getElementById('tk_dep').selectedIndex = 0;
-            document.getElementById('tk_tipo').selectedIndex = 0;
-            
-            if(archivoInput) archivoInput.value = "";
-            if(progressDiv) progressDiv.style.display = "none";
-
-            volver();
-            
-        } catch (e) {
-            console.error("Error completo:", e);
-            alert("Error al enviar ticket: " + e);
-        }
-    }
-
-    function cargarTicketsAdmin() {
-        const tb = document.getElementById('tbody_admin_tickets');
-        db.collection("tickets").onSnapshot(snap => {
-            if(!tb) return;
-            tb.innerHTML = ""; 
-            snap.forEach(doc => {
-                const t = doc.data(); 
-                if(t.estado === "Cerrado") return;
-                if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
-                
-                let btnDet = checkPermission("card_admin_tickets", "Ver Detalle") ? `<button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>` : "";
-                let btnEdit = checkPermission("card_admin_tickets", "Editar") ? `<button class="btn-acc bg-p-orange" onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>` : "";
-                let btnRe = checkPermission("card_admin_tickets", "Reasignar") ? `<button class="btn-acc bg-r-purple" onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : "";
-                let btnFin = checkPermission("card_admin_tickets", "Finalizar") ? `<button class="btn-acc bg-c-green" onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>` : "";
-                let btnDel = checkPermission("card_admin_tickets", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : "";
-                
-                tb.innerHTML += `<tr><td>#${doc.id}</td><td>${t.solicitante}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado}</td><td>${btnDet}${btnEdit}${btnRe}${btnFin}${btnDel}</td></tr>`;
+            transaction.set(db.collection("tickets").doc(nuevoIdNum.toString()), {
+                ticket_id_numerico: nuevoIdNum,
+                solicitante: nom,
+                usuario: user.email,
+                campus: document.getElementById('tk_campus').value,
+                prioridad: document.getElementById('tk_prioridad').value,
+                dependencia: document.getElementById('tk_dep').value,
+                tipo: document.getElementById('tk_tipo').value,
+                desc: d,
+                imagen: urlDescarga,
+                estado: "Abierto",
+                asignado: asig,
+                fecha: new Date().toLocaleString()
             });
         });
+
+        // 3. Notificación y Limpieza
+        cerrarModales();
+        mostrarModalStatus("success", "¡Solicitud Enviada!", "Tu ticket ha sido registrado y un gestor será asignado pronto.");
+        
+        document.getElementById('tk_nom_user').value = "";
+        document.getElementById('tk_desc').value = "";
+        if(archivoInput) archivoInput.value = "";
+        if(progressDiv) progressDiv.style.display = "none";
+
+        volver();
+        
+    } catch (e) {
+        mostrarModalStatus("danger", "Error de Envío", "No se pudo procesar tu ticket. Revisa tu conexión.");
     }
+}
+
+    function cargarTicketsAdmin() {
+    const tb = document.getElementById('tbody_admin_tickets');
+    const configMod = configVisualLocal['card_admin_tickets'] || {};
+    const coloresAcciones = configMod.accionesColores || {};
+
+    const getBtnStyle = (nombreAccion) => {
+        const color = coloresAcciones[nombreAccion] || "#64748b";
+        return `class="btn-acc custom-action-color" style="--btn-color: ${color}"`;
+    };
+
+    db.collection("tickets").onSnapshot(snap => {
+        if(!tb) return;
+        tb.innerHTML = ""; 
+        snap.forEach(doc => {
+            const t = doc.data(); 
+            if(t.estado === "Cerrado") return;
+            if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
+            
+            let btnDet = checkPermission("card_admin_tickets", "Ver Detalle") ? `<button ${getBtnStyle("Ver Detalle")} onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>` : "";
+            let btnEdit = checkPermission("card_admin_tickets", "Editar") ? `<button ${getBtnStyle("Editar")} onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>` : "";
+            let btnRe = checkPermission("card_admin_tickets", "Reasignar") ? `<button ${getBtnStyle("Reasignar")} onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : "";
+            let btnFin = checkPermission("card_admin_tickets", "Finalizar") ? `<button ${getBtnStyle("Finalizar")} onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>` : "";
+            let btnDel = checkPermission("card_admin_tickets", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : "";
+            
+            tb.innerHTML += `<tr><td>#${doc.id}</td><td>${t.solicitante}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado}</td><td>${btnDet}${btnEdit}${btnRe}${btnFin}${btnDel}</td></tr>`;
+        });
+    });
+}
 
     async function verDetalleTicket(id) { 
         const doc = await db.collection("tickets").doc(id).get(); 
@@ -1392,16 +1548,26 @@ renderTablaRoles();
     function abrirModalCierre(id) { selectedId = id; document.getElementById('tk_respuesta_cierre').value = ""; document.getElementById('modalCerrarTicket').style.display = 'block'; }
     
     async function ejecutarCierreConComentario() { 
-        const r = document.getElementById('tk_respuesta_cierre').value; 
-        if(!r) return alert("Por favor escriba la solución.");
+    const r = document.getElementById('tk_respuesta_cierre').value; 
+    
+    if(!r) {
+        mostrarModalStatus("warning", "Respuesta Necesaria", "Debe indicar la solución brindada para poder finalizar el ticket.");
+        return;
+    }
+    
+    try {
         await db.collection("tickets").doc(selectedId).update({ 
             estado: "Cerrado", 
             respuesta: r, 
             fecha_cierre: new Date().toLocaleString() 
         }); 
+        
         cerrarModales(); 
-        alert("Ticket cerrado correctamente.");
+        mostrarModalStatus("success", "Ticket Finalizado", "El ticket ha sido marcado como Cerrado exitosamente.");
+    } catch (e) {
+        mostrarModalStatus("danger", "Error", "No se pudo cerrar el ticket. Intente de nuevo.");
     }
+}
 
     async function eliminar(id, coll) {
     mostrarModalStatus("danger", "¿Eliminar Registro?", "Esta acción es permanente y no se puede deshacer.", async () => {
@@ -1420,7 +1586,27 @@ renderTablaRoles();
     h.innerHTML = "";
     
     const displayData = dataFiltrada || localData;
+    
+    // Identificar el ID del módulo para traer sus colores
     const activeModId = `card_${currentColl === 'inventario' ? 'inv_admin' : (currentColl === 'inventario_salas' ? 'inv_salas' : currentColl)}`;
+    const configMod = configVisualLocal[activeModId] || {};
+    const coloresAcciones = configMod.accionesColores || {};
+
+    // Función interna para aplicar el color personalizado a cada botón según su nombre de acción
+    // Dentro de renderTablaMaestra, actualiza la función interna:
+const getBtnStyle = (nombreAccion) => {
+    const configMod = configVisualLocal[activeModId] || {};
+    const coloresAcciones = configMod.accionesColores || {};
+    
+    // Si no hay color guardado, asignamos colores de respaldo según el nombre
+    let fallback = "#64748b";
+    if (nombreAccion === "Editar") fallback = "#f59e0b";
+    if (nombreAccion === "Finalizar") fallback = "#22c55e";
+    if (nombreAccion === "Mantenimiento") fallback = "#00bcd4";
+
+    const color = coloresAcciones[nombreAccion] || fallback;
+    return `class="btn-acc custom-action-color" style="--btn-color: ${color}"`;
+};
 
     // CONFIGURACIÓN DE CABECERAS
     if(currentColl === 'extensiones') {
@@ -1431,40 +1617,47 @@ renderTablaRoles();
         h.innerHTML = `<tr><th>Nombre/Aula</th><th>Tipo</th><th>Modelo/Ubicación</th><th>Serial/ID</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Acciones</th></tr>`;
     }
 
-    // RENDERIZADO DE FILAS UNIFICADO
     displayData.forEach(e => {
         let btns = "";
         let rowHTML = "";
 
         if(currentColl === 'extensiones') {
-            if(checkPermission("card_extensiones", "Ver Detalle")) btns += `<button class="btn-acc bg-v-gray" onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
-            if(checkPermission("card_extensiones", "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-            if(userRole === "Admin" || checkPermission("card_extensiones", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
+            if(checkPermission("card_extensiones", "Ver Detalle")) 
+                btns += `<button ${getBtnStyle("Ver Detalle")} onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
+            if(checkPermission("card_extensiones", "Editar")) 
+                btns += `<button ${getBtnStyle("Editar")} onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+            if(userRole === "Admin" || checkPermission("card_extensiones", "Eliminar")) 
+                btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
             
             rowHTML = `<tr><td><b>${e.nom || ''}</b></td><td>${e.dep || ''}</td><td>${e.ext || ''}</td><td>${e.tipo_ext || ''}</td><td>${btns}</td></tr>`;
         
         } else if(currentColl === 'usuarios') {
-            if(checkPermission("card_usuarios", "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-            if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
+            if(checkPermission("card_usuarios", "Editar")) 
+                btns += `<button ${getBtnStyle("Editar")} onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+            if(userRole === "Admin") 
+                btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
             
             rowHTML = `<tr><td>${e.nom || ''}</td><td>${e.cor || ''}</td><td>${e.rol || ''}</td><td>${btns}</td></tr>`;
         
         } else {
             // Inventarios, Aulas e Impresoras
-            if(checkPermission(activeModId, "Editar")) btns += `<button class="btn-acc bg-info-e" onclick="abrirModalRegistro('editar','${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>`;
+            if(checkPermission(activeModId, "Editar")) 
+                btns += `<button ${getBtnStyle("Editar")} onclick="abrirModalRegistro('editar','${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>`;
             
-            // BOTÓN DE CHEQUEO (Exclusivo de Aulas)
             if(currentColl === 'aulas_dti') {
-                btns += `<button class="btn-acc bg-c-green" onclick="abrirModalChequeo('${e.id}', '${e.nom}')" title="Registrar Chequeo"><i class="fas fa-check-double"></i></button>`;
+                // Para el chequeo usamos el color de "Mantenimiento" o uno gris si no existe
+                btns += `<button ${getBtnStyle("Mantenimiento")} onclick="abrirModalChequeo('${e.id}', '${e.nom}')" title="Registrar Chequeo"><i class="fas fa-check-double"></i></button>`;
             }
 
-            if(checkPermission(activeModId, "Mantenimiento")) btns += `<button class="btn-acc bg-r-purple" onclick="abrirMantenimiento('${e.id}')" title="Mantenimiento"><i class="fas fa-tools"></i></button>`;
+            if(checkPermission(activeModId, "Mantenimiento")) 
+                btns += `<button ${getBtnStyle("Mantenimiento")} onclick="abrirMantenimiento('${e.id}')" title="Mantenimiento"><i class="fas fa-tools"></i></button>`;
             
             if(checkPermission(activeModId, "Historial")) {
+                const actName = "Historial";
                 if(currentColl === 'aulas_dti') {
-                    btns += `<button class="btn-acc bg-v-gray" onclick="verHistorialAulas('${e.id}', '${e.nom}')" title="Historial de Chequeos"><i class="fas fa-history"></i></button>`;
+                    btns += `<button ${getBtnStyle(actName)} onclick="verHistorialAulas('${e.id}', '${e.nom}')" title="Historial de Chequeos"><i class="fas fa-history"></i></button>`;
                 } else {
-                    btns += `<button class="btn-acc bg-v-gray" onclick="verHistorial('${e.id}')" title="Historial de Mantenimientos"><i class="fas fa-history"></i></button>`;
+                    btns += `<button ${getBtnStyle(actName)} onclick="verHistorial('${e.id}')" title="Historial de Mantenimientos"><i class="fas fa-history"></i></button>`;
                 }
             }
             
@@ -1590,12 +1783,46 @@ renderTablaRoles();
     }
 
     async function guardarDatoMaestro() {
-        let o = {};
-        document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => o[i.id] = i.value);
-        if(modoModal === 'editar') await db.collection(currentColl).doc(selectedId).update(o);
-        else await db.collection(currentColl).add(o);
-        cerrarModales(); mostrarModalStatus("success", "¡Registro Exitoso!", "La información se ha guardado correctamente.");
+    let o = {};
+    let camposVacios = false;
+    
+    // Recopilar datos y validar obligatorios
+    document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => {
+        // No validamos como obligatorios Extensión, Correo o Fecha si no se quieren poner
+        if(!i.value && i.id !== 'ext_tel' && i.id !== 'cor_res' && i.id !== 'f_ingreso') {
+            camposVacios = true;
+        }
+        o[i.id] = i.value;
+    });
+
+    if(camposVacios) {
+        mostrarModalStatus("warning", "Atención", "Por favor complete los campos obligatorios del formulario.");
+        return;
     }
+
+    const nombresColes = {
+        'usuarios': 'Usuario',
+        'inventario': 'Equipo Administrativo',
+        'inventario_salas': 'Equipo de Sala',
+        'extensiones': 'Extensión',
+        'aulas_dti': 'Aula',
+        'impresoras': 'Impresora'
+    };
+    const etiqueta = nombresColes[currentColl] || 'Registro';
+
+    try {
+        if(modoModal === 'editar') {
+            await db.collection(currentColl).doc(selectedId).update(o);
+            mostrarModalStatus("success", "Actualización Exitosa", `La información del ${etiqueta} ha sido actualizada.`);
+        } else {
+            await db.collection(currentColl).add(o);
+            mostrarModalStatus("success", "Registro Exitoso", `El nuevo ${etiqueta} se ha guardado en el sistema.`);
+        }
+        cerrarModales(); 
+    } catch (e) {
+        mostrarModalStatus("danger", "Error de Guardado", "Hubo un problema al conectar con la base de datos.");
+    }
+}
 
     async function cargarGraficaActualizada() {
         const f = document.getElementById('filtro_stats').value;
@@ -1723,13 +1950,66 @@ renderTablaRoles();
         document.getElementById('modalMantenimiento').style.display = 'block';
     }
 
-    async function guardarMantenimientoEditado() {
-        const f = document.getElementById('mnt_fecha').value;
-        const t = document.getElementById('mnt_tipo').value;
-        const d = document.getElementById('mnt_desc').value;
-        await db.collection(selectedCollMnt).doc(selectedEquipIdMnt).collection("mantenimientos").doc(selectedId).update({ fecha: f, tipo: t, desc: d });
-        cerrarModales(); alert("Mantenimiento actualizado"); cargarGestionMantenimientos();
+async function guardarMantenimiento() {
+    const f = document.getElementById('mnt_fecha').value; 
+    const t = document.getElementById('mnt_tipo').value; 
+    const d = document.getElementById('mnt_desc').value;
+    
+    if(!f || !d) {
+        mostrarModalStatus("warning", "Datos Incompletos", "Debe ingresar la fecha y la descripción del mantenimiento.");
+        return;
     }
+
+    try {
+        await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ 
+            fecha: f, 
+            tipo: t, 
+            desc: d,
+            usuario_registro: user.email 
+        });
+        cerrarModales(); 
+        mostrarModalStatus("success", "Mantenimiento Registrado", "Se ha guardado el historial técnico correctamente.");
+    } catch (e) {
+        mostrarModalStatus("danger", "Error", "No se pudo registrar el mantenimiento.");
+    }
+}
+
+// Función para editar un mantenimiento existente (Desde el módulo de gestión)
+async function guardarMantenimientoEditado() {
+    const f = document.getElementById('mnt_fecha').value;
+    const t = document.getElementById('mnt_tipo').value;
+    const d = document.getElementById('mnt_desc').value;
+    
+    if(!f || !d) {
+        mostrarModalStatus("warning", "Campos Vacíos", "No puede dejar la fecha o descripción en blanco.");
+        return;
+    }
+
+    try {
+        await db.collection(selectedCollMnt).doc(selectedEquipIdMnt).collection("mantenimientos").doc(selectedId).update({ 
+            fecha: f, 
+            tipo: t, 
+            desc: d 
+        });
+        
+        cerrarModales(); 
+        mostrarModalStatus("success", "Cambios Guardados", "El registro de mantenimiento ha sido actualizado con éxito.");
+        cargarGestionMantenimientos(); // Refresca la tabla automáticamente
+    } catch (e) {
+        mostrarModalStatus("danger", "Error de Actualización", "Hubo un problema al modificar el registro.");
+    }
+}
+
+// Reemplazar eliminarMnt
+async function eliminarMnt(coll, eid, mid) { 
+    mostrarModalStatus("danger", "¿Eliminar Registro?", "Se borrará definitivamente el historial de este mantenimiento.", async () => {
+        await db.collection(coll).doc(eid).collection("mantenimientos").doc(mid).delete(); 
+        cargarGestionMantenimientos();
+        setTimeout(() => {
+            mostrarModalStatus("success", "Registro Borrado", "El mantenimiento ha sido eliminado del historial.");
+        }, 300);
+    });
+}
     
     async function verHistorial(id) {
         const content = document.getElementById('historial_content');
@@ -1739,12 +2019,15 @@ renderTablaRoles();
         document.getElementById('modalHistorial').style.display='block';
     }
 
-    function abrirMantenimiento(id) { selectedId = id; document.getElementById('modalMantenimiento').style.display='block'; }
-    async function guardarMantenimiento() {
-        const f = document.getElementById('mnt_fecha').value; const t = document.getElementById('mnt_tipo').value; const d = document.getElementById('mnt_desc').value;
-        await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ fecha: f, tipo: t, desc: d });
-        cerrarModales(); alert("Guardado");
-    }
+    function abrirMantenimiento(id) { 
+    selectedId = id; 
+    document.getElementById('mnt_modal_title').innerText = "Registrar Mantenimiento";
+    document.getElementById('mnt_fecha').value = "";
+    document.getElementById('mnt_desc').value = "";
+    // Aseguramos que el botón de guardar llame a la función correcta
+    document.getElementById('btn_guardar_mnt').onclick = guardarMantenimiento;
+    document.getElementById('modalMantenimiento').style.display = 'block'; 
+}
 
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { localStorage.clear(); auth.signOut().then(() => location.reload()); }
@@ -1808,30 +2091,6 @@ async function enviarTicket() {
     // ... resto de tu código de envío actual ...
 }
 
-// ACTUALIZACIÓN EN GUARDAR REGISTRO MAESTRO
-async function guardarDatoMaestro() {
-    let o = {};
-    let camposVacios = false;
-    
-    document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => {
-        if(!i.value) camposVacios = true;
-        o[i.id] = i.value;
-    });
-
-    if(camposVacios) {
-        mostrarModalStatus("warning", "Atención", "Todos los campos del formulario son necesarios para el registro.");
-        return;
-    }
-
-    // ... lógica de guardado en Firebase ...
-    await db.collection(currentColl).add(o);
-    cerrarModales(); 
-    mostrarModalStatus("success", "¡Éxito!", "El equipo ha sido registrado correctamente.");
-}
-
-// Variable para guardar los estados seleccionados temporalmente
-let estadosChequeoActual = {};
-
 function abrirModalChequeo(id, nombre) {
     selectedId = id;
     document.getElementById('aula_nombre_chequeo').innerText = "Aula: " + nombre;
@@ -1890,6 +2149,162 @@ async function guardarChequeoAula() {
         console.error("Error:", error);
         mostrarModalStatus("danger", "Error", "No se pudo guardar el chequeo.");
     }
+}
+
+let configVisualLocal = {};
+
+// 1. Cargar configuración desde Firebase y aplicar a la UI
+async function cargarYAplicarConfigVisual() {
+    const doc = await db.collection("configuracion").doc("visual").get();
+    if (doc.exists) {
+        configVisualLocal = doc.data();
+        aplicarCambiosVisuales();
+    } else {
+        // Si no existe, crear la inicial basada en MODULOS_SISTEMA
+        restablecerConfiguracionPredeterminada();
+    }
+}
+
+function aplicarCambiosVisuales() {
+    MODULOS_SISTEMA.forEach(m => {
+        const config = configVisualLocal[m.id];
+        if (config) {
+            const card = document.getElementById(m.id);
+            if (card) {
+                const h3 = card.querySelector('h3');
+                const icon = card.querySelector('i');
+                if (h3) h3.innerText = config.nuevoNom || m.nom;
+                if (icon) {
+                    icon.className = config.nuevoIcono || icon.className; // Mantiene la clase si no hay nueva
+                    icon.style.color = config.colorIcono || "var(--primary)";
+                }
+            }
+        }
+    });
+    // Esto asegura que la tabla de edición se vea actualizada tras guardar
+    renderConfigVisualTable();
+    // Y esto actualiza los botones de la tabla maestra si estuviera abierta
+    if(currentColl) renderTablaMaestra();
+}
+
+function renderConfigVisualTable() {
+    const container = document.getElementById('container_config_visual');
+    if (!container) return;
+    container.innerHTML = "";
+
+    MODULOS_SISTEMA.forEach(m => {
+        const conf = configVisualLocal[m.id] || {};
+        const accionesColores = conf.accionesColores || {};
+        
+        // Generar inputs de colores para las acciones
+        let htmlAcciones = m.acts.map(act => `
+            <div class="campo-group">
+                <label style="font-size:9px;">${act}</label>
+                <input type="color" class="v_c_act_specific" data-mod="${m.id}" data-act="${act}" 
+                       value="${accionesColores[act] || '#64748b'}" style="height:30px; border:none; cursor:pointer;">
+            </div>
+        `).join('');
+
+        container.innerHTML += `
+            <div class="config-card">
+                <div class="config-card-header">
+                    <i class="${conf.nuevoIcono || 'fas fa-box'}" style="color: ${conf.colorIcono || '#2563eb'}"></i>
+                    <div>
+                        <strong style="display:block; font-size:1rem;">${conf.nuevoNom || m.nom}</strong>
+                        <small style="color:var(--gray); font-size:0.7rem;">ID: ${m.id}</small>
+                    </div>
+                </div>
+
+                <div class="grid-bonito" style="grid-template-columns: 1fr; gap:10px;">
+                    <div class="campo-group">
+                        <span class="config-section-title">Identidad del Módulo</span>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                            <div>
+                                <label>Nombre Mostrar</label>
+                                <input type="text" id="v_nom_${m.id}" value="${conf.nuevoNom || m.nom}">
+                            </div>
+                            <div>
+                                <label>Icono (FontAwesome)</label>
+                                <input type="text" id="v_ico_${m.id}" value="${conf.nuevoIcono || 'fas fa-box'}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="campo-group">
+                        <label>Color Icono Principal</label>
+                        <input type="color" id="v_c_ico_${m.id}" value="${conf.colorIcono || '#2563eb'}" style="width:100%; height:35px; border:none;">
+                    </div>
+
+                    <div class="action-colors-container">
+                        <span class="config-section-title">Colores de Botones (Acciones)</span>
+                        <div class="grid-colores-acciones">
+                            ${htmlAcciones}
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-save-config" onclick="guardarFilaVisual('${m.id}')">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+            </div>`;
+    });
+}
+
+async function guardarFilaVisual(modId) {
+    const nuevoNom = document.getElementById(`v_nom_${modId}`).value;
+    const nuevoIcono = document.getElementById(`v_ico_${modId}`).value;
+    const colorIcono = document.getElementById(`v_c_ico_${modId}`).value;
+
+    // Capturar todos los colores de las acciones específicas de este módulo
+    let accionesColores = {};
+    document.querySelectorAll(`.v_c_act_specific[data-mod="${modId}"]`).forEach(input => {
+        const nombreAccion = input.getAttribute('data-act');
+        accionesColores[nombreAccion] = input.value;
+    });
+
+    configVisualLocal[modId] = { 
+        nuevoNom, 
+        nuevoIcono, 
+        colorIcono, 
+        accionesColores // Guardamos el mapa de colores
+    };
+
+    try {
+        await db.collection("configuracion").doc("visual").set(configVisualLocal);
+        mostrarModalStatus("success", "Actualizado", "Configuración de botones y estilo guardada.");
+        aplicarCambiosVisuales();
+    } catch (e) {
+        mostrarModalStatus("danger", "Error", "No se pudo sincronizar con Firebase.");
+    }
+}
+
+async function restablecerConfiguracionPredeterminada() {
+    let base = {};
+    MODULOS_SISTEMA.forEach(m => {
+        // Definimos un mapeo de colores estándar para que no inicien en gris
+        const defaultActions = {};
+        m.acts.forEach(act => {
+            if (act === "Editar") defaultActions[act] = "#f59e0b"; // Naranja
+            else if (act === "Ver Detalle") defaultActions[act] = "#64748b"; // Gris
+            else if (act === "Mantenimiento") defaultActions[act] = "#00bcd4"; // Info/Cian
+            else if (act === "Historial") defaultActions[act] = "#8b5cf6"; // Púrpura
+            else if (act === "Finalizar") defaultActions[act] = "#22c55e"; // Verde
+            else if (act === "Reasignar") defaultActions[act] = "#2563eb"; // Azul
+            else defaultActions[act] = "#64748b";
+        });
+
+        base[m.id] = { 
+            nuevoNom: m.nom, 
+            nuevoIcono: m.id === "card_mis_tickets" ? "fas fa-ticket-alt" : "fas fa-box", 
+            colorIcono: "#2563eb", 
+            accionesColores: defaultActions 
+        };
+    });
+    
+    mostrarModalStatus("warning", "Restableciendo", "Se aplicarán los colores originales del sistema...", async () => {
+        await db.collection("configuracion").doc("visual").set(base);
+        location.reload();
+    });
 }
 </script>
 </body>
