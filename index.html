@@ -397,10 +397,10 @@
 .res-funcional { background: #dcfce7; color: #166534; }
 .res-falla { background: #fee2e2; color: #991b1b; }
 
-/* --- NUEVO DISEÑO PARA PERSONALIZACIÓN VISUAL --- */
+/* --- DISEÑO PERSONALIZACIÓN VISUAL (REFORMADO Y RESPONSIVO) --- */
 .config-grid-cards {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 20px;
     padding: 10px 0;
 }
@@ -411,7 +411,6 @@
     border-radius: 16px;
     padding: 20px;
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    transition: transform 0.2s;
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -427,57 +426,34 @@
 
 .config-card-header i {
     font-size: 1.5rem;
-    width: 40px;
-    height: 40px;
+    min-width: 45px;
+    height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: #f8fafc;
     border-radius: 10px;
-}
-
-.config-section-title {
-    font-size: 0.7rem;
-    font-weight: 800;
-    color: var(--gray);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
-    display: block;
-}
-
-.action-colors-container {
-    background: #f8fafc;
-    padding: 15px;
-    border-radius: 12px;
-    border: 1px solid #edf2f7;
 }
 
 .grid-colores-acciones {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Dos columnas de colores */
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 10px;
 }
 
-.btn-save-config {
-    margin-top: auto;
-    width: 100%;
-    background: var(--dark);
-    color: white;
-    border: none;
-    padding: 12px;
-    border-radius: 10px;
-    font-weight: 700;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: 0.3s;
-}
+/* Ajustes para dispositivos móviles */
+@media (max-width: 600px) {
+    .config-grid-cards {
+        grid-template-columns: 1fr; /* Una sola columna en móvil */
+    }
+    
+    .grid-colores-acciones {
+        grid-template-columns: 1fr 1fr; /* Dos columnas pequeñas de colores */
+    }
 
-.btn-save-config:hover {
-    background: var(--primary);
+    .config-card {
+        padding: 15px;
+    }
 }
     </style>
 </head>
@@ -1483,12 +1459,13 @@ renderTablaRoles();
 
     function cargarTicketsAdmin() {
     const tb = document.getElementById('tbody_admin_tickets');
-    const configMod = configVisualLocal['card_admin_tickets'] || {};
+    const activeModId = 'card_admin_tickets';
+    const configMod = configVisualLocal[activeModId] || {};
     const coloresAcciones = configMod.accionesColores || {};
 
     const getBtnStyle = (nombreAccion) => {
         const color = coloresAcciones[nombreAccion] || "#64748b";
-        return `class="btn-acc custom-action-color" style="--btn-color: ${color}"`;
+        return `class="btn-acc" style="background-color: ${color} !important;"`;
     };
 
     db.collection("tickets").onSnapshot(snap => {
@@ -1499,11 +1476,11 @@ renderTablaRoles();
             if(t.estado === "Cerrado") return;
             if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
             
-            let btnDet = checkPermission("card_admin_tickets", "Ver Detalle") ? `<button ${getBtnStyle("Ver Detalle")} onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>` : "";
-            let btnEdit = checkPermission("card_admin_tickets", "Editar") ? `<button ${getBtnStyle("Editar")} onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>` : "";
-            let btnRe = checkPermission("card_admin_tickets", "Reasignar") ? `<button ${getBtnStyle("Reasignar")} onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : "";
-            let btnFin = checkPermission("card_admin_tickets", "Finalizar") ? `<button ${getBtnStyle("Finalizar")} onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>` : "";
-            let btnDel = checkPermission("card_admin_tickets", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : "";
+            let btnDet = checkPermission(activeModId, "Ver Detalle") ? `<button ${getBtnStyle("Ver Detalle")} onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>` : "";
+            let btnEdit = checkPermission(activeModId, "Editar") ? `<button ${getBtnStyle("Editar")} onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>` : "";
+            let btnRe = checkPermission(activeModId, "Reasignar") ? `<button ${getBtnStyle("Reasignar")} onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : "";
+            let btnFin = checkPermission(activeModId, "Finalizar") ? `<button ${getBtnStyle("Finalizar")} onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>` : "";
+            let btnDel = (userRole === "Admin") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : "";
             
             tb.innerHTML += `<tr><td>#${doc.id}</td><td>${t.solicitante}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado}</td><td>${btnDet}${btnEdit}${btnRe}${btnFin}${btnDel}</td></tr>`;
         });
@@ -1595,17 +1572,24 @@ renderTablaRoles();
     // Función interna para aplicar el color personalizado a cada botón según su nombre de acción
     // Dentro de renderTablaMaestra, actualiza la función interna:
 const getBtnStyle = (nombreAccion) => {
+    // 1. Obtener la configuración del módulo actual
     const configMod = configVisualLocal[activeModId] || {};
     const coloresAcciones = configMod.accionesColores || {};
     
-    // Si no hay color guardado, asignamos colores de respaldo según el nombre
-    let fallback = "#64748b";
-    if (nombreAccion === "Editar") fallback = "#f59e0b";
-    if (nombreAccion === "Finalizar") fallback = "#22c55e";
-    if (nombreAccion === "Mantenimiento") fallback = "#00bcd4";
+    // 2. Buscar si el usuario definió un color para esta acción específica
+    let colorFinal = coloresAcciones[nombreAccion];
 
-    const color = coloresAcciones[nombreAccion] || fallback;
-    return `class="btn-acc custom-action-color" style="--btn-color: ${color}"`;
+    // 3. Si no hay color guardado, aplicamos el respaldo lógico según el nombre
+    if (!colorFinal) {
+        if (nombreAccion === "Editar") colorFinal = "#f59e0b";
+        else if (nombreAccion === "Finalizar") colorFinal = "#22c55e";
+        else if (nombreAccion === "Mantenimiento") colorFinal = "#00bcd4";
+        else if (nombreAccion === "Ver Detalle") colorFinal = "#64748b";
+        else if (nombreAccion === "Historial") colorFinal = "#8b5cf6";
+        else colorFinal = "#64748b"; // Gris por defecto
+    }
+
+    return `class="btn-acc" style="background-color: ${colorFinal} !important;"`;
 };
 
     // CONFIGURACIÓN DE CABECERAS
@@ -2193,50 +2177,58 @@ function renderConfigVisualTable() {
     container.innerHTML = "";
 
     MODULOS_SISTEMA.forEach(m => {
+        // Obtenemos la configuración guardada o un objeto vacío
         const conf = configVisualLocal[m.id] || {};
         const accionesColores = conf.accionesColores || {};
         
-        // Generar inputs de colores para las acciones
-        let htmlAcciones = m.acts.map(act => `
-            <div class="campo-group">
-                <label style="font-size:9px;">${act}</label>
-                <input type="color" class="v_c_act_specific" data-mod="${m.id}" data-act="${act}" 
-                       value="${accionesColores[act] || '#64748b'}" style="height:30px; border:none; cursor:pointer;">
-            </div>
-        `).join('');
+        // Generar inputs de colores asegurando que tomen el valor guardado
+        let htmlAcciones = m.acts.map(act => {
+            // Prioridad: 1. Color guardado en DB, 2. Color por defecto del sistema
+            const colorGuardado = accionesColores[act] || '#64748b';
+            return `
+                <div class="campo-group">
+                    <label style="font-size:10px; color:var(--gray);">${act}</label>
+                    <input type="color" class="v_c_act_specific" 
+                           data-mod="${m.id}" 
+                           data-act="${act}" 
+                           value="${colorGuardado}" 
+                           style="height:35px; width:100%; border:1.5px solid #e2e8f0; border-radius:6px; cursor:pointer; padding:2px;">
+                </div>
+            `;
+        }).join('');
 
         container.innerHTML += `
             <div class="config-card">
                 <div class="config-card-header">
                     <i class="${conf.nuevoIcono || 'fas fa-box'}" style="color: ${conf.colorIcono || '#2563eb'}"></i>
-                    <div>
-                        <strong style="display:block; font-size:1rem;">${conf.nuevoNom || m.nom}</strong>
+                    <div style="overflow: hidden;">
+                        <strong style="display:block; font-size:1rem; white-space: nowrap; text-overflow: ellipsis;">${conf.nuevoNom || m.nom}</strong>
                         <small style="color:var(--gray); font-size:0.7rem;">ID: ${m.id}</small>
                     </div>
                 </div>
 
-                <div class="grid-bonito" style="grid-template-columns: 1fr; gap:10px;">
+                <div class="grid-bonito" style="grid-template-columns: 1fr; gap:12px;">
                     <div class="campo-group">
                         <span class="config-section-title">Identidad del Módulo</span>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
                             <div>
-                                <label>Nombre Mostrar</label>
-                                <input type="text" id="v_nom_${m.id}" value="${conf.nuevoNom || m.nom}">
+                                <label>Nombre</label>
+                                <input type="text" id="v_nom_${m.id}" value="${conf.nuevoNom || m.nom}" style="width:100%;">
                             </div>
                             <div>
-                                <label>Icono (FontAwesome)</label>
-                                <input type="text" id="v_ico_${m.id}" value="${conf.nuevoIcono || 'fas fa-box'}">
+                                <label>Icono (FA)</label>
+                                <input type="text" id="v_ico_${m.id}" value="${conf.nuevoIcono || 'fas fa-box'}" style="width:100%;">
                             </div>
                         </div>
                     </div>
 
                     <div class="campo-group">
                         <label>Color Icono Principal</label>
-                        <input type="color" id="v_c_ico_${m.id}" value="${conf.colorIcono || '#2563eb'}" style="width:100%; height:35px; border:none;">
+                        <input type="color" id="v_c_ico_${m.id}" value="${conf.colorIcono || '#2563eb'}" style="width:100%; height:35px; border:1.5px solid #e2e8f0; border-radius:6px;">
                     </div>
 
                     <div class="action-colors-container">
-                        <span class="config-section-title">Colores de Botones (Acciones)</span>
+                        <span class="config-section-title">Colores de Botones</span>
                         <div class="grid-colores-acciones">
                             ${htmlAcciones}
                         </div>
@@ -2244,7 +2236,7 @@ function renderConfigVisualTable() {
                 </div>
 
                 <button class="btn-save-config" onclick="guardarFilaVisual('${m.id}')">
-                    <i class="fas fa-save"></i> Guardar Cambios
+                    <i class="fas fa-save"></i> GUARDAR MÓDULO
                 </button>
             </div>`;
     });
@@ -2255,7 +2247,7 @@ async function guardarFilaVisual(modId) {
     const nuevoIcono = document.getElementById(`v_ico_${modId}`).value;
     const colorIcono = document.getElementById(`v_c_ico_${modId}`).value;
 
-    // Capturar todos los colores de las acciones específicas de este módulo
+    // Recopilar colores de acciones
     let accionesColores = {};
     document.querySelectorAll(`.v_c_act_specific[data-mod="${modId}"]`).forEach(input => {
         const nombreAccion = input.getAttribute('data-act');
@@ -2266,44 +2258,86 @@ async function guardarFilaVisual(modId) {
         nuevoNom, 
         nuevoIcono, 
         colorIcono, 
-        accionesColores // Guardamos el mapa de colores
+        accionesColores 
     };
 
     try {
         await db.collection("configuracion").doc("visual").set(configVisualLocal);
-        mostrarModalStatus("success", "Actualizado", "Configuración de botones y estilo guardada.");
+        
+        // Aplicar cambios visuales inmediatamente a las tarjetas del dashboard
         aplicarCambiosVisuales();
+        
+        // Refrescar las tablas abiertas para ver los nuevos colores en los botones de acción
+        if(currentColl) renderTablaMaestra();
+        if(document.getElementById('mod_admin_tickets').style.display === 'block') cargarTicketsAdmin();
+
+        mostrarModalStatus("success", "Estilo Guardado", "Los cambios se aplicaron a todo el sistema.");
     } catch (e) {
-        mostrarModalStatus("danger", "Error", "No se pudo sincronizar con Firebase.");
+        mostrarModalStatus("danger", "Error", "No se pudo guardar la configuración.");
     }
 }
 
 async function restablecerConfiguracionPredeterminada() {
     let base = {};
+    
+    // Mapeo manual de iconos originales para que no se pierdan al resetear
+    const iconosOriginales = {
+        "card_mis_tickets": "fas fa-ticket-alt",
+        "card_enviar_ticket": "fas fa-paper-plane",
+        "card_admin_tickets": "fas fa-tasks",
+        "card_historico_cerrados": "fas fa-archive",
+        "card_inv_admin": "fas fa-laptop",
+        "card_inv_salas": "fas fa-desktop",
+        "card_extensiones": "fas fa-phone-volume",
+        "card_calendario": "fas fa-calendar-alt",
+        "card_stats": "fas fa-chart-pie",
+        "card_usuarios": "fas fa-users-cog",
+        "card_aulas": "fas fa-school",
+        "card_impresoras": "fas fa-print",
+        "card_gest_mantenimientos": "fas fa-tools",
+        "card_preferencias": "fas fa-cogs",
+        "card_config_visual": "fas fa-palette"
+    };
+
     MODULOS_SISTEMA.forEach(m => {
-        // Definimos un mapeo de colores estándar para que no inicien en gris
         const defaultActions = {};
         m.acts.forEach(act => {
-            if (act === "Editar") defaultActions[act] = "#f59e0b"; // Naranja
-            else if (act === "Ver Detalle") defaultActions[act] = "#64748b"; // Gris
-            else if (act === "Mantenimiento") defaultActions[act] = "#00bcd4"; // Info/Cian
-            else if (act === "Historial") defaultActions[act] = "#8b5cf6"; // Púrpura
-            else if (act === "Finalizar") defaultActions[act] = "#22c55e"; // Verde
-            else if (act === "Reasignar") defaultActions[act] = "#2563eb"; // Azul
+            if (act === "Editar") defaultActions[act] = "#f59e0b";
+            else if (act === "Ver Detalle") defaultActions[act] = "#64748b";
+            else if (act === "Mantenimiento") defaultActions[act] = "#00bcd4";
+            else if (act === "Historial") defaultActions[act] = "#8b5cf6";
+            else if (act === "Finalizar") defaultActions[act] = "#22c55e";
+            else if (act === "Reasignar") defaultActions[act] = "#2563eb";
             else defaultActions[act] = "#64748b";
         });
 
         base[m.id] = { 
             nuevoNom: m.nom, 
-            nuevoIcono: m.id === "card_mis_tickets" ? "fas fa-ticket-alt" : "fas fa-box", 
+            nuevoIcono: iconosOriginales[m.id] || "fas fa-box", 
             colorIcono: "#2563eb", 
             accionesColores: defaultActions 
         };
     });
     
-    mostrarModalStatus("warning", "Restableciendo", "Se aplicarán los colores originales del sistema...", async () => {
-        await db.collection("configuracion").doc("visual").set(base);
-        location.reload();
+    mostrarModalStatus("warning", "Restablecer Sistema", "Se eliminarán todos los colores personalizados y nombres editados. ¿Continuar?", async () => {
+        try {
+            // 1. Limpiar localStorage para evitar que se abra un módulo viejo con colores viejos
+            localStorage.removeItem('activeModulo');
+            localStorage.removeItem('activeParams');
+
+            // 2. Guardar configuración original en Firebase
+            await db.collection("configuracion").doc("visual").set(base);
+            
+            // 3. Notificación de éxito y recarga forzada
+            mostrarModalStatus("success", "Sistema Reiniciado", "Los valores de fábrica han sido aplicados.");
+            
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+            
+        } catch (e) {
+            mostrarModalStatus("danger", "Error", "No se pudo conectar con la base de datos.");
+        }
     });
 }
 </script>
