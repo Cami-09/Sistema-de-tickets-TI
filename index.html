@@ -1517,16 +1517,16 @@ renderTablaRoles();
             if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
             
             // Definición de botones pasando AMBOS parámetros (Módulo y Acción)
-            let btnDet = checkPermission(activeModId, "Ver Detalle") ? `<button ${getBtnStyle(activeModId, "Ver Detalle")} onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>` : "";
-            let btnEdit = checkPermission(activeModId, "Editar") ? `<button ${getBtnStyle(activeModId, "Editar")} onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>` : "";
-            let btnRe = checkPermission(activeModId, "Reasignar") ? `<button ${getBtnStyle(activeModId, "Reasignar")} onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : "";
-            let btnFin = checkPermission(activeModId, "Finalizar") ? `<button ${getBtnStyle(activeModId, "Finalizar")} onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>` : "";
+            let btnDet = checkPermission(activeModId, "Ver Detalle") ? `<button ${getBtnStyle(activeModId, "Ver Detalle")} onclick="verDetalleTicket('${doc.id}')" title="Ver detalle"><i class="fas fa-eye"></i></button>` : "";
+            let btnEdit = checkPermission(activeModId, "Editar") ? `<button ${getBtnStyle(activeModId, "Editar")} onclick="actEstado('${doc.id}','En Proceso')" title="En proceso"><i class="fas fa-clock"></i></button>` : "";
+            let btnRe = checkPermission(activeModId, "Reasignar") ? `<button ${getBtnStyle(activeModId, "Reasignar")} onclick="abrirRe('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>` : "";
+            let btnFin = checkPermission(activeModId, "Finalizar") ? `<button ${getBtnStyle(activeModId, "Finalizar")} onclick="abrirModalCierre('${doc.id}')" title="Finalizar"><i class="fas fa-check-circle"></i></button>` : "";
             
             // Botón de Revertir (Funcionalidad solicitada)
             let btnRev = (t.estado === "En Proceso" && checkPermission(activeModId, "Revertir a Abierto")) ? 
                          `<button ${getBtnStyle(activeModId, "Revertir a Abierto")} onclick="revertirAAbierto('${doc.id}')" title="Revertir a Abierto"><i class="fas fa-undo"></i></button>` : "";
             
-            let btnDel = (userRole === "Admin") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : "";
+            let btnDel = (userRole === "Admin") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>` : "";
             
             // Construcción de la fila
             tb.innerHTML += `<tr>
