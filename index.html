@@ -2125,13 +2125,18 @@ let configVisualLocal = {};
 
 // 1. Cargar configuración desde Firebase y aplicar a la UI
 async function cargarYAplicarConfigVisual() {
-    const doc = await db.collection("configuracion").doc("visual").get();
-    if (doc.exists) {
-        configVisualLocal = doc.data();
-        aplicarCambiosVisuales();
-    } else {
-        // Si no existe, crear la inicial basada en MODULOS_SISTEMA
-        restablecerConfiguracionPredeterminada();
+    try {
+        const doc = await db.collection("configuracion").doc("visual").get();
+        if (doc.exists) {
+            configVisualLocal = doc.data();
+            aplicarCambiosVisuales();
+        } else {
+            // En lugar de resetear con modal, simplemente inicializamos el objeto vacío
+            configVisualLocal = {};
+            console.log("No hay configuración visual personalizada aún.");
+        }
+    } catch (e) {
+        console.error("Error cargando config visual:", e);
     }
 }
 
