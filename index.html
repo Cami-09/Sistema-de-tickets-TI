@@ -933,7 +933,7 @@
     const MODULOS_SISTEMA = [
         {id: "card_mis_tickets", nom: "Mis Tickets", acts: ["Ver Detalle"]},
         {id: "card_enviar_ticket", nom: "Enviar Ticket", acts: ["Crear"]},
-        {id: "card_admin_tickets", nom: "Admin Tickets", acts: ["Editar", "Reasignar", "Finalizar", "Eliminar", "Ver Detalle"]},
+        {id: "card_admin_tickets", nom: "Admin Tickets", acts: ["Editar", "Reasignar", "Finalizar", "Eliminar", "Ver Detalle", "Revertir a Abierto"]},
         {id: "card_historico_cerrados", nom: "Histórico Tickets Cerrados", acts: ["Ver Detalle", "Eliminar"]},
         {id: "card_inv_admin", nom: "Equipos Administrativos", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
         {id: "card_inv_salas", nom: "Equipos Salas", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
@@ -947,6 +947,29 @@
         {id: "card_preferencias", nom: "Gestión Preferencias", acts: ["Crear", "Editar", "Eliminar"]},
         {id: "card_config_visual", nom: "Personalización Visual", acts: ["Editar"]}
     ];
+
+    function getBtnStyle(modId, nombreAccion) {
+    // 1. Obtener la configuración del módulo solicitado
+    const configMod = configVisualLocal[modId] || {};
+    const coloresAcciones = configMod.accionesColores || {};
+    
+    // 2. Buscar color personalizado guardado en Firebase
+    let colorFinal = coloresAcciones[nombreAccion];
+
+    // 3. Respaldo lógico para evitar el color negro (Fallback)
+    if (!colorFinal || colorFinal === "#000000") {
+        if (nombreAccion === "Editar") colorFinal = "#f59e0b"; // Naranja
+        else if (nombreAccion === "Revertir a Abierto") colorFinal = "#6366f1"; // Indigo
+        else if (nombreAccion === "Finalizar") colorFinal = "#22c55e"; // Verde
+        else if (nombreAccion === "Mantenimiento") colorFinal = "#00bcd4"; // Cyan
+        else if (nombreAccion === "Ver Detalle") colorFinal = "#64748b"; // Gris
+        else if (nombreAccion === "Historial") colorFinal = "#8b5cf6"; // Morado
+        else if (nombreAccion === "Reasignar") colorFinal = "#2563eb"; // Azul
+        else colorFinal = "#64748b"; // Gris por defecto
+    }
+
+    return `class="btn-acc" style="background-color: ${colorFinal} !important; color: white;"`;
+}
 
     auth.onAuthStateChanged(async (u) => {
         if(u) {
@@ -1460,29 +1483,37 @@ renderTablaRoles();
     function cargarTicketsAdmin() {
     const tb = document.getElementById('tbody_admin_tickets');
     const activeModId = 'card_admin_tickets';
-    const configMod = configVisualLocal[activeModId] || {};
-    const coloresAcciones = configMod.accionesColores || {};
-
-    const getBtnStyle = (nombreAccion) => {
-        const color = coloresAcciones[nombreAccion] || "#64748b";
-        return `class="btn-acc" style="background-color: ${color} !important;"`;
-    };
 
     db.collection("tickets").onSnapshot(snap => {
         if(!tb) return;
         tb.innerHTML = ""; 
         snap.forEach(doc => {
             const t = doc.data(); 
+            // Filtros de visualización
             if(t.estado === "Cerrado") return;
             if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
             
-            let btnDet = checkPermission(activeModId, "Ver Detalle") ? `<button ${getBtnStyle("Ver Detalle")} onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>` : "";
-            let btnEdit = checkPermission(activeModId, "Editar") ? `<button ${getBtnStyle("Editar")} onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>` : "";
-            let btnRe = checkPermission(activeModId, "Reasignar") ? `<button ${getBtnStyle("Reasignar")} onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : "";
-            let btnFin = checkPermission(activeModId, "Finalizar") ? `<button ${getBtnStyle("Finalizar")} onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>` : "";
+            // Definición de botones pasando AMBOS parámetros (Módulo y Acción)
+            let btnDet = checkPermission(activeModId, "Ver Detalle") ? `<button ${getBtnStyle(activeModId, "Ver Detalle")} onclick="verDetalleTicket('${doc.id}')"><i class="fas fa-eye"></i></button>` : "";
+            let btnEdit = checkPermission(activeModId, "Editar") ? `<button ${getBtnStyle(activeModId, "Editar")} onclick="actEstado('${doc.id}','En Proceso')"><i class="fas fa-clock"></i></button>` : "";
+            let btnRe = checkPermission(activeModId, "Reasignar") ? `<button ${getBtnStyle(activeModId, "Reasignar")} onclick="abrirRe('${doc.id}')"><i class="fas fa-user-edit"></i></button>` : "";
+            let btnFin = checkPermission(activeModId, "Finalizar") ? `<button ${getBtnStyle(activeModId, "Finalizar")} onclick="abrirModalCierre('${doc.id}')"><i class="fas fa-check-circle"></i></button>` : "";
+            
+            // Botón de Revertir (Funcionalidad solicitada)
+            let btnRev = (t.estado === "En Proceso" && checkPermission(activeModId, "Revertir a Abierto")) ? 
+                         `<button ${getBtnStyle(activeModId, "Revertir a Abierto")} onclick="revertirAAbierto('${doc.id}')" title="Revertir a Abierto"><i class="fas fa-undo"></i></button>` : "";
+            
             let btnDel = (userRole === "Admin") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : "";
             
-            tb.innerHTML += `<tr><td>#${doc.id}</td><td>${t.solicitante}</td><td>${t.tipo}</td><td><b>${t.estado}</b></td><td>${t.asignado}</td><td>${btnDet}${btnEdit}${btnRe}${btnFin}${btnDel}</td></tr>`;
+            // Construcción de la fila
+            tb.innerHTML += `<tr>
+                <td>#${doc.id}</td>
+                <td>${t.solicitante}</td>
+                <td>${t.tipo}</td>
+                <td><b>${t.estado}</b></td>
+                <td>${t.asignado}</td>
+                <td>${btnDet}${btnEdit}${btnRev}${btnRe}${btnFin}${btnDel}</td>
+            </tr>`;
         });
     });
 }
@@ -1546,6 +1577,18 @@ renderTablaRoles();
     }
 }
 
+    async function revertirAAbierto(id) {
+        mostrarModalStatus("warning", "¿Revertir Estado?", "El ticket volverá a estado 'Abierto'.", async () => {
+            try {
+                await db.collection("tickets").doc(id).update({ estado: "Abierto" });
+                mostrarModalStatus("success", "Estado Actualizado", "El ticket ahora está abierto nuevamente.");
+                // La tabla se actualiza sola gracias al onSnapshot
+            } catch (e) {
+                mostrarModalStatus("danger", "Error", "No se pudo cambiar el estado.");
+            }
+        });
+    }
+
     async function eliminar(id, coll) {
     mostrarModalStatus("danger", "¿Eliminar Registro?", "Esta acción es permanente y no se puede deshacer.", async () => {
         await db.collection(coll || currentColl).doc(id).delete();
@@ -1564,33 +1607,8 @@ renderTablaRoles();
     
     const displayData = dataFiltrada || localData;
     
-    // Identificar el ID del módulo para traer sus colores
+    // 1. Identificar el ID del módulo para traer sus colores personalizados
     const activeModId = `card_${currentColl === 'inventario' ? 'inv_admin' : (currentColl === 'inventario_salas' ? 'inv_salas' : currentColl)}`;
-    const configMod = configVisualLocal[activeModId] || {};
-    const coloresAcciones = configMod.accionesColores || {};
-
-    // Función interna para aplicar el color personalizado a cada botón según su nombre de acción
-    // Dentro de renderTablaMaestra, actualiza la función interna:
-const getBtnStyle = (nombreAccion) => {
-    // 1. Obtener la configuración del módulo actual
-    const configMod = configVisualLocal[activeModId] || {};
-    const coloresAcciones = configMod.accionesColores || {};
-    
-    // 2. Buscar si el usuario definió un color para esta acción específica
-    let colorFinal = coloresAcciones[nombreAccion];
-
-    // 3. Si no hay color guardado, aplicamos el respaldo lógico según el nombre
-    if (!colorFinal) {
-        if (nombreAccion === "Editar") colorFinal = "#f59e0b";
-        else if (nombreAccion === "Finalizar") colorFinal = "#22c55e";
-        else if (nombreAccion === "Mantenimiento") colorFinal = "#00bcd4";
-        else if (nombreAccion === "Ver Detalle") colorFinal = "#64748b";
-        else if (nombreAccion === "Historial") colorFinal = "#8b5cf6";
-        else colorFinal = "#64748b"; // Gris por defecto
-    }
-
-    return `class="btn-acc" style="background-color: ${colorFinal} !important;"`;
-};
 
     // CONFIGURACIÓN DE CABECERAS
     if(currentColl === 'extensiones') {
@@ -1601,15 +1619,19 @@ const getBtnStyle = (nombreAccion) => {
         h.innerHTML = `<tr><th>Nombre/Aula</th><th>Tipo</th><th>Modelo/Ubicación</th><th>Serial/ID</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Acciones</th></tr>`;
     }
 
+    // 2. Renderizado de filas
     displayData.forEach(e => {
         let btns = "";
         let rowHTML = "";
 
         if(currentColl === 'extensiones') {
+            // Pasamos activeModId y el nombre de la acción a getBtnStyle
             if(checkPermission("card_extensiones", "Ver Detalle")) 
-                btns += `<button ${getBtnStyle("Ver Detalle")} onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
+                btns += `<button ${getBtnStyle("card_extensiones", "Ver Detalle")} onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
+            
             if(checkPermission("card_extensiones", "Editar")) 
-                btns += `<button ${getBtnStyle("Editar")} onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                btns += `<button ${getBtnStyle("card_extensiones", "Editar")} onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+            
             if(userRole === "Admin" || checkPermission("card_extensiones", "Eliminar")) 
                 btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
             
@@ -1617,32 +1639,28 @@ const getBtnStyle = (nombreAccion) => {
         
         } else if(currentColl === 'usuarios') {
             if(checkPermission("card_usuarios", "Editar")) 
-                btns += `<button ${getBtnStyle("Editar")} onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                btns += `<button ${getBtnStyle("card_usuarios", "Editar")} onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+            
             if(userRole === "Admin") 
                 btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
             
             rowHTML = `<tr><td>${e.nom || ''}</td><td>${e.cor || ''}</td><td>${e.rol || ''}</td><td>${btns}</td></tr>`;
         
         } else {
-            // Inventarios, Aulas e Impresoras
+            // Inventarios (Admin/Salas), Aulas e Impresoras
             if(checkPermission(activeModId, "Editar")) 
-                btns += `<button ${getBtnStyle("Editar")} onclick="abrirModalRegistro('editar','${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>`;
+                btns += `<button ${getBtnStyle(activeModId, "Editar")} onclick="abrirModalRegistro('editar','${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>`;
             
             if(currentColl === 'aulas_dti') {
-                // Para el chequeo usamos el color de "Mantenimiento" o uno gris si no existe
-                btns += `<button ${getBtnStyle("Mantenimiento")} onclick="abrirModalChequeo('${e.id}', '${e.nom}')" title="Registrar Chequeo"><i class="fas fa-check-double"></i></button>`;
+                // Registrar Chequeo usa la estética de "Mantenimiento"
+                btns += `<button ${getBtnStyle(activeModId, "Mantenimiento")} onclick="abrirModalChequeo('${e.id}', '${e.nom}')" title="Registrar Chequeo"><i class="fas fa-check-double"></i></button>`;
             }
 
             if(checkPermission(activeModId, "Mantenimiento")) 
-                btns += `<button ${getBtnStyle("Mantenimiento")} onclick="abrirMantenimiento('${e.id}')" title="Mantenimiento"><i class="fas fa-tools"></i></button>`;
+                btns += `<button ${getBtnStyle(activeModId, "Mantenimiento")} onclick="abrirMantenimiento('${e.id}')" title="Mantenimiento"><i class="fas fa-tools"></i></button>`;
             
             if(checkPermission(activeModId, "Historial")) {
-                const actName = "Historial";
-                if(currentColl === 'aulas_dti') {
-                    btns += `<button ${getBtnStyle(actName)} onclick="verHistorialAulas('${e.id}', '${e.nom}')" title="Historial de Chequeos"><i class="fas fa-history"></i></button>`;
-                } else {
-                    btns += `<button ${getBtnStyle(actName)} onclick="verHistorial('${e.id}')" title="Historial de Mantenimientos"><i class="fas fa-history"></i></button>`;
-                }
+                btns += `<button ${getBtnStyle(activeModId, "Historial")} onclick="${currentColl === 'aulas_dti' ? 'verHistorialAulas' : 'verHistorial'}('${e.id}', '${e.nom || ''}')" title="Historial"><i class="fas fa-history"></i></button>`;
             }
             
             if(userRole === "Admin") {
