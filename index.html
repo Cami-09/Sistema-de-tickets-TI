@@ -665,9 +665,29 @@
     </div>
 
     <div id="mod_admin_tickets" class="modulo">
-        <button onclick="volver()" class="btn-gray">⬅ Volver</button>
-        <div style="overflow-x:auto; margin-top:15px;"><table><thead><tr><th>ID</th><th>Usuario</th><th>Tipo</th><th>Estado</th><th>Gestor</th><th>Acciones</th></tr></thead><tbody id="tbody_admin_tickets"></tbody></table></div>
-    </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <button onclick="volver()" class="btn-gray">⬅ Volver</button>
+            <h2 style="margin:0; color:var(--dark);">Administración de Tickets</h2>
+            <button id="btn_eliminar_todos_tk_admin" onclick="eliminarTodosLosTickets()" style="background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; display: none; align-items: center; gap: 8px; font-size: 0.8rem; text-transform: uppercase;">
+                <i class="fas fa-trash-alt"></i> Eliminar Todos
+            </button>
+        </div>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Tipo</th>
+                        <th>Estado</th>
+                        <th>Gestor</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody_admin_tickets"></tbody>
+            </table>
+        </div>
+    </div>
 
     <div id="mod_stats" class="modulo">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -1222,7 +1242,14 @@ renderTablaRoles();
         }
         
         if(id === 'mod_mis_tickets') cargarMisTickets();
-        if(id === 'mod_admin_tickets') cargarTicketsAdmin();
+        if(id === 'mod_admin_tickets') {
+            cargarTicketsAdmin();
+            const btnEliminarTodosAdmin = document.getElementById('btn_eliminar_todos_tk_admin');
+            if (btnEliminarTodosAdmin) {
+                // Solo se muestra si el rol es exactamente "Admin"
+                btnEliminarTodosAdmin.style.display = userRole === "Admin" ? 'flex' : 'none';
+            }
+        }
         if(id === 'mod_historico_cerrados') cargarHistoricoCerrados();
         if(id === 'mod_stats') setTimeout(cargarGraficaActualizada, 350);
         if(id === 'mod_calendario') setTimeout(inicializarCalendario, 300);
@@ -1416,8 +1443,8 @@ renderTablaRoles();
     });
 }
 
-    // CORRECCIÓN: FUNCIÓN ENVIAR TICKET CON SOPORTE DE IMAGEN
-    async function enviarTicket() {
+    // CORRECCIÓN: FUNCIÓN ENVIAR TICKET CON MODAL DE CARGA DE IMAGEN
+async function enviarTicket() {
     const nom = document.getElementById('tk_nom_user').value;
     const d = document.getElementById('tk_desc').value;
     const archivoInput = document.getElementById('tk_archivo');
@@ -1437,6 +1464,14 @@ renderTablaRoles();
             const fileName = `tickets/${Date.now()}_${file.name}`;
             const storageRef = storage.ref(fileName);
             
+            // --- NUEVO: MODAL DE CARGA ---
+            // Lanzamos el modal con aviso de carga
+            mostrarModalStatus("warning", "Subiendo Evidencia", "Iniciando carga de la imagen...");
+            // Cambiamos el icono por un spinner dando vueltas
+            document.getElementById('alertIcon').className = 'fas fa-spinner fa-spin';
+            // Vaciamos los botones para que el usuario NO pueda cerrar el modal accidentalmente
+            document.getElementById('alertButtons').innerHTML = '';
+
             if(progressDiv) progressDiv.style.display = "block";
             
             const task = storageRef.put(file);
@@ -1445,7 +1480,15 @@ renderTablaRoles();
                 task.on('state_changed', 
                     (snapshot) => {
                         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        if(progressDiv) progressDiv.innerText = `Subiendo imagen... ${Math.round(progress)}%`;
+                        const porcentaje = Math.round(progress);
+
+                        if(progressDiv) progressDiv.innerText = `Subiendo imagen... ${porcentaje}%`;
+
+                        // --- NUEVO: ACTUALIZACIÓN EN TIEMPO REAL DEL MODAL ---
+                        const alertMsg = document.getElementById('alertMessage');
+                        if(alertMsg) {
+                            alertMsg.innerHTML = `Subiendo imagen... <b>${porcentaje}% completado</b>.<br>Por favor, no cierre esta ventana.`;
+                        }
                     }, 
                     (error) => {
                         reject("Error al subir la imagen.");
@@ -1489,7 +1532,9 @@ renderTablaRoles();
 
         // 3. Notificación y Limpieza
         cerrarModales();
-        mostrarModalStatus("success", "¡Solicitud Enviada!", "Tu ticket ha sido registrado y un gestor será asignado pronto.");
+
+        // Al terminar todo, sobrescribimos el modal de carga por el modal de éxito final con autocierre
+        mostrarModalStatus("success", "¡Solicitud Enviada!", "Tu ticket ha sido registrado y un gestor será asignado pronto.", null, 2500);
         
         document.getElementById('tk_nom_user').value = "";
         document.getElementById('tk_desc').value = "";
@@ -1619,6 +1664,53 @@ renderTablaRoles();
         setTimeout(() => {
             mostrarModalStatus("success", "Eliminado", "El registro ha sido borrado.");
         }, 300);
+    });
+}
+
+    // ======================================================
+// FUNCIÓN PARA ELIMINAR TODOS LOS TICKETS (SOLO ADMIN)
+// ======================================================
+async function eliminarTodosLosTickets() {
+    // Doble validación de seguridad
+    if (userRole !== "Admin") {
+        mostrarModalStatus("danger", "Acceso Denegado", "Solo el administrador maestro puede eliminar todos los tickets del sistema.");
+        return;
+    }
+
+    // Modal de confirmación irreversible
+    mostrarModalStatus("danger", "⚠️ ¿ELIMINAR TODOS LOS TICKETS?", "Esta acción es permanente, irreversible y borrará absolutamente todo el historial de tickets del sistema. ¿Estás seguro?", async () => {
+        try {
+            // Actualizar texto del modal mientras procesa
+            document.getElementById('alertMessage').innerText = "Eliminando tickets de la base de datos, por favor espera...";
+            document.getElementById('alertButtons').innerHTML = ""; 
+
+            const snapshot = await db.collection("tickets").get();
+            
+            if (snapshot.empty) {
+                mostrarModalStatus("warning", "Sin Registros", "No hay tickets en el sistema para eliminar.");
+                return;
+            }
+
+            // Borrado masivo usando Promise.all para que sea instantáneo
+            const promesasDeBorrado = [];
+            snapshot.forEach(doc => {
+                promesasDeBorrado.push(db.collection("tickets").doc(doc.id).delete());
+            });
+            
+            await Promise.all(promesasDeBorrado);
+            
+            // Opcional: Resetear el contador de tickets a 0
+            await db.collection("configuracion").doc("contadores").update({ ticket_actual: 0 });
+            
+            mostrarModalStatus("success", "Limpieza Exitosa", "Todos los tickets han sido borrados de forma permanente.");
+            
+            // Refrescar la tabla de administración
+            cargarTicketsAdmin();
+            
+        } catch (error) {
+            console.error("Error al borrar todos los tickets: ", error);
+            mostrarModalStatus("danger", "Error del Sistema", "Ocurrió un problema de red o base de datos al intentar borrar los tickets.");
+        }
     });
 }
 
@@ -2061,37 +2153,41 @@ async function eliminarMnt(coll, eid, mid) {
     function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); document.getElementById('modalReasignar').style.display = 'block'; }
     async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); }
 
-    // Función Maestra para Alertas y Confirmaciones (Éxito y Eliminación)
-function mostrarModalStatus(tipo, titulo, mensaje, callback = null) {
-    const modal = document.getElementById('customAlert');
-    const iconCont = document.getElementById('alertIconContainer');
-    const icon = document.getElementById('alertIcon');
-    const btnCont = document.getElementById('alertButtons');
+// Función Maestra para Alertas y Confirmaciones (Éxito y Eliminación)
+function mostrarModalStatus(tipo, titulo, mensaje, callback = null, autoCloseMs = null) {
+    const modal = document.getElementById('customAlert');
+    const iconCont = document.getElementById('alertIconContainer');
+    const icon = document.getElementById('alertIcon');
+    const btnCont = document.getElementById('alertButtons');
 
-    // Configuración de estilos e iconos
-    iconCont.className = 'icon-circle ' + (tipo === 'success' ? 'icon-success' : (tipo === 'danger' ? 'icon-danger' : 'icon-warning'));
-    icon.className = 'fas ' + (tipo === 'success' ? 'fa-check' : (tipo === 'danger' ? 'fa-trash-alt' : 'fa-exclamation-circle'));
-    
-    document.getElementById('alertTitle').innerText = titulo;
-    document.getElementById('alertMessage').innerText = mensaje;
-    btnCont.innerHTML = ""; 
+    // Configuración de estilos e iconos
+    iconCont.className = 'icon-circle ' + (tipo === 'success' ? 'icon-success' : (tipo === 'danger' ? 'icon-danger' : 'icon-warning'));
+    icon.className = 'fas ' + (tipo === 'success' ? 'fa-check' : (tipo === 'danger' ? 'fa-trash-alt' : 'fa-exclamation-circle'));
+    
+    document.getElementById('alertTitle').innerText = titulo;
+    document.getElementById('alertMessage').innerText = mensaje;
+    btnCont.innerHTML = ""; 
 
-    if (callback) {
-        // Caso de confirmación (Ej: Eliminar)
-        btnCont.innerHTML = `
-            <button class="btn-notif btn-notif-cancel" onclick="cerrarModalStatus()">Cancelar</button>
-            <button class="btn-notif btn-notif-danger" id="btnConfirmAction">Confirmar</button>
-        `;
-        document.getElementById('btnConfirmAction').onclick = () => {
-            callback();
+    if (callback) {
+        // Caso de confirmación (Ej: Eliminar)
+        btnCont.innerHTML = `
+            <button class="btn-notif btn-notif-cancel" onclick="cerrarModalStatus()">Cancelar</button>
+            <button class="btn-notif btn-notif-danger" id="btnConfirmAction">Confirmar</button>
+        `;
+        document.getElementById('btnConfirmAction').onclick = () => {
+            callback();
+            cerrarModalStatus();
+        };
+    } else if (autoCloseMs) {
+        // NUEVO: Caso de auto-cierre (desaparece solo y no muestra botones)
+        setTimeout(() => {
             cerrarModalStatus();
-        };
+        }, autoCloseMs);
     } else {
-        // Caso de aviso simple (Ej: Campos vacíos o Guardado exitoso)
-        // IMPORTANTE: Aquí el onclick debe ser exactamente cerrarModalStatus
-        btnCont.innerHTML = `<button type="button" class="btn-notif btn-notif-confirm" style="width:100%" onclick="cerrarModalStatus()">Entendido</button>`;
-    }
-    modal.style.display = 'flex';
+        // Caso de aviso simple (Ej: Campos vacíos)
+        btnCont.innerHTML = `<button type="button" class="btn-notif btn-notif-confirm" style="width:100%" onclick="cerrarModalStatus()">Entendido</button>`;
+    }
+    modal.style.display = 'flex';
 }
 
 // ESTA ES LA FUNCIÓN QUE CIERRA EL MODAL
