@@ -550,6 +550,7 @@
         
         <div class="card" id="card_inv_admin" onclick="abrir_maestro('inventario', 'Equipos Administrativos')"><i class="fas fa-laptop"></i><h3>Equipos Administrativos</h3></div>
         <div class="card" id="card_inv_salas" onclick="abrir_maestro('inventario_salas', 'Equipos Salas')"><i class="fas fa-desktop"></i><h3>Equipos Salas</h3></div>
+        <div class="card" id="card_inv_obsoletos" onclick="abrir_maestro('equipos_obsoletos', 'Equipos Obsoletos')"><i class="fas fa-dumpster"></i><h3>Equipos Obsoletos</h3></div>
         <div class="card" id="card_extensiones" onclick="abrir_maestro('extensiones', 'Extensiones Administrativos')"><i class="fas fa-phone-volume"></i><h3>Extensiones Administrativos</h3></div>
 
         <div class="card" id="card_calendario" onclick="abrir('mod_calendario')"><i class="fas fa-calendar-alt"></i><h3>Calendario</h3></div>
@@ -988,7 +989,9 @@
         {id: "card_impresoras", nom: "Impresoras", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
         {id: "card_gest_mantenimientos", nom: "Gestión Mantenimientos", acts: ["Editar", "Eliminar"]},
         {id: "card_preferencias", nom: "Gestión Preferencias", acts: ["Crear", "Editar", "Eliminar"]},
-        {id: "card_config_visual", nom: "Personalización Visual", acts: ["Editar"]}
+        {id: "card_config_visual", nom: "Personalización Visual", acts: ["Editar"]},
+        {id: "card_inv_obsoletos", nom: "Equipos Obsoletos", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]}
+    
     ];
 
     function getBtnStyle(modId, nombreAccion) {
@@ -1126,6 +1129,7 @@
             "card_historico_cerrados": ["Ver Detalle"],
             "card_inv_admin": ["Crear", "Editar", "Mantenimiento", "Historial"],
             "card_inv_salas": ["Crear", "Editar", "Mantenimiento", "Historial"],
+            "card_inv_obsoletos": ["Crear", "Editar", "Mantenimiento", "Historial"],
             "card_extensiones": ["Crear", "Editar", "Ver Detalle"],
             "card_calendario": ["Ver"],
             "card_aulas": ["Crear", "Editar", "Mantenimiento", "Historial"],
@@ -1143,7 +1147,7 @@
         modulosPermitidos = rolDB.modulos;
     } else {
         const vDefault = { 
-            "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_historico_cerrados", "card_inv_admin", "card_inv_salas", "card_extensiones", "card_calendario", "card_aulas", "card_impresoras", "card_gest_mantenimientos"],
+            "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_historico_cerrados", "card_inv_admin", "card_inv_salas", "card_inv_obsoletos", "card_extensiones", "card_calendario", "card_aulas", "card_impresoras", "card_gest_mantenimientos"],
             "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
         };
         modulosPermitidos = vDefault[userRole] || vDefault["Usuario"];
@@ -1224,6 +1228,7 @@ renderTablaRoles();
             const modIdMap = {
                 'inventario': 'card_inv_admin',
                 'inventario_salas': 'card_inv_salas',
+                'equipos_obsoletos': 'card_inv_obsoletos',
                 'extensiones': 'card_extensiones',
                 'usuarios': 'card_usuarios',
                 'aulas_dti': 'card_aulas',
@@ -1723,7 +1728,8 @@ async function eliminarTodosLosTickets() {
     const displayData = dataFiltrada || localData;
     
     // 1. Identificar el ID del módulo para traer sus colores personalizados
-    const activeModId = `card_${currentColl === 'inventario' ? 'inv_admin' : (currentColl === 'inventario_salas' ? 'inv_salas' : currentColl)}`;
+    // 1. Identificar el ID del módulo para traer sus colores personalizados
+    const activeModId = `card_${currentColl === 'inventario' ? 'inv_admin' : (currentColl === 'inventario_salas' ? 'inv_salas' : (currentColl === 'equipos_obsoletos' ? 'inv_obsoletos' : currentColl))}`;
 
     // CONFIGURACIÓN DE CABECERAS
     if(currentColl === 'extensiones') {
@@ -1865,7 +1871,7 @@ async function eliminarTodosLosTickets() {
         } else if(currentColl === 'usuarios') {
             const roles = ["Admin", "Gestor", "Usuario", ...listaRolesGlobal.map(r => r.nombre)];
             fields = [["Nombre","nom"],["Correo","cor"],["Rol","rol","select", [...new Set(roles)]]];
-        } else if(currentColl === 'inventario' || currentColl === 'inventario_salas') {
+        } else if(currentColl === 'inventario' || currentColl === 'inventario_salas' || currentColl === 'equipos_obsoletos') {
             // CAMPOS SEGÚN LA IMAGEN DE REFERENCIA
             fields = [
                 ["Pc", "nom"], ["Tipo", "tip", "select", ["Portátil", "Todo en Uno", "Torre"]], ["Modelo", "mod"],
@@ -1921,6 +1927,7 @@ async function eliminarTodosLosTickets() {
         'usuarios': 'Usuario',
         'inventario': 'Equipo Administrativo',
         'inventario_salas': 'Equipo de Sala',
+        'equipos_obsoletos': 'Equipo Obsoleto',
         'extensiones': 'Extensión',
         'aulas_dti': 'Aula',
         'impresoras': 'Impresora'
@@ -1962,7 +1969,7 @@ async function eliminarTodosLosTickets() {
             initialView: 'dayGridMonth', locale: 'es',
             events: async function(info, success) {
                 const evs = [];
-                const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti"];
+                const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti", "equipos_obsoletos"];
                 for(let coll of colecciones) {
                     const snapEquipos = await db.collection(coll).get();
                     for(let docE of snapEquipos.docs) {
@@ -1986,7 +1993,7 @@ async function eliminarTodosLosTickets() {
         // Si ya hay datos previos, no mostramos el "Cargando" para que no parpadee
         if(tb.innerHTML === "") tb.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando mantenimientos...</td></tr>";
         
-        const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti"];
+        const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti", "equipos_obsoletos"];
         let promesasGlobales = [];
 
         try {
@@ -2416,6 +2423,7 @@ async function restablecerConfiguracionPredeterminada() {
         "card_historico_cerrados": "fas fa-archive",
         "card_inv_admin": "fas fa-laptop",
         "card_inv_salas": "fas fa-desktop",
+        "card_inv_obsoletos": "fas fa-dumpster",
         "card_extensiones": "fas fa-phone-volume",
         "card_calendario": "fas fa-calendar-alt",
         "card_stats": "fas fa-chart-pie",
