@@ -1554,42 +1554,47 @@ async function enviarTicket() {
 }
 
     function cargarTicketsAdmin() {
-    const tb = document.getElementById('tbody_admin_tickets');
-    const activeModId = 'card_admin_tickets';
+        const tb = document.getElementById('tbody_admin_tickets');
+        const activeModId = 'card_admin_tickets';
 
-    db.collection("tickets").onSnapshot(snap => {
-        if(!tb) return;
-        tb.innerHTML = ""; 
-        snap.forEach(doc => {
-            const t = doc.data(); 
-            // Filtros de visualización
-            if(t.estado === "Cerrado") return;
-            if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
+        db.collection("tickets").onSnapshot(snap => {
+            if(!tb) return;
             
-            // Definición de botones pasando AMBOS parámetros (Módulo y Acción)
-            let btnDet = checkPermission(activeModId, "Ver Detalle") ? `<button ${getBtnStyle(activeModId, "Ver Detalle")} onclick="verDetalleTicket('${doc.id}')" title="Ver detalle"><i class="fas fa-eye"></i></button>` : "";
-            let btnEdit = checkPermission(activeModId, "Editar") ? `<button ${getBtnStyle(activeModId, "Editar")} onclick="actEstado('${doc.id}','En Proceso')" title="En proceso"><i class="fas fa-clock"></i></button>` : "";
-            let btnRe = checkPermission(activeModId, "Reasignar") ? `<button ${getBtnStyle(activeModId, "Reasignar")} onclick="abrirRe('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>` : "";
-            let btnFin = checkPermission(activeModId, "Finalizar") ? `<button ${getBtnStyle(activeModId, "Finalizar")} onclick="abrirModalCierre('${doc.id}')" title="Finalizar"><i class="fas fa-check-circle"></i></button>` : "";
+            let htmlRows = ""; // <-- SOLUCIÓN: Usamos una variable temporal para concatenar todo
             
-            // Botón de Revertir (Funcionalidad solicitada)
-            let btnRev = (t.estado === "En Proceso" && checkPermission(activeModId, "Revertir a Abierto")) ? 
-                         `<button ${getBtnStyle(activeModId, "Revertir a Abierto")} onclick="revertirAAbierto('${doc.id}')" title="Revertir a Abierto"><i class="fas fa-undo"></i></button>` : "";
+            snap.forEach(doc => {
+                const t = doc.data(); 
+                // Filtros de visualización
+                if(t.estado === "Cerrado") return;
+                if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
+                
+                // Definición de botones pasando AMBOS parámetros (Módulo y Acción)
+                let btnDet = checkPermission(activeModId, "Ver Detalle") ? `<button ${getBtnStyle(activeModId, "Ver Detalle")} onclick="verDetalleTicket('${doc.id}')" title="Ver detalle"><i class="fas fa-eye"></i></button>` : "";
+                let btnEdit = checkPermission(activeModId, "Editar") ? `<button ${getBtnStyle(activeModId, "Editar")} onclick="actEstado('${doc.id}','En Proceso')" title="En proceso"><i class="fas fa-clock"></i></button>` : "";
+                let btnRe = checkPermission(activeModId, "Reasignar") ? `<button ${getBtnStyle(activeModId, "Reasignar")} onclick="abrirRe('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>` : "";
+                let btnFin = checkPermission(activeModId, "Finalizar") ? `<button ${getBtnStyle(activeModId, "Finalizar")} onclick="abrirModalCierre('${doc.id}')" title="Finalizar"><i class="fas fa-check-circle"></i></button>` : "";
+                
+                // Botón de Revertir (Funcionalidad solicitada)
+                let btnRev = (t.estado === "En Proceso" && checkPermission(activeModId, "Revertir a Abierto")) ? 
+                             `<button ${getBtnStyle(activeModId, "Revertir a Abierto")} onclick="revertirAAbierto('${doc.id}')" title="Revertir a Abierto"><i class="fas fa-undo"></i></button>` : "";
+                
+                let btnDel = (userRole === "Admin") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>` : "";
+                
+                // Construcción de la fila en la variable (No en el DOM directamente)
+                htmlRows += `<tr>
+                    <td>#${doc.id}</td>
+                    <td>${t.solicitante}</td>
+                    <td>${t.tipo}</td>
+                    <td><b>${t.estado}</b></td>
+                    <td>${t.asignado}</td>
+                    <td>${btnDet}${btnEdit}${btnRev}${btnRe}${btnFin}${btnDel}</td>
+                </tr>`;
+            });
             
-            let btnDel = (userRole === "Admin") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>` : "";
-            
-            // Construcción de la fila
-            tb.innerHTML += `<tr>
-                <td>#${doc.id}</td>
-                <td>${t.solicitante}</td>
-                <td>${t.tipo}</td>
-                <td><b>${t.estado}</b></td>
-                <td>${t.asignado}</td>
-                <td>${btnDet}${btnEdit}${btnRev}${btnRe}${btnFin}${btnDel}</td>
-            </tr>`;
+            // <-- Inyectamos todo de golpe al final (Esto elimina el lag por completo)
+            tb.innerHTML = htmlRows || "<tr><td colspan='6' style='text-align:center;'>No hay tickets activos</td></tr>";
         });
-    });
-}
+    }
 
     async function verDetalleTicket(id) { 
         const doc = await db.collection("tickets").doc(id).get(); 
@@ -1673,7 +1678,7 @@ async function enviarTicket() {
 }
 
     // ======================================================
-// FUNCIÓN PARA ELIMINAR TODOS LOS TICKETS (SOLO ADMIN)
+// FUNCIÓN PARA ELIMINAR TODOS LOS TICKETS (OPTIMIZADA CON BATCH Y PROGRESO)
 // ======================================================
 async function eliminarTodosLosTickets() {
     // Doble validación de seguridad
@@ -1682,117 +1687,131 @@ async function eliminarTodosLosTickets() {
         return;
     }
 
-    // Modal de confirmación irreversible
-    mostrarModalStatus("danger", "⚠️ ¿ELIMINAR TODOS LOS TICKETS?", "Esta acción es permanente, irreversible y borrará absolutamente todo el historial de tickets del sistema. ¿Estás seguro?", async () => {
-        try {
-            // Actualizar texto del modal mientras procesa
-            document.getElementById('alertMessage').innerText = "Eliminando tickets de la base de datos, por favor espera...";
-            document.getElementById('alertButtons').innerHTML = ""; 
+    // 1. Mostrar el modal de confirmación normal (pasamos función vacía para que pinte los botones)
+    mostrarModalStatus("danger", "⚠️ ¿ELIMINAR TODOS LOS TICKETS?", "Esta acción es permanente, irreversible y borrará absolutamente todo el historial de tickets del sistema. ¿Estás seguro?", () => {});
 
-            const snapshot = await db.collection("tickets").get();
-            
-            if (snapshot.empty) {
-                mostrarModalStatus("warning", "Sin Registros", "No hay tickets en el sistema para eliminar.");
-                return;
+    // 2. Sobrescribir inmediatamente el evento del botón Confirmar para evitar que el modal se cierre
+    const btnConfirm = document.getElementById('btnConfirmAction');
+    if (btnConfirm) {
+        btnConfirm.onclick = async () => {
+            try {
+                // Cambiar UI a estado de "Cargando" sin cerrar el modal
+                document.getElementById('alertIconContainer').className = 'icon-circle icon-warning';
+                document.getElementById('alertIcon').className = 'fas fa-spinner fa-spin';
+                document.getElementById('alertButtons').innerHTML = ""; // Ocultar botones
+                document.getElementById('alertMessage').innerHTML = `Calculando registros a eliminar...`;
+
+                const snapshot = await db.collection("tickets").get();
+                const totalTickets = snapshot.size;
+
+                if (totalTickets === 0) {
+                    mostrarModalStatus("warning", "Sin Registros", "No hay tickets en el sistema para eliminar.");
+                    return;
+                }
+
+                document.getElementById('alertMessage').innerHTML = `Eliminando tickets... <b>0%</b> completado.<br><small style="color:var(--gray);">Por favor, no cierre esta ventana.</small>`;
+
+                // 3. Usar WriteBatch (Lotes) es la forma nativa y más rápida de Firebase para borrado masivo
+                const lotes = [];
+                let loteActual = db.batch();
+                let operaciones = 0;
+
+                // Preparar los lotes de eliminación
+                snapshot.docs.forEach((doc) => {
+                    loteActual.delete(doc.ref);
+                    operaciones++;
+                    // Firebase permite un máximo de 500 operaciones por lote
+                    if (operaciones === 500) {
+                        lotes.push(loteActual);
+                        loteActual = db.batch();
+                        operaciones = 0;
+                    }
+                });
+
+                // Empujar el último lote si quedaron operaciones pendientes
+                if (operaciones > 0) lotes.push(loteActual);
+
+                let lotesCompletados = 0;
+                const totalLotes = lotes.length;
+
+                // 4. Ejecutar los lotes uno por uno y actualizar la UI con el progreso
+                for (const lote of lotes) {
+                    await lote.commit(); // Aquí ocurre la magia masiva de Firebase
+                    lotesCompletados++;
+                    const porcentaje = Math.round((lotesCompletados / totalLotes) * 100);
+                    document.getElementById('alertMessage').innerHTML = `Eliminando tickets... <b>${porcentaje}%</b> completado.<br><small style="color:var(--gray);">Por favor, no cierre esta ventana.</small>`;
+                }
+
+                // Opcional: Resetear el contador maestro de tickets a 0
+                await db.collection("configuracion").doc("contadores").update({ ticket_actual: 0 });
+
+                // 5. Mostrar modal de éxito que se cierra solo después de 3 segundos
+                mostrarModalStatus("success", "Limpieza Exitosa", "Todos los tickets han sido borrados masivamente del sistema.", null, 3000);
+                
+                // Refrescar la tabla para que quede en blanco
+                cargarTicketsAdmin();
+
+            } catch (error) {
+                console.error("Error masivo: ", error);
+                mostrarModalStatus("danger", "Error del Sistema", "Ocurrió un problema de red o base de datos al intentar borrar los tickets.");
             }
-
-            // Borrado masivo usando Promise.all para que sea instantáneo
-            const promesasDeBorrado = [];
-            snapshot.forEach(doc => {
-                promesasDeBorrado.push(db.collection("tickets").doc(doc.id).delete());
-            });
-            
-            await Promise.all(promesasDeBorrado);
-            
-            // Opcional: Resetear el contador de tickets a 0
-            await db.collection("configuracion").doc("contadores").update({ ticket_actual: 0 });
-            
-            mostrarModalStatus("success", "Limpieza Exitosa", "Todos los tickets han sido borrados de forma permanente.");
-            
-            // Refrescar la tabla de administración
-            cargarTicketsAdmin();
-            
-        } catch (error) {
-            console.error("Error al borrar todos los tickets: ", error);
-            mostrarModalStatus("danger", "Error del Sistema", "Ocurrió un problema de red o base de datos al intentar borrar los tickets.");
-        }
-    });
+        };
+    }
 }
 
     function renderTablaMaestra(dataFiltrada = null) {
-    const b = document.getElementById('m_tbody'); if(!b) return;
-    b.innerHTML = "";
-    const h = document.getElementById('m_thead'); if(!h) return;
-    h.innerHTML = "";
-    
-    const displayData = dataFiltrada || localData;
-    
-    // 1. Identificar el ID del módulo para traer sus colores personalizados
-    // 1. Identificar el ID del módulo para traer sus colores personalizados
-    const activeModId = `card_${currentColl === 'inventario' ? 'inv_admin' : (currentColl === 'inventario_salas' ? 'inv_salas' : (currentColl === 'equipos_obsoletos' ? 'inv_obsoletos' : currentColl))}`;
+        const b = document.getElementById('m_tbody'); if(!b) return;
+        const h = document.getElementById('m_thead'); if(!h) return;
+        
+        const displayData = dataFiltrada || localData;
+        
+        // 1. Identificar el ID del módulo para traer sus colores personalizados
+        const activeModId = `card_${currentColl === 'inventario' ? 'inv_admin' : (currentColl === 'inventario_salas' ? 'inv_salas' : (currentColl === 'equipos_obsoletos' ? 'inv_obsoletos' : currentColl))}`;
 
-    // CONFIGURACIÓN DE CABECERAS
-    if(currentColl === 'extensiones') {
-        h.innerHTML = `<tr><th>Nombre</th><th>Dependencia</th><th>Extensión</th><th>Tipo</th><th>Acciones</th></tr>`;
-    } else if(currentColl === 'usuarios') {
-        h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
-    } else {
-        h.innerHTML = `<tr><th>Nombre/Aula</th><th>Tipo</th><th>Modelo/Ubicación</th><th>Serial/ID</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Acciones</th></tr>`;
-    }
-
-    // 2. Renderizado de filas
-    displayData.forEach(e => {
-        let btns = "";
-        let rowHTML = "";
-
+        // CONFIGURACIÓN DE CABECERAS
         if(currentColl === 'extensiones') {
-            // Pasamos activeModId y el nombre de la acción a getBtnStyle
-            if(checkPermission("card_extensiones", "Ver Detalle")) 
-                btns += `<button ${getBtnStyle("card_extensiones", "Ver Detalle")} onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
-            
-            if(checkPermission("card_extensiones", "Editar")) 
-                btns += `<button ${getBtnStyle("card_extensiones", "Editar")} onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-            
-            if(userRole === "Admin" || checkPermission("card_extensiones", "Eliminar")) 
-                btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
-            
-            rowHTML = `<tr><td><b>${e.nom || ''}</b></td><td>${e.dep || ''}</td><td>${e.ext || ''}</td><td>${e.tipo_ext || ''}</td><td>${btns}</td></tr>`;
-        
+            h.innerHTML = `<tr><th>Nombre</th><th>Dependencia</th><th>Extensión</th><th>Tipo</th><th>Acciones</th></tr>`;
         } else if(currentColl === 'usuarios') {
-            if(checkPermission("card_usuarios", "Editar")) 
-                btns += `<button ${getBtnStyle("card_usuarios", "Editar")} onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
-            
-            if(userRole === "Admin") 
-                btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
-            
-            rowHTML = `<tr><td>${e.nom || ''}</td><td>${e.cor || ''}</td><td>${e.rol || ''}</td><td>${btns}</td></tr>`;
-        
+            h.innerHTML = `<tr><th>Nombre</th><th>Correo</th><th>Rol</th><th>Acciones</th></tr>`;
         } else {
-            // Inventarios (Admin/Salas), Aulas e Impresoras
-            if(checkPermission(activeModId, "Editar")) 
-                btns += `<button ${getBtnStyle(activeModId, "Editar")} onclick="abrirModalRegistro('editar','${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>`;
-            
-            if(currentColl === 'aulas_dti') {
-                // Registrar Chequeo usa la estética de "Mantenimiento"
-                btns += `<button ${getBtnStyle(activeModId, "Mantenimiento")} onclick="abrirModalChequeo('${e.id}', '${e.nom}')" title="Registrar Chequeo"><i class="fas fa-check-double"></i></button>`;
-            }
-
-            if(checkPermission(activeModId, "Mantenimiento")) 
-                btns += `<button ${getBtnStyle(activeModId, "Mantenimiento")} onclick="abrirMantenimiento('${e.id}')" title="Mantenimiento"><i class="fas fa-tools"></i></button>`;
-            
-            if(checkPermission(activeModId, "Historial")) {
-                btns += `<button ${getBtnStyle(activeModId, "Historial")} onclick="${currentColl === 'aulas_dti' ? 'verHistorialAulas' : 'verHistorial'}('${e.id}', '${e.nom || ''}')" title="Historial"><i class="fas fa-history"></i></button>`;
-            }
-            
-            if(userRole === "Admin") {
-                btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')" title="Eliminar"><i class="fas fa-trash"></i></button>`;
-            }
-
-            rowHTML = `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
+            h.innerHTML = `<tr><th>Nombre/Aula</th><th>Tipo</th><th>Modelo/Ubicación</th><th>Serial/ID</th><th>Responsable</th><th>Dep.</th><th>Campus</th><th>Acciones</th></tr>`;
         }
-        b.innerHTML += rowHTML;
-    });
-}
+
+        let htmlRows = ""; // <-- SOLUCIÓN: Variable temporal para evitar congelamientos
+
+        // 2. Renderizado de filas
+        displayData.forEach(e => {
+            let btns = "";
+            let rowHTML = "";
+
+            if(currentColl === 'extensiones') {
+                if(checkPermission("card_extensiones", "Ver Detalle")) btns += `<button ${getBtnStyle("card_extensiones", "Ver Detalle")} onclick="verOjitoExtension('${e.id}')"><i class="fas fa-eye"></i></button>`;
+                if(checkPermission("card_extensiones", "Editar")) btns += `<button ${getBtnStyle("card_extensiones", "Editar")} onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                if(userRole === "Admin" || checkPermission("card_extensiones", "Eliminar")) btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','extensiones')"><i class="fas fa-trash"></i></button>`;
+                
+                rowHTML = `<tr><td><b>${e.nom || ''}</b></td><td>${e.dep || ''}</td><td>${e.ext || ''}</td><td>${e.tipo_ext || ''}</td><td>${btns}</td></tr>`;
+            
+            } else if(currentColl === 'usuarios') {
+                if(checkPermission("card_usuarios", "Editar")) btns += `<button ${getBtnStyle("card_usuarios", "Editar")} onclick="abrirModalRegistro('editar','${e.id}')"><i class="fas fa-edit"></i></button>`;
+                if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','usuarios')"><i class="fas fa-trash"></i></button>`;
+                
+                rowHTML = `<tr><td>${e.nom || ''}</td><td>${e.cor || ''}</td><td>${e.rol || ''}</td><td>${btns}</td></tr>`;
+            
+            } else {
+                if(checkPermission(activeModId, "Editar")) btns += `<button ${getBtnStyle(activeModId, "Editar")} onclick="abrirModalRegistro('editar','${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>`;
+                if(currentColl === 'aulas_dti') btns += `<button ${getBtnStyle(activeModId, "Mantenimiento")} onclick="abrirModalChequeo('${e.id}', '${e.nom}')" title="Registrar Chequeo"><i class="fas fa-check-double"></i></button>`;
+                if(checkPermission(activeModId, "Mantenimiento")) btns += `<button ${getBtnStyle(activeModId, "Mantenimiento")} onclick="abrirMantenimiento('${e.id}')" title="Mantenimiento"><i class="fas fa-tools"></i></button>`;
+                if(checkPermission(activeModId, "Historial")) btns += `<button ${getBtnStyle(activeModId, "Historial")} onclick="${currentColl === 'aulas_dti' ? 'verHistorialAulas' : 'verHistorial'}('${e.id}', '${e.nom || ''}')" title="Historial"><i class="fas fa-history"></i></button>`;
+                if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')" title="Eliminar"><i class="fas fa-trash"></i></button>`;
+                
+                rowHTML = `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
+            }
+            
+            htmlRows += rowHTML; // Acumular en lugar de imprimir
+        });
+        
+        b.innerHTML = htmlRows; // Inyectar de golpe al final
+    }
 
     async function verHistorialAulas(id, nombreAula) {
     const container = document.getElementById('hist_chequeos_container');
