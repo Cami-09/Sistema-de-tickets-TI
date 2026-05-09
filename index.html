@@ -1464,17 +1464,18 @@ async function enviarTicket() {
         let urlDescarga = "";
 
         // 1. Subida de imagen (si existe)
-        if (archivoInput && archivoInput.files[0]) {
+        if (archivoInput && archivoInput.files.length > 0) {
             const file = archivoInput.files[0];
-            const fileName = `tickets/${Date.now()}_${file.name}`;
-            const storageRef = storage.ref(fileName);
             
-            // --- NUEVO: MODAL DE CARGA ---
-            // Lanzamos el modal con aviso de carga
+            // Sanitizamos el nombre del archivo (reemplaza espacios y caracteres raros por guiones bajos)
+            const cleanFileName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+            const fileName = `tickets/${Date.now()}_${cleanFileName}`;
+            
+            // Usamos .child() que es más estable en Firebase v8
+            const storageRef = storage.ref().child(fileName);
+            
             mostrarModalStatus("warning", "Subiendo Evidencia", "Iniciando carga de la imagen...");
-            // Cambiamos el icono por un spinner dando vueltas
             document.getElementById('alertIcon').className = 'fas fa-spinner fa-spin';
-            // Vaciamos los botones para que el usuario NO pueda cerrar el modal accidentalmente
             document.getElementById('alertButtons').innerHTML = '';
 
             if(progressDiv) progressDiv.style.display = "block";
@@ -1489,18 +1490,23 @@ async function enviarTicket() {
 
                         if(progressDiv) progressDiv.innerText = `Subiendo imagen... ${porcentaje}%`;
 
-                        // --- NUEVO: ACTUALIZACIÓN EN TIEMPO REAL DEL MODAL ---
                         const alertMsg = document.getElementById('alertMessage');
                         if(alertMsg) {
                             alertMsg.innerHTML = `Subiendo imagen... <b>${porcentaje}% completado</b>.<br>Por favor, no cierre esta ventana.`;
                         }
                     }, 
                     (error) => {
-                        reject("Error al subir la imagen.");
+                        console.error("Error interno de Storage:", error);
+                        reject(error); // Pasamos el error real en lugar de un texto genérico
                     }, 
                     async () => {
-                        urlDescarga = await task.snapshot.ref.getDownloadURL();
-                        resolve();
+                        try {
+                            // Extraemos la URL directo de la referencia segura
+                            urlDescarga = await storageRef.getDownloadURL();
+                            resolve();
+                        } catch (errUrl) {
+                            reject(errUrl);
+                        }
                     }
                 );
             });
@@ -1511,8 +1517,15 @@ async function enviarTicket() {
         
         await db.runTransaction(async (transaction) => {
             const contadorDoc = await transaction.get(contadorRef);
-            const nuevoIdNum = contadorDoc.data().ticket_actual + 1;
-            transaction.update(contadorRef, { ticket_actual: nuevoIdNum });
+            let nuevoIdNum = 1; // Valor por defecto si es el primer ticket de la historia
+            
+            // Validación por si el documento 'contadores' no existe o está vacío
+            if (contadorDoc.exists && contadorDoc.data().ticket_actual !== undefined) {
+                nuevoIdNum = contadorDoc.data().ticket_actual + 1;
+                transaction.update(contadorRef, { ticket_actual: nuevoIdNum });
+            } else {
+                transaction.set(contadorRef, { ticket_actual: nuevoIdNum });
+            }
 
             let asig = "Pendiente";
             if(listaGestoresGlobal.length > 0) {
@@ -1538,7 +1551,6 @@ async function enviarTicket() {
         // 3. Notificación y Limpieza
         cerrarModales();
 
-        // Al terminar todo, sobrescribimos el modal de carga por el modal de éxito final con autocierre
         mostrarModalStatus("success", "¡Solicitud Enviada!", "Tu ticket ha sido registrado y un gestor será asignado pronto.", null, 2500);
         
         document.getElementById('tk_nom_user').value = "";
@@ -1549,7 +1561,10 @@ async function enviarTicket() {
         volver();
         
     } catch (e) {
-        mostrarModalStatus("danger", "Error de Envío", "No se pudo procesar tu ticket. Revisa tu conexión.");
+        console.error("Error de Envío:", e);
+        // Ahora sí imprimiremos en pantalla la causa técnica real del problema
+        const mensajeReal = e.message || "Error desconocido";
+        mostrarModalStatus("danger", "Fallo al Enviar", "Detalle: " + mensajeReal);
     }
 }
 
