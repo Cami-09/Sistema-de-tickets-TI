@@ -63,6 +63,34 @@
         .search-container { display: flex; gap: 10px; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 10px; flex-wrap: wrap; }
         .mantenimiento-item { border-bottom: 1px solid #eee; padding: 10px 0; }
 
+
+        /* Mejoras de estilo para el calendario */
+        #calendar { min-height: 640px; }
+        #calendar .fc-daygrid-event {
+            padding: 8px 10px;
+            border-radius: 12px;
+            min-height: 46px;
+            line-height: 1.2;
+            font-size: 0.9rem;
+            white-space: normal;
+            border: 1px solid rgba(255,255,255,0.35);
+        }
+        #calendar .fc-daygrid-event .fc-event-title {
+            display: block;
+            font-weight: 700;
+            font-size: 0.92rem;
+        }
+        #calendar .fc-daygrid-event .fc-event-subtitle {
+            display: block;
+            font-size: 0.76rem;
+            opacity: 0.92;
+            margin-top: 2px;
+        }
+        #calendar .fc-daygrid-event-dot { display: none; }
+        #calendar .fc-toolbar { margin-bottom: 18px; }
+        #calendar .fc-daygrid-day-top { padding: 8px 10px; }
+        #calendar .fc .fc-daygrid-day-frame { min-height: 110px; }
+
         #miGrafica { width: 100% !important; height: 100% !important; }
 
         .roles-chk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1.5px solid #eee; margin-top: 10px; }
@@ -457,6 +485,11 @@
 }
     </style>
 </head>
+
+<div class="banner-mantenimiento">
+  ⚠️ <strong>Aviso:</strong> Mantenimiento programado para el: <span id="fecha-aviso">Cargando fecha...</span>
+</div>
+    
 <div id="modalChequeoAula" class="modal">
     <div class="modal-content" style="max-width:500px;">
         <h2 style="color:var(--primary); text-align:center;"><i class="fas fa-clipboard-check"></i> Registro de Chequeo Técnico</h2>
@@ -629,8 +662,11 @@
     </div>
 
     <div id="mod_gest_mantenimientos" class="modulo">
-        <button onclick="volver()" class="btn-gray">⬅ Volver</button>
-        <h2 style="margin-top:15px;"><i class="fas fa-tools"></i> Listado General de Mantenimientos</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <button onclick="volver()" class="btn-gray">⬅ Volver</button>
+            <h2 style="margin:0;"><i class="fas fa-tools"></i> Gestión de Mantenimientos</h2>
+            <button class="btn-agregar-master" onclick="abrirModalNuevoMantenimientoGestion()"><i class="fas fa-plus"></i> Registrar Nuevo</button>
+        </div>
         <div style="overflow-x:auto; margin-top:15px;">
             <table>
                 <thead>
@@ -640,6 +676,7 @@
                         <th>Ubicación</th>
                         <th>Tipo</th>
                         <th>Descripción</th>
+                        <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -657,6 +694,19 @@
         <div class="search-container" id="m_search_container" style="display:none;">
             <input type="text" id="m_search" placeholder="Buscar..." style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;" onkeyup="filtrarMaestro()">
         </div>
+        <div id="maestro_filter_panel" style="display:none; gap: 12px; margin-bottom: 15px; padding: 14px; border: 1px solid #e5e7eb; border-radius: 14px; background: #f8fafc;">
+            <div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit,minmax(220px,1fr));">
+                <div class="campo-group"><label>Inventario</label><input type="text" id="filtro_inv_num" placeholder="Buscar inventario..." style="width:100%;"></div>
+                <div class="campo-group"><label>Nombre Responsable</label><input type="text" id="filtro_responsable" placeholder="Buscar persona..." style="width:100%;"></div>
+                <div class="campo-group"><label>Campus</label><input type="text" id="filtro_cam" placeholder="Buscar campus..." style="width:100%;"></div>
+                <div class="campo-group"><label>Fecha de Mantenimiento</label><input type="date" id="filtro_fecha_mantenimiento" style="width:100%;"></div>
+                <div class="campo-group"><label>IP</label><input type="text" id="filtro_ip" placeholder="Buscar IP..." style="width:100%;"></div>
+            </div>
+            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:8px;">
+                <button class="btn-gray" onclick="limpiarFiltroMaestro()" style="padding:10px 16px;">Limpiar filtro</button>
+                <button class="btn-agregar-master" onclick="aplicarFiltroMaestro()" style="padding:10px 16px;">Aplicar filtro</button>
+            </div>
+        </div>
         <div style="overflow-x:auto;"><table><thead id="m_thead"></thead><tbody id="m_tbody"></tbody></table></div>
     </div>
 
@@ -666,29 +716,29 @@
     </div>
 
     <div id="mod_admin_tickets" class="modulo">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <button onclick="volver()" class="btn-gray">⬅ Volver</button>
-            <h2 style="margin:0; color:var(--dark);">Administración de Tickets</h2>
-            <button id="btn_eliminar_todos_tk_admin" onclick="eliminarTodosLosTickets()" style="background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; display: none; align-items: center; gap: 8px; font-size: 0.8rem; text-transform: uppercase;">
-                <i class="fas fa-trash-alt"></i> Eliminar Todos
-            </button>
-        </div>
-        <div style="overflow-x:auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Usuario</th>
-                        <th>Tipo</th>
-                        <th>Estado</th>
-                        <th>Gestor</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody_admin_tickets"></tbody>
-            </table>
-        </div>
-    </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <button onclick="volver()" class="btn-gray">⬅ Volver</button>
+            <h2 style="margin:0; color:var(--dark);">Administración de Tickets</h2>
+            <button id="btn_eliminar_todos_tk_admin" onclick="eliminarTodosLosTickets()" style="background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; display: none; align-items: center; gap: 8px; font-size: 0.8rem; text-transform: uppercase;">
+                <i class="fas fa-trash-alt"></i> Eliminar Todos
+            </button>
+        </div>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Usuario</th>
+                        <th>Tipo</th>
+                        <th>Estado</th>
+                        <th>Gestor</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody_admin_tickets"></tbody>
+            </table>
+        </div>
+    </div>
 
     <div id="mod_stats" class="modulo">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -802,17 +852,11 @@
                 <textarea id="tk_desc" rows="6" placeholder="Describa detalladamente su solicitud..."></textarea>
             </div>
 
-            <div class="campo-group span-full">
-                <label><i class="fas fa-image"></i> Adjuntar Evidencia (Opcional)</label>
-                <input type="file" id="tk_archivo" accept="image/*" style="font-size: 0.8rem; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px dashed var(--primary);">
-                <div id="upload_progress" style="font-size: 11px; color: var(--primary); font-weight: bold; margin-top: 5px; display: none;">Subiendo imagen... 0%</div>
-            </div>
-
             <div class="span-full" style="margin-top: 10px;">
                 <button class="btn-agregar-master" onclick="enviarTicket()" style="width: 100%; justify-content: center; padding: 18px; font-size: 1rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);">
                     <i class="fas fa-paper-plane"></i> ENVIAR SOLICITUD DE SOPORTE AHORA
                 </button>
-                <center><small style="margin-top: 12px; display: block; color: var(--gray);">Su solicitud será asignada automáticamente.</small></center>
+                <center><small style="margin-top: 12px; display: block; color: var(--gray);">Su solicitud será asignada automáticamente por un gestor.</small></center>
             </div>
         </div>
     </div>
@@ -870,7 +914,7 @@
         
         <div class="grid-bonito" style="grid-template-columns:1fr; gap: 20px;">
             <div class="campo-group">
-                <label><i class="far fa-calendar-alt"></i> Fecha del Servicio</label>
+                <label><i class="far fa-calendar-alt"></i> Fecha del mantenimiento</label>
                 <input type="date" id="mnt_fecha" style="width: 100%; box-sizing: border-box;">
             </div>
             
@@ -879,12 +923,11 @@
                 <select id="mnt_tipo" style="width: 100%; box-sizing: border-box;">
                     <option value="Preventivo">Preventivo</option>
                     <option value="Correctivo">Correctivo</option>
-                    <option value="Garantía">Garantía / Soporte Externo</option>
                 </select>
             </div>
             
             <div class="campo-group">
-                <label><i class="fas fa-align-left"></i> Descripción del Trabajo</label>
+                <label><i class="fas fa-align-left"></i> Descripción del mantenimiento</label>
                 <textarea id="mnt_desc" rows="4" placeholder="Describa las acciones realizadas..." style="width: 100%; box-sizing: border-box; resize: none;"></textarea>
             </div>
             
@@ -898,11 +941,96 @@
     </div>
 </div>
 
+<div id="modalNuevoMantenimientoGestion" class="modal">
+    <div class="modal-content" style="max-width: 550px; border-radius: 20px; padding: 30px;">
+        <h2 style="color:var(--primary); text-align:center; margin-bottom: 5px;"><i class="fas fa-plus-circle"></i> Registrar Nuevo Mantenimiento</h2>
+        <p style="text-align:center; color:var(--gray); font-size:0.8rem; margin-bottom: 25px;">Complete todos los campos para programar o registrar un mantenimiento.</p>
+        
+        <div class="grid-bonito" style="grid-template-columns:1fr; gap: 18px;">
+            <div class="campo-group">
+                <label><i class="fas fa-barcode"></i> Número de Inventario</label>
+                <input type="text" id="mnt_gestion_inventario" placeholder="Ej: INV-001" style="width: 100%; box-sizing: border-box;">
+            </div>
+            
+            <div class="campo-group">
+                <label><i class="fas fa-laptop"></i> Nombre del Equipo</label>
+                <input type="text" id="mnt_gestion_equipo" placeholder="Ej: Computadora de escritorio" style="width: 100%; box-sizing: border-box;">
+            </div>
+            
+            <div class="campo-group">
+                <label><i class="far fa-calendar-alt"></i> Fecha de Mantenimiento</label>
+                <input type="date" id="mnt_gestion_fecha" style="width: 100%; box-sizing: border-box;">
+            </div>
+            
+            <div class="campo-group">
+                <label><i class="fas fa-tag"></i> Tipo de Mantenimiento</label>
+                <select id="mnt_gestion_tipo" style="width: 100%; box-sizing: border-box;">
+                    <option value="">Seleccione tipo</option>
+                    <option value="Preventivo">Preventivo</option>
+                    <option value="Correctivo">Correctivo</option>
+                </select>
+            </div>
+            
+            <div class="campo-group">
+                <label><i class="fas fa-check-circle"></i> Estado</label>
+                <select id="mnt_gestion_estado" style="width: 100%; box-sizing: border-box;">
+                    <option value="Programado">Programado</option>
+                    <option value="Realizado">Realizado</option>
+                </select>
+            </div>
+            
+            <div class="campo-group">
+                <label><i class="fas fa-align-left"></i> Descripción</label>
+                <textarea id="mnt_gestion_desc" rows="4" placeholder="Describe los detalles del mantenimiento..." style="width: 100%; box-sizing: border-box; resize: none;"></textarea>
+            </div>
+            
+            <div style="display:flex; gap:12px; margin-top:15px;">
+                <button class="btn-gray" onclick="cerrarModales()" style="flex:1; padding: 12px; font-weight: 700;">Cancelar</button>
+                <button class="btn-agregar-master" onclick="guardarMantenimientoGestion()" style="flex:1; justify-content:center; padding: 12px; font-size: 0.9rem;">
+                    Registrar Mantenimiento
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="modalHistorial" class="modal">
     <div class="modal-content">
         <h3>Historial de Mantenimientos</h3>
         <div id="historial_content"></div>
         <div style="margin-top:20px; text-align:right;"><button class="btn-gray" onclick="cerrarModales()">Cerrar</button></div>
+    </div>
+</div>
+
+<div id="modalDetalleMantenimiento" class="modal">
+    <div class="modal-content" style="max-width: 500px; border-radius: 20px; padding: 28px;">
+        <h2 style="color:var(--primary); text-align:center; margin-bottom: 12px;"><i class="fas fa-info-circle"></i> Detalle de Mantenimiento</h2>
+        <div style="display:grid; gap:14px; margin-top:16px; color: var(--dark);">
+            <div style="background:#f8fafc; border-radius:12px; padding:14px;">
+                <strong>Nombre de la persona</strong>
+                <p id="detalle_mantenimiento_usuario" style="margin:8px 0 0; color: var(--gray);"></p>
+            </div>
+            <div style="background:#f8fafc; border-radius:12px; padding:14px;">
+                <strong>Fecha</strong>
+                <p id="detalle_mantenimiento_fecha" style="margin:8px 0 0; color: var(--gray);"></p>
+            </div>
+            <div style="background:#f8fafc; border-radius:12px; padding:14px;">
+                <strong>Tipo de mantenimiento</strong>
+                <p id="detalle_mantenimiento_tipo" style="margin:8px 0 0; color: var(--gray);"></p>
+            </div>
+            <div style="background:#f8fafc; border-radius:12px; padding:14px;">
+                <strong>Equipo</strong>
+                <p id="detalle_mantenimiento_equipo" style="margin:8px 0 0; color: var(--gray);"></p>
+            </div>
+            <div style="background:#f8fafc; border-radius:12px; padding:14px;">
+                <strong>Descripción del trabajo</strong>
+                <p id="detalle_mantenimiento_descripcion" style="margin:8px 0 0; color: var(--gray); line-height: 1.5; white-space: pre-wrap; word-wrap: break-word;"></p>
+            </div>
+        </div>
+        <div style="margin-top:24px; display:flex; gap:10px; justify-content:flex-end;">
+            <button id="btn_marcar_realizado" class="btn-agregar-master" style="padding: 10px 18px; display: none;"><i class="fas fa-check"></i> Marcar Realizado</button>
+            <button class="btn-gray" onclick="cerrarModales()" style="padding: 10px 18px;">Cerrar</button>
+        </div>
     </div>
 </div>
 
@@ -973,14 +1101,15 @@
     let selectedMntId = null, selectedCollMnt = null, selectedEquipIdMnt = null;
     let listaRolesGlobal = [], dataHistoricoCerrados = [];
     let currentPermissions = {}; 
+    let enviandoTicketActualmente = false; // <-- VARIABLE DE BLOQUEO AÑADIDA
 
     const MODULOS_SISTEMA = [
         {id: "card_mis_tickets", nom: "Mis Tickets", acts: ["Ver Detalle"]},
         {id: "card_enviar_ticket", nom: "Enviar Ticket", acts: ["Crear"]},
         {id: "card_admin_tickets", nom: "Admin Tickets", acts: ["Editar", "Reasignar", "Finalizar", "Eliminar", "Ver Detalle", "Revertir a Abierto"]},
-        {id: "card_historico_cerrados", nom: "Histórico Tickets Cerrados", acts: ["Ver Detalle", "Eliminar"]},
-        {id: "card_inv_admin", nom: "Equipos Administrativos", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
-        {id: "card_inv_salas", nom: "Equipos Salas", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]},
+        {id: "card_historico_cerrados", nom: "Histórico Tickets Cerrados", acts: ["Ver Detalle", "Eliminar", "Revertir a Abierto"]},
+        {id: "card_inv_admin", nom: "Equipos Administrativos", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial", "Duplicar"]},
+        {id: "card_inv_salas", nom: "Equipos Salas", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial", "Duplicar"]},
         {id: "card_extensiones", nom: "Extensiones Administrativos", acts: ["Crear", "Editar", "Eliminar", "Ver Detalle"]},
         {id: "card_calendario", nom: "Calendario", acts: ["Ver"]},
         {id: "card_stats", nom: "Estadísticas", acts: ["Ver"]},
@@ -990,7 +1119,7 @@
         {id: "card_gest_mantenimientos", nom: "Gestión Mantenimientos", acts: ["Editar", "Eliminar"]},
         {id: "card_preferencias", nom: "Gestión Preferencias", acts: ["Crear", "Editar", "Eliminar"]},
         {id: "card_config_visual", nom: "Personalización Visual", acts: ["Editar"]},
-        {id: "card_inv_obsoletos", nom: "Equipos Obsoletos", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial"]}
+        {id: "card_inv_obsoletos", nom: "Equipos Obsoletos", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial", "Duplicar"]}
     
     ];
 
@@ -1011,6 +1140,7 @@
         else if (nombreAccion === "Ver Detalle") colorFinal = "#64748b"; // Gris
         else if (nombreAccion === "Historial") colorFinal = "#8b5cf6"; // Morado
         else if (nombreAccion === "Reasignar") colorFinal = "#2563eb"; // Azul
+        else if (nombreAccion === "Duplicar") colorFinal = "#f59e0b"; // Amarillo suave
         else colorFinal = "#64748b"; // Gris por defecto
     }
 
@@ -1038,26 +1168,23 @@
         }
     });
 
-    auth.onAuthStateChanged(async (u) => {
-    if(u) {
-        user = u;
-        // ... (tus otras líneas de carga)
-        await cargarYAplicarConfigVisual(); // <--- AÑADE ESTO
-        // ...
-    }
-});
-
-    async function cargarRoles() {
-        db.collection("roles").onSnapshot(async (snap) => {
-            listaRolesGlobal = [];
-            snap.forEach(doc => {
-                const data = doc.data();
-                if (data.nombre !== "Supervisor") {
+    function cargarRoles() {
+        return new Promise((resolve) => {
+            db.collection("roles").onSnapshot((snap) => {
+                listaRolesGlobal = [];
+                snap.forEach(doc => {
+                    const data = doc.data();
                     listaRolesGlobal.push({id: doc.id, ...data});
+                });
+
+                // Si ya hay un usuario logueado, reaplicamos sus privilegios al instante
+                // para que cualquier cambio de rol en vivo surta efecto inmediatamente.
+                if (user && userRole) {
+                    aplicarPrivilegios(userRole, nombreRealUsuario);
                 }
+
+                resolve(); // Libera el await inicial para que el sistema continúe cargando
             });
-            renderTablaRoles();
-            if(user) verificarRol();
         });
     }
 
@@ -1066,7 +1193,9 @@
             let ab = 0, pr = 0, ce = 0;
             snap.forEach(doc => {
                 const s = doc.data().estado;
-                if(s === "Abierto") ab++; else if(s === "En Proceso") pr++; else if(s === "Cerrado") ce++;
+                if (s === "Abierto") ab++;
+                else if (s === "En Proceso" || s === "En Proceso cami") pr++;
+                else if (s === "Cerrado") ce++;
             });
             document.getElementById('count_abiertos').innerText = ab;
             document.getElementById('count_proceso').innerText = pr;
@@ -1087,42 +1216,49 @@
         });
     }
 
-   async function verificarRol() {
-    document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
-    const statsHeader = document.getElementById('stats_contadores_visibles');
-    if(statsHeader) statsHeader.style.display = 'none';
+    // --- NUEVO SISTEMA DE ROL EN TIEMPO REAL ---
+    let unsubscribeUser = null;
 
+function verificarRol() {
     if (!user) return;
 
-    const q = await db.collection("usuarios").where("cor", "==", user.email).get();
-    if (user.email === "camicarmona1212@gmail.com") {
-        userRole = "Admin";
-        nombreRealUsuario = "Admin Maestro";
-    } else if(!q.empty) {
-        const d = q.docs[0].data(); 
-        userRole = d.rol; 
-        nombreRealUsuario = d.nom;
-    } else {
-        userRole = "Usuario"; 
-        nombreRealUsuario = "Invitado";
+    // Matamos el listener anterior si existe para evitar duplicados en memoria
+    if (unsubscribeUser) {
+        unsubscribeUser();
     }
 
-    document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
-    
-    // CARGA DE PERMISOS DESDE BD
-    const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
-    
-    if (rolDB && rolDB.accionesPermitidas) {
-        currentPermissions = rolDB.accionesPermitidas;
-    } else if (userRole === "Admin") {
-        currentPermissions = "ALL";
-    } else if (userRole === "Usuario") {
-        currentPermissions = {
-            "card_mis_tickets": ["Ver Detalle"],
-            "card_enviar_ticket": ["Crear"]
-        };
-    } else if (userRole === "Gestor") {
-        currentPermissions = {
+    // Permiso maestro de seguridad
+    if (user.email.toLowerCase() === "camicarmona1212@gmail.com") {
+        aplicarPrivilegios("Admin", "Admin Maestro");
+        return;
+    }
+
+    // Limpiamos espacios y forzamos minúsculas para asegurar la coincidencia exacta
+    const correoLimpio = user.email.trim().toLowerCase();
+
+    unsubscribeUser = db.collection("usuarios").where("cor", "==", correoLimpio).onSnapshot(snap => {
+        if(!snap.empty) {
+            const d = snap.docs[0].data();
+            aplicarPrivilegios(d.rol, d.nom);
+        } else {
+            aplicarPrivilegios("Usuario", "Invitado");
+        }
+    });
+}
+
+    function aplicarPrivilegios(rolAsignado, nombreReal) {
+        userRole = rolAsignado;
+        nombreRealUsuario = nombreReal;
+
+        document.getElementById('user_info').innerText = `${user.email} (${userRole})`;
+
+        document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
+        const statsHeader = document.getElementById('stats_contadores_visibles');
+        if(statsHeader) statsHeader.style.display = 'none';
+
+        const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
+
+        const permisosGestorPorDefecto = {
             "card_mis_tickets": ["Ver Detalle"],
             "card_enviar_ticket": ["Crear"],
             "card_admin_tickets": ["Editar", "Finalizar", "Ver Detalle", "Revertir a Abierto"],
@@ -1136,33 +1272,82 @@
             "card_impresoras": ["Crear", "Editar", "Mantenimiento", "Historial"],
             "card_gest_mantenimientos": ["Editar"]
         };
-    } else {
-        currentPermissions = {};
-    }
 
-    let modulosPermitidos = [];
-    if(userRole === "Admin") {
-        modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
-    } else if(rolDB && rolDB.modulos) {
-        modulosPermitidos = rolDB.modulos;
-    } else {
-        const vDefault = { 
-            "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_historico_cerrados", "card_inv_admin", "card_inv_salas", "card_inv_obsoletos", "card_extensiones", "card_calendario", "card_aulas", "card_impresoras", "card_gest_mantenimientos"],
-            "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
-        };
-        modulosPermitidos = vDefault[userRole] || vDefault["Usuario"];
-    }
+        function unirPermisos(basePermisos, permisosGuardados) {
+            const resultado = { ...basePermisos };
+            Object.keys(permisosGuardados || {}).forEach(modId => {
+                const baseAcciones = Array.isArray(basePermisos[modId]) ? basePermisos[modId] : [];
+                const guardadas = Array.isArray(permisosGuardados[modId]) ? permisosGuardados[modId] : [];
+                resultado[modId] = Array.from(new Set([...baseAcciones, ...guardadas]));
+            });
+            return resultado;
+        }
 
-    modulosPermitidos.forEach(id => { 
-        const el = document.getElementById(id);
-        if(el) el.style.display = 'block'; 
-    });
+        if (rolDB && rolDB.accionesPermitidas) {
+            if (userRole === "Gestor") {
+                currentPermissions = unirPermisos(permisosGestorPorDefecto, rolDB.accionesPermitidas);
+            } else {
+                currentPermissions = rolDB.accionesPermitidas;
+            }
+        } else if (userRole === "Admin") {
+            currentPermissions = "ALL";
+        } else if (userRole === "Usuario") {
+            currentPermissions = {
+                "card_mis_tickets": ["Ver Detalle"],
+                "card_enviar_ticket": ["Crear"]
+            };
+        } else if (userRole === "Gestor") {
+            currentPermissions = permisosGestorPorDefecto;
+        } else {
+            currentPermissions = {};
+        }
 
-    if(userRole !== "Usuario" && statsHeader) {
-        statsHeader.style.display = 'flex';
+        let modulosPermitidos = [];
+        if(userRole === "Admin") {
+            modulosPermitidos = MODULOS_SISTEMA.map(m => m.id);
+        } else if(rolDB && rolDB.modulos) {
+            modulosPermitidos = rolDB.modulos;
+        } else {
+            const vDefault = {
+                "Gestor": ["card_mis_tickets", "card_enviar_ticket", "card_admin_tickets", "card_historico_cerrados", "card_inv_admin", "card_inv_salas", "card_inv_obsoletos", "card_extensiones", "card_calendario", "card_aulas", "card_impresoras", "card_gest_mantenimientos"],
+                "Usuario": ["card_mis_tickets", "card_enviar_ticket"]
+            };
+            modulosPermitidos = vDefault[userRole] || vDefault["Usuario"];
+        }
+
+        modulosPermitidos.forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.style.display = 'block';
+        });
+
+        if(userRole !== "Usuario" && statsHeader) {
+            statsHeader.style.display = 'flex';
+        }
+        renderTablaRoles();
+
+        const btnNuevo = document.getElementById('btn_maestro_nuevo');
+        if(currentColl && btnNuevo) {
+            const modIdMap = {
+                'inventario': 'card_inv_admin',
+                'inventario_salas': 'card_inv_salas',
+                'equipos_obsoletos': 'card_inv_obsoletos',
+                'extensiones': 'card_extensiones',
+                'usuarios': 'card_usuarios',
+                'aulas_dti': 'card_aulas',
+                'impresoras': 'card_impresoras'
+            };
+            const currentModId = modIdMap[currentColl] || currentColl;
+            btnNuevo.style.display = checkPermission(currentModId, "Crear") ? 'flex' : 'none';
+            renderTablaMaestra();
+        }
+
+        if(document.getElementById('mod_admin_tickets').style.display === 'block') {
+           const btnEliminarTodosAdmin = document.getElementById('btn_eliminar_todos_tk_admin');
+           if (btnEliminarTodosAdmin) btnEliminarTodosAdmin.style.display = userRole === "Admin" ? 'flex' : 'none';
+           cargarTicketsAdmin();
+        }
     }
-renderTablaRoles();
-}
+    // --- FIN SISTEMA DE ROL EN TIEMPO REAL ---
 
     // Lógica para Histórico de Cerrados
     async function cargarHistoricoCerrados() {
@@ -1177,25 +1362,31 @@ renderTablaRoles();
     }
 
     function renderTablaHistorico(data) {
-        const tb = document.getElementById('tbody_historico_cerrados');
-        tb.innerHTML = "";
-        data.forEach(t => {
-            let btnDet = checkPermission("card_historico_cerrados", "Ver Detalle") ? `<button class="btn-acc bg-v-gray" onclick="verDetalleTicket('${t.id}')"><i class="fas fa-eye"></i></button>` : "";
-            let btnDel = (userRole === "Admin") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${t.id}', 'tickets')"><i class="fas fa-trash"></i></button>` : "";
-            
-            tb.innerHTML += `<tr>
-                <td>#${t.id.substring(0,5)}</td>
-                <td><b>${t.solicitante}</b></td>
-                <td>${t.tipo}</td>
-                <td>${t.dependencia}</td>
-                <td>${t.prioridad}</td>
-                <td>${t.campus}</td>
-                <td>${t.asignado}</td>
-                <td>${btnDet}${btnDel}</td>
-            </tr>`;
-        });
-        if(data.length === 0) tb.innerHTML = "<tr><td colspan='8' style='text-align:center;'>No se encontraron tickets cerrados</td></tr>";
-    }
+    const tb = document.getElementById('tbody_historico_cerrados');
+    tb.innerHTML = "";
+    data.forEach(t => {
+        // Obtenemos los botones conectándolos con el diseño visual personalizado
+        let btnDet = checkPermission("card_historico_cerrados", "Ver Detalle") ? `<button ${getBtnStyle("card_historico_cerrados", "Ver Detalle")} onclick="verDetalleTicket('${t.id}')" title="Ver Detalle"><i class="fas fa-eye"></i></button>` : "";
+        
+        // BOTÓN REVERTIR: Ahora obedece 100% al sistema dinámico de roles
+let btnRev = checkPermission("card_historico_cerrados", "Revertir a Abierto") ? `<button ${getBtnStyle("card_historico_cerrados", "Revertir a Abierto")} onclick="revertirAAbierto('${t.id}')" title="Reabrir Ticket"><i class="fas fa-undo"></i></button>` : "";
+
+// (Opcional pero recomendado) BOTÓN ELIMINAR: También lo conectamos al sistema de roles
+let btnDel = checkPermission("card_historico_cerrados", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${t.id}', 'tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>` : "";
+        
+        tb.innerHTML += `<tr>
+            <td>#${t.id.substring(0,5)}</td>
+            <td><b>${t.solicitante}</b></td>
+            <td>${t.tipo}</td>
+            <td>${t.dependencia}</td>
+            <td>${t.prioridad}</td>
+            <td>${t.campus}</td>
+            <td>${t.asignado}</td>
+            <td>${btnDet}${btnRev}${btnDel}</td>
+        </tr>`;
+    });
+    if(data.length === 0) tb.innerHTML = "<tr><td colspan='8' style='text-align:center;'>No se encontraron tickets cerrados</td></tr>";
+}
 
     function filtrarHistoricoCerrados() {
         const dep = document.getElementById('filtro_hist_dep').value.toLowerCase();
@@ -1239,6 +1430,12 @@ renderTablaRoles();
                 btnNuevo.style.display = checkPermission(currentModId, "Crear") ? 'flex' : 'none';
             }
 
+            const searchContainer = document.getElementById('m_search_container');
+            const filtroPanel = document.getElementById('maestro_filter_panel');
+            if(searchContainer) searchContainer.style.display = currentColl ? 'flex' : 'none';
+            if(filtroPanel) filtroPanel.style.display = ['inventario','inventario_salas','equipos_obsoletos'].includes(currentColl) ? 'grid' : 'none';
+            if(filtroPanel) limpiarFiltroMaestro();
+
             db.collection(currentColl).onSnapshot(s => { 
                 localData = []; 
                 s.forEach(d => localData.push({id: d.id, ...d.data()})); 
@@ -1246,6 +1443,7 @@ renderTablaRoles();
             });
         }
         
+        if(id === 'mod_config_visual') renderConfigVisualTable();
         if(id === 'mod_mis_tickets') cargarMisTickets();
         if(id === 'mod_admin_tickets') {
             cargarTicketsAdmin();
@@ -1316,7 +1514,7 @@ renderTablaRoles();
 
     function checkPermission(modId, action) {
         if(!user) return false;
-        if(user.email === "camicarmona1212@gmail.com") return true;
+        if(user.email.toLowerCase() === "camicarmona1212@gmail.com") return true;
         if(currentPermissions === "ALL") return true;
         if(!currentPermissions || !currentPermissions[modId]) return false;
         const modPerms = currentPermissions[modId];
@@ -1366,6 +1564,27 @@ renderTablaRoles();
         document.getElementById('modalRol').style.display = 'block';
     }
 
+    function duplicarRol(id) {
+        const r = listaRolesGlobal.find(x => x.id === id);
+        if(!r) return;
+        abrirModalRol('nuevo');
+        document.getElementById('rol_nombre').value = `Copia de ${r.nombre}`;
+        setTimeout(() => {
+            const modsGuardados = r.modulos || [];
+            const permsGuardados = r.accionesPermitidas || {};
+            document.querySelectorAll('.chk-rol-mod').forEach(chk => {
+                if(modsGuardados.includes(chk.value)) {
+                    chk.checked = true;
+                    toggleAccionesRol(chk.value, true);
+                    const acts = permsGuardados[chk.value] || [];
+                    document.querySelectorAll(`.chk-act-rol[data-mod="${chk.value}"]`).forEach(aCheck => {
+                        aCheck.checked = acts.includes(aCheck.value);
+                    });
+                }
+            });
+        }, 100);
+    }
+
     function toggleAccionesRol(modId, checked) {
         const div = document.getElementById(`div_acts_${modId}`);
         div.style.opacity = checked ? "1" : "0.3";
@@ -1397,6 +1616,7 @@ renderTablaRoles();
             await db.collection("roles").doc(selectedId).update(data);
             mostrarModalStatus("success", "Rol Actualizado", `Los permisos del rol "${nombre}" han sido modificados.`);
         }
+        await cargarRoles();
         cerrarModales(); 
     } catch (e) {
         mostrarModalStatus("danger", "Error", "No se pudo guardar el rol en la base de datos.");
@@ -1416,7 +1636,6 @@ renderTablaRoles();
             // 2. Construimos los botones solo si el permiso existe
             let btnEdit = puedeEditar ? 
                 `<button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')" title="Editar Rol"><i class="fas fa-edit"></i></button>` : "";
-            
             let btnDel = puedeEliminar ? 
                 `<button class="btn-acc bg-d-red" onclick="eliminarRol('${r.id}')" title="Eliminar Rol"><i class="fas fa-trash"></i></button>` : "";
 
@@ -1448,84 +1667,34 @@ renderTablaRoles();
     });
 }
 
-    // CORRECCIÓN: FUNCIÓN ENVIAR TICKET CON MODAL DE CARGA DE IMAGEN
+    // CORRECCIÓN: FUNCIÓN ENVIAR TICKET CON MODAL DE CARGA DE IMAGEN Y BLOQUEO
 async function enviarTicket() {
+    // --- NUEVO: Bloqueo anti-doble clic ---
+    if (enviandoTicketActualmente) {
+        mostrarModalStatus("warning", "Procesando", "Tu solicitud ya se está enviando. Por favor, espera un momento.");
+        return;
+    }
+
     const nom = document.getElementById('tk_nom_user').value;
     const d = document.getElementById('tk_desc').value;
-    const archivoInput = document.getElementById('tk_archivo');
-    const progressDiv = document.getElementById('upload_progress');
     
     if(!nom || !d) {
         mostrarModalStatus("warning", "Campos Incompletos", "Por favor, complete su nombre y la descripción antes de enviar.");
         return;
     }
 
+    enviandoTicketActualmente = true; // --- NUEVO: Se cierra el candado ---
+
     try {
         let urlDescarga = "";
-
-        // 1. Subida de imagen (si existe)
-        if (archivoInput && archivoInput.files.length > 0) {
-            const file = archivoInput.files[0];
-            
-            // Sanitizamos el nombre del archivo (reemplaza espacios y caracteres raros por guiones bajos)
-            const cleanFileName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
-            const fileName = `tickets/${Date.now()}_${cleanFileName}`;
-            
-            // Usamos .child() que es más estable en Firebase v8
-            const storageRef = storage.ref().child(fileName);
-            
-            mostrarModalStatus("warning", "Subiendo Evidencia", "Iniciando carga de la imagen...");
-            document.getElementById('alertIcon').className = 'fas fa-spinner fa-spin';
-            document.getElementById('alertButtons').innerHTML = '';
-
-            if(progressDiv) progressDiv.style.display = "block";
-            
-            const task = storageRef.put(file);
-
-            await new Promise((resolve, reject) => {
-                task.on('state_changed', 
-                    (snapshot) => {
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        const porcentaje = Math.round(progress);
-
-                        if(progressDiv) progressDiv.innerText = `Subiendo imagen... ${porcentaje}%`;
-
-                        const alertMsg = document.getElementById('alertMessage');
-                        if(alertMsg) {
-                            alertMsg.innerHTML = `Subiendo imagen... <b>${porcentaje}% completado</b>.<br>Por favor, no cierre esta ventana.`;
-                        }
-                    }, 
-                    (error) => {
-                        console.error("Error interno de Storage:", error);
-                        reject(error); // Pasamos el error real en lugar de un texto genérico
-                    }, 
-                    async () => {
-                        try {
-                            // Extraemos la URL directo de la referencia segura
-                            urlDescarga = await storageRef.getDownloadURL();
-                            resolve();
-                        } catch (errUrl) {
-                            reject(errUrl);
-                        }
-                    }
-                );
-            });
-        }
 
         // 2. Guardado en Firestore
         const contadorRef = db.collection("configuracion").doc("contadores");
         
         await db.runTransaction(async (transaction) => {
             const contadorDoc = await transaction.get(contadorRef);
-            let nuevoIdNum = 1; // Valor por defecto si es el primer ticket de la historia
-            
-            // Validación por si el documento 'contadores' no existe o está vacío
-            if (contadorDoc.exists && contadorDoc.data().ticket_actual !== undefined) {
-                nuevoIdNum = contadorDoc.data().ticket_actual + 1;
-                transaction.update(contadorRef, { ticket_actual: nuevoIdNum });
-            } else {
-                transaction.set(contadorRef, { ticket_actual: nuevoIdNum });
-            }
+            const nuevoIdNum = contadorDoc.data().ticket_actual + 1;
+            transaction.update(contadorRef, { ticket_actual: nuevoIdNum });
 
             let asig = "Pendiente";
             if(listaGestoresGlobal.length > 0) {
@@ -1551,20 +1720,18 @@ async function enviarTicket() {
         // 3. Notificación y Limpieza
         cerrarModales();
 
+        // Al terminar todo, sobrescribimos el modal de carga por el modal de éxito final con autocierre
         mostrarModalStatus("success", "¡Solicitud Enviada!", "Tu ticket ha sido registrado y un gestor será asignado pronto.", null, 2500);
         
         document.getElementById('tk_nom_user').value = "";
         document.getElementById('tk_desc').value = "";
-        if(archivoInput) archivoInput.value = "";
-        if(progressDiv) progressDiv.style.display = "none";
 
         volver();
         
     } catch (e) {
-        console.error("Error de Envío:", e);
-        // Ahora sí imprimiremos en pantalla la causa técnica real del problema
-        const mensajeReal = e.message || "Error desconocido";
-        mostrarModalStatus("danger", "Fallo al Enviar", "Detalle: " + mensajeReal);
+        mostrarModalStatus("danger", "Error de Envío", "No se pudo procesar tu ticket. Revisa tu conexión.");
+    } finally {
+        enviandoTicketActualmente = false; // --- NUEVO: Se abre el candado al final pase lo que pase ---
     }
 }
 
@@ -1621,7 +1788,7 @@ async function enviarTicket() {
                 <a href="${t.imagen}" target="_blank">
                     <img src="${t.imagen}" style="max-width:100%; border-radius:10px; border:1px solid #ddd; cursor: zoom-in;">
                 </a>
-            </div>` : '<p><i>Sin evidencia adjunta.</i></p>';
+            </div>` : '';
 
         document.getElementById('detalle_content').innerHTML = `
             <div style="text-align:left; line-height:1.6;">
@@ -1632,9 +1799,9 @@ async function enviarTicket() {
                 <p><b>Tipo:</b> ${t.tipo}</p>
                 <p><b>Prioridad:</b> ${t.prioridad}</p>
                 <p><b>Descripción:</b> ${t.desc}</p>
-                <hr>
-                ${imgHTML} 
-                <hr>
+                ${imgHTML ? '<hr>' : ''}
+                ${imgHTML}
+                ${imgHTML ? '<hr>' : ''}
                 <p><b>Gestor Asignado:</b> ${t.asignado}</p>
                 <p><b>Estado:</b> <span style="color:var(--primary); font-weight:bold;">${t.estado}</span></p>
                 <p><b>Fecha Reporte:</b> ${t.fecha}</p>
@@ -1671,16 +1838,24 @@ async function enviarTicket() {
 }
 
     async function revertirAAbierto(id) {
-        mostrarModalStatus("warning", "¿Revertir Estado?", "El ticket volverá a estado 'Abierto'.", async () => {
-            try {
-                await db.collection("tickets").doc(id).update({ estado: "Abierto" });
-                mostrarModalStatus("success", "Estado Actualizado", "El ticket ahora está abierto nuevamente.");
-                // La tabla se actualiza sola gracias al onSnapshot
-            } catch (e) {
-                mostrarModalStatus("danger", "Error", "No se pudo cambiar el estado.");
+    mostrarModalStatus("warning", "¿Revertir Estado?", "El ticket volverá a estado 'Abierto'.", async () => {
+        try {
+            // Se cambia el estado y se borra la fecha de cierre de la base de datos
+            await db.collection("tickets").doc(id).update({ 
+                estado: "Abierto",
+                fecha_cierre: firebase.firestore.FieldValue.delete()
+            });
+            mostrarModalStatus("success", "Estado Actualizado", "El ticket ha sido reabierto exitosamente.");
+            
+            // Forzamos el refresco de la tabla si el usuario está en el histórico
+            if (document.getElementById('mod_historico_cerrados').style.display === 'block') {
+                cargarHistoricoCerrados();
             }
-        });
-    }
+        } catch (e) {
+            mostrarModalStatus("danger", "Error", "No se pudo cambiar el estado.");
+        }
+    });
+}
 
     async function eliminar(id, coll) {
     mostrarModalStatus("danger", "¿Eliminar Registro?", "Esta acción es permanente y no se puede deshacer.", async () => {
@@ -1817,6 +1992,8 @@ async function eliminarTodosLosTickets() {
                 if(currentColl === 'aulas_dti') btns += `<button ${getBtnStyle(activeModId, "Mantenimiento")} onclick="abrirModalChequeo('${e.id}', '${e.nom}')" title="Registrar Chequeo"><i class="fas fa-check-double"></i></button>`;
                 if(checkPermission(activeModId, "Mantenimiento")) btns += `<button ${getBtnStyle(activeModId, "Mantenimiento")} onclick="abrirMantenimiento('${e.id}')" title="Mantenimiento"><i class="fas fa-tools"></i></button>`;
                 if(checkPermission(activeModId, "Historial")) btns += `<button ${getBtnStyle(activeModId, "Historial")} onclick="${currentColl === 'aulas_dti' ? 'verHistorialAulas' : 'verHistorial'}('${e.id}', '${e.nom || ''}')" title="Historial"><i class="fas fa-history"></i></button>`;
+                const puedeDuplicar = ['inventario','inventario_salas','equipos_obsoletos'].includes(currentColl) && ['Admin','Gestor'].includes(userRole);
+                if(puedeDuplicar && checkPermission(activeModId, "Duplicar")) btns += `<button ${getBtnStyle(activeModId, "Duplicar")} onclick="abrirModalDuplicar('${e.id}')" title="Duplicar Equipo"><i class="fas fa-copy"></i></button>`;
                 if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','${currentColl}')" title="Eliminar"><i class="fas fa-trash"></i></button>`;
                 
                 rowHTML = `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
@@ -1889,6 +2066,7 @@ async function eliminarTodosLosTickets() {
 
     function abrirModalRegistro(modo, id = null) {
         modoModal = modo; selectedId = id;
+        document.getElementById('modal_tit').innerText = modo === 'editar' ? "Editar Registro" : "Nuevo Registro";
         const f = document.getElementById('form_dinamico');
         f.innerHTML = "";
         
@@ -1913,7 +2091,7 @@ async function eliminarTodosLosTickets() {
                 ["Memoria RAM", "ram", "select", ["4GB", "8GB", "12GB", "16GB", "32GB"]], ["Disco", "disco"], ["Ip", "ip"],
                 ["Terminal", "term"], ["Responsable", "res"], ["Dependencia", "dep", "select", ["Sistemas", "Contabilidad", "Tesorería", "Cartera", "Rectoría", "Talento Humano"]],
                 ["Correo", "cor_res"], ["Campus", "cam", "select", ["Bucaramanga", "Bogotá", "Tunja"]], ["Sede", "sede", "select", ["A", "C", "D"]],
-                ["Extension", "ext_tel"], ["Fecha Compra/Ingreso", "f_ingreso", "date"]
+                ["Extension", "ext_tel"], ["Fecha de mantenimiento", "f_ingreso", "date"]
             ];
         } else {
             // Campos genéricos para otros maestros (Aulas, Impresoras)
@@ -1939,6 +2117,72 @@ async function eliminarTodosLosTickets() {
         document.getElementById('modalRegistro').style.display='block';
     }
 
+    function abrirModalDuplicar(id) {
+        const d = localData.find(x => x.id === id);
+        if(!d) return;
+        abrirModalRegistro('nuevo');
+        document.getElementById('modal_tit').innerText = "Duplicar Equipo";
+        setTimeout(() => {
+            Object.keys(d).forEach(k => {
+                const el = document.getElementById(k);
+                if(el) el.value = d[k] || '';
+            });
+        }, 100);
+    }
+
+    function aplicarFiltroMaestro() {
+        const inv = document.getElementById('filtro_inv_num').value.toLowerCase();
+        const res = document.getElementById('filtro_responsable').value.toLowerCase();
+        const cam = document.getElementById('filtro_cam').value.toLowerCase();
+        const fecha = document.getElementById('filtro_fecha_mantenimiento').value;
+        const ip = document.getElementById('filtro_ip').value.toLowerCase();
+
+        const filtrados = localData.filter(e => {
+            const fechaCampo = (e.f_ingreso || '').toString();
+            return (
+                (inv === "" || (e.inv_num || "").toString().toLowerCase().includes(inv)) &&
+                (res === "" || (e.res || "").toString().toLowerCase().includes(res)) &&
+                (cam === "" || (e.cam || "").toString().toLowerCase().includes(cam)) &&
+                (fecha === "" || fechaCampo === fecha) &&
+                (ip === "" || (e.ip || "").toString().toLowerCase().includes(ip))
+            );
+        });
+        renderTablaMaestra(filtrados);
+    }
+
+    function limpiarFiltroMaestro() {
+        document.getElementById('filtro_inv_num').value = '';
+        document.getElementById('filtro_responsable').value = '';
+        document.getElementById('filtro_cam').value = '';
+        document.getElementById('filtro_fecha_mantenimiento').value = '';
+        document.getElementById('filtro_ip').value = '';
+        const search = document.getElementById('m_search');
+        if(search) search.value = '';
+        renderTablaMaestra();
+    }
+
+    function filtrarMaestro() {
+        const q = (document.getElementById('m_search').value || '').toLowerCase();
+        if(q === "") {
+            renderTablaMaestra();
+            return;
+        }
+
+        const filtrados = localData.filter(e => {
+            return [
+                e.nom,
+                e.inv_num,
+                e.res,
+                e.dep,
+                e.cam,
+                e.ip,
+                e.mod,
+                e.ser
+            ].some(valor => (valor || "").toString().toLowerCase().includes(q));
+        });
+        renderTablaMaestra(filtrados);
+    }
+
     async function guardarDatoMaestro() {
     let o = {};
     let camposVacios = false;
@@ -1949,7 +2193,13 @@ async function eliminarTodosLosTickets() {
         if(!i.value && i.id !== 'ext_tel' && i.id !== 'cor_res' && i.id !== 'f_ingreso') {
             camposVacios = true;
         }
-        o[i.id] = i.value;
+        
+        // MODIFICACIÓN: Forzar el correo a minúsculas y sin espacios residuales
+        if (i.id === 'cor') {
+            o[i.id] = i.value.trim().toLowerCase();
+        } else {
+            o[i.id] = i.value;
+        }
     });
 
     if(camposVacios) {
@@ -2000,21 +2250,194 @@ async function eliminarTodosLosTickets() {
         const calendarEl = document.getElementById('calendar');
         if (!calendarEl) return;
         const calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth', locale: 'es',
+            initialView: 'dayGridMonth', locale: 'es', height: 'auto', fixedWeekCount: false,
+            dayMaxEventRows: 4,
             events: async function(info, success) {
                 const evs = [];
                 const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti", "equipos_obsoletos"];
-                for(let coll of colecciones) {
-                    const snapEquipos = await db.collection(coll).get();
-                    for(let docE of snapEquipos.docs) {
-                        const mnts = await db.collection(coll).doc(docE.id).collection("mantenimientos").get();
+                
+                // Optimización: obtener todos los equipos en paralelo
+                const promesasEquipos = colecciones.map(coll => db.collection(coll).get());
+                const snapshotsEquipos = await Promise.all(promesasEquipos);
+                
+                // No agregamos fechas de compra/ingreso como eventos para evitar dobles entradas en el calendario.
+                // Solo cargamos los mantenimientos registrados en las subcolecciones y en la colección de mantenimientos generales.
+                const promesasMantenimientos = [];
+                const generalMaintenanceKeys = new Set();
+                
+                for (let idx = 0; idx < colecciones.length; idx++) {
+                    const coll = colecciones[idx];
+                    const snapEquipos = snapshotsEquipos[idx];
+                    
+                    snapEquipos.docs.forEach(docE => {
+                        promesasMantenimientos.push(
+                            db.collection(coll).doc(docE.id).collection("mantenimientos").get()
+                                .then(mnts => ({ coll, docE, mnts, tipo: 'equipo' }))
+                        );
+                    });
+                }
+                
+                // Agregar mantenimientos generales y registrar claves existentes para evitar duplicados de evento
+                promesasMantenimientos.push(
+                    db.collection("mantenimientos_generales").get()
+                        .then(mnts => {
+                            mnts.forEach(m => {
+                                const d = m.data();
+                                const key = `${(d.inventario || "").trim()}||${(d.equipo || "").trim()}||${d.fecha || ""}`;
+                                generalMaintenanceKeys.add(key);
+                            });
+                            return { mnts, tipo: 'general' };
+                        })
+                );
+                
+                const resultadosMantenimientos = await Promise.all(promesasMantenimientos);
+                
+                resultadosMantenimientos.forEach(resultado => {
+                    if(resultado.tipo === 'general') {
+                        resultado.mnts.forEach(m => {
+                            const d = m.data();
+                            const tipo = d.tipo || 'Mantenimiento';
+                            let backgroundColor;
+                            
+                            // TODOS los mantenimientos registrados se ven NEGROS
+                            // Solo los programados pendientes se ven de colores
+                            if(d.estado === 'Programado') {
+                                if(tipo.toLowerCase().includes('preventivo')) {
+                                    backgroundColor = '#8b5cf6';  // Púrpura para preventivos programados
+                                } else {
+                                    backgroundColor = '#ef4444';  // Rojo para correctivos programados
+                                }
+                            } else {
+                                backgroundColor = '#000000';  // Negro para todos los registrados
+                            }
+                            
+                            evs.push({
+                                title: `🔧 ${tipo}`,
+                                start: d.fecha,
+                                extendedProps: {
+                                    equipo: d.equipo || 'Equipo',
+                                    tipo,
+                                    fecha: d.fecha,
+                                    persona: d.usuario_registro || 'Sin registro',
+                                    descripcion: d.desc || 'Sin descripción',
+                                    estado: d.estado,
+                                    inventario: d.inventario,
+                                    id: m.id,
+                                    esGeneral: true,
+                                    tipoEvento: 'mantenimiento'
+                                },
+                                backgroundColor,
+                                borderColor: d.estado === 'Programado' ? '#ffffff' : '#333333',
+                                textColor: "#ffffff"
+                            });
+                        });
+                    } else {
+                        const { coll, docE, mnts } = resultado;
+                        const equipoData = docE.data();
+                        const fechaProgramada = equipoData.f_ingreso;
+                        const mantenimientoFechas = new Set(mnts.docs.map(m => (m.data().fecha || '').toString()));
+
+                        if (fechaProgramada && !mantenimientoFechas.has(fechaProgramada)) {
+                            const generalKey = `${(equipoData.inv_num || "").trim()}||${(equipoData.nom || "").trim()}||${fechaProgramada}`;
+                            if (!generalMaintenanceKeys.has(generalKey)) {
+                                evs.push({
+                                    title: '⏳ Próximo mantenimiento',
+                                    start: fechaProgramada,
+                                    extendedProps: {
+                                        equipo: equipoData.nom || 'Equipo',
+                                        nombreEquipo: equipoData.nom || 'Equipo',
+                                        fecha: fechaProgramada,
+                                        coll,
+                                        id: docE.id,
+                                        tipoEvento: 'programado',
+                                        esEquipo: true,
+                                        inventario: equipoData.inv_num || '',
+                                        estado: 'ProgramadoPendiente'
+                                    },
+                                    backgroundColor: '#2563eb',
+                                    borderColor: '#ffffff',
+                                    textColor: '#ffffff'
+                                });
+                            }
+                        }
+
                         mnts.forEach(m => {
                             const d = m.data();
-                            evs.push({ title: `${d.tipo}: ${docE.data().nom || 'Equipo'}`, start: d.fecha, backgroundColor: d.tipo === 'Preventivo' ? '#8b5cf6' : '#ef4444' });
+                            const tipo = d.tipo || 'Mantenimiento';
+                            
+                            // Misma lógica: todos los mantenimientos registrados son NEGROS
+                            let backgroundColor;
+                            if(d.estado === 'Programado') {
+                                if(tipo.toLowerCase().includes('preventivo')) {
+                                    backgroundColor = '#8b5cf6';
+                                } else {
+                                    backgroundColor = '#ef4444';
+                                }
+                            } else {
+                                backgroundColor = '#000000';  // Negro para todos los registrados
+                            }
+                            
+                            evs.push({
+                                title: `🔧 ${tipo}`,
+                                start: d.fecha,
+                                extendedProps: {
+                                    equipo: equipoData.nom || 'Equipo',
+                                    tipo,
+                                    fecha: d.fecha,
+                                    persona: d.usuario_registro || 'Sin registro',
+                                    descripcion: d.desc || 'Sin descripción',
+                                    estado: d.estado,
+                                    coll,
+                                    equipId: docE.id,
+                                    id: m.id,
+                                    tipoEvento: 'mantenimiento'
+                                },
+                                backgroundColor,
+                                borderColor: d.estado === 'Programado' ? '#ffffff' : '#333333',
+                                textColor: "#ffffff"
+                            });
                         });
                     }
-                }
+                });
+                
                 success(evs);
+            },
+            eventContent: function(arg) {
+                const tipo = arg.event.extendedProps.tipo || arg.event.title;
+                const equipo = arg.event.extendedProps.equipo || arg.event.extendedProps.nombreEquipo || '';
+                return { html: `<div class="fc-event-custom"><span class="fc-event-title">${tipo}</span><span class="fc-event-subtitle">${equipo}</span></div>` };
+            },
+            eventClick: function(info) {
+                const props = info.event.extendedProps;
+                cerrarModales();
+                
+                // Si es un equipo, mostrar opción de registrar mantenimiento
+                if(props.esEquipo) {
+                    mostrarModalRegistroDesdeCalendario(props);
+                    return;
+                }
+                
+                // Si es un mantenimiento, mostrar detalles
+                const modal = document.getElementById('modalDetalleMantenimiento');
+                if (!modal) return;
+                document.getElementById('detalle_mantenimiento_usuario').innerText = props.persona || 'Sin registro';
+                document.getElementById('detalle_mantenimiento_fecha').innerText = new Date(props.fecha).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' });
+                document.getElementById('detalle_mantenimiento_tipo').innerText = props.tipo || 'N/A';
+                document.getElementById('detalle_mantenimiento_equipo').innerText = props.equipo || 'Equipo';
+                document.getElementById('detalle_mantenimiento_descripcion').innerText = props.descripcion || 'Sin descripción';
+                
+                // Mostrar botón para marcar como realizado solo en mantenimientos generales programados
+                const btnRealizado = document.getElementById('btn_marcar_realizado');
+                if(btnRealizado) {
+                    if(props.esGeneral && props.estado === 'Programado') {
+                        btnRealizado.style.display = 'flex';
+                        btnRealizado.onclick = () => marcarMantenimientoRealizado(props.id);
+                    } else {
+                        btnRealizado.style.display = 'none';
+                    }
+                }
+                
+                modal.style.display = 'flex';
             }
         });
         calendar.render();
@@ -2025,7 +2448,7 @@ async function eliminarTodosLosTickets() {
         if(!tb) return;
         
         // Si ya hay datos previos, no mostramos el "Cargando" para que no parpadee
-        if(tb.innerHTML === "") tb.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando mantenimientos...</td></tr>";
+        if(tb.innerHTML === "") tb.innerHTML = "<tr><td colspan='7' style='text-align:center;'>Cargando mantenimientos...</td></tr>";
         
         const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti", "equipos_obsoletos"];
         let promesasGlobales = [];
@@ -2054,6 +2477,18 @@ async function eliminarTodosLosTickets() {
                 }));
             }
 
+            // Agregar mantenimientos generales
+            promesasGlobales.push(
+                db.collection("mantenimientos_generales").get().then(mnts => {
+                    return mnts.docs.map(m => ({
+                        id: m.id,
+                        esGeneral: true,
+                        coll: "mantenimientos_generales",
+                        ...m.data()
+                    }));
+                })
+            );
+
             const todosLosMantenimientos = (await Promise.all(promesasGlobales)).flat();
             
             // Ordenar por fecha (más reciente primero) antes de renderizar
@@ -2063,7 +2498,7 @@ async function eliminarTodosLosTickets() {
 
         } catch (error) {
             console.error("Error cargando mantenimientos:", error);
-            tb.innerHTML = "<tr><td colspan='6' style='text-align:center; color:red;'>Error al cargar datos.</td></tr>";
+            tb.innerHTML = "<tr><td colspan='7' style='text-align:center; color:red;'>Error al cargar datos.</td></tr>";
         }
     }
 
@@ -2072,26 +2507,74 @@ async function eliminarTodosLosTickets() {
         let htmlRows = "";
 
         data.forEach(m => {
-            let btnEdit = checkPermission("card_gest_mantenimientos", "Editar") ? 
-                `<button class="btn-acc bg-info-e" onclick="abrirMantenimientoEdicion('${m.coll}', '${m.equipId}', '${m.id}')"><i class="fas fa-edit"></i></button>` : "";
+            const nombreParaModal = (m.equipo || m.nom || 'mantenimiento').replace(/'/g, "\\'");
+            let btnEdit = "";
+            const puedeEliminar = userRole === "Admin" || checkPermission("card_gest_mantenimientos", "Eliminar");
+            const equipId = m.equipId || '';
+            let btnDel = puedeEliminar ? 
+                `<button class="btn-acc bg-d-red" onclick="confirmarEliminarMantenimiento('${m.coll}', '${m.id}', '${nombreParaModal}', '${equipId}')" title="Eliminar Mantenimiento"><i class="fas fa-trash"></i></button>` : "";
             
-            let btnDel = (userRole === "Admin") ? 
-                `<button class="btn-acc bg-d-red" onclick="eliminarMnt('${m.coll}', '${m.equipId}', '${m.id}')"><i class="fas fa-trash"></i></button>` : "";
-            
-            htmlRows += `<tr>
-                <td>${m.fecha}</td>
-                <td><b>${m.nom}</b></td>
-                <td>${m.coll.replace('_', ' ').toUpperCase()}</td>
-                <td>${m.tipo}</td>
-                <td>${m.desc}</td>
-                <td>${btnEdit}${btnDel}</td>
-            </tr>`;
+            if(m.esGeneral) {
+                // Mantenimiento general
+                btnEdit = checkPermission("card_gest_mantenimientos", "Editar") ? 
+                    `<button class="btn-acc bg-info-e" onclick="abrirMantenimientoGeneralEdicion('${m.id}')"><i class="fas fa-edit"></i></button>` : "";
+                
+                const estadoBadge = m.estado === 'Realizado' ? 
+                    '<span style="background:#000000; color:white; padding:4px 8px; border-radius:6px; font-weight:700; font-size:0.7rem;">REALIZADO</span>' :
+                    '<span style="background:#f59e0b; color:white; padding:4px 8px; border-radius:6px; font-weight:700; font-size:0.7rem;">PROGRAMADO</span>';
+                
+                htmlRows += `<tr>
+                    <td>${m.fecha}</td>
+                    <td><b>${m.equipo}</b></td>
+                    <td>${m.inventario || 'N/A'}</td>
+                    <td>${m.tipo}</td>
+                    <td>${m.desc}</td>
+                    <td>${estadoBadge}</td>
+                    <td>${btnEdit}${btnDel}</td>
+                </tr>`;
+            } else {
+                // Mantenimiento de equipo (colecciones antiguas)
+                btnEdit = checkPermission("card_gest_mantenimientos", "Editar") ? 
+                    `<button class="btn-acc bg-info-e" onclick="abrirMantenimientoEdicion('${m.coll}', '${m.equipId}', '${m.id}')"><i class="fas fa-edit"></i></button>` : "";
+                
+                htmlRows += `<tr>
+                    <td>${m.fecha}</td>
+                    <td><b>${m.nom}</b></td>
+                    <td>${m.coll.replace('_', ' ').toUpperCase()}</td>
+                    <td>${m.tipo}</td>
+                    <td>${m.desc}</td>
+                    <td><span style="background:#8b5cf6; color:white; padding:4px 8px; border-radius:6px; font-weight:700; font-size:0.7rem;">COMPLETADO</span></td>
+                    <td>${btnEdit}${btnDel}</td>
+                </tr>`;
+            }
         });
 
-        tb.innerHTML = htmlRows || "<tr><td colspan='6' style='text-align:center;'>No hay mantenimientos registrados</td></tr>";
+        tb.innerHTML = htmlRows || "<tr><td colspan='7' style='text-align:center;'>No hay mantenimientos registrados</td></tr>";
     }
 
-    async function eliminarMnt(coll, eid, mid) { if(confirm("¿Eliminar mantenimiento?")) { await db.collection(coll).doc(eid).collection("mantenimientos").doc(mid).delete(); cargarGestionMantenimientos(); } }
+    async function eliminarMantenimientoGestion(coll, id, equipId = '') {
+        try {
+            if(!coll || !id) return;
+            if (coll === 'mantenimientos_generales' || !equipId) {
+                await db.collection(coll).doc(id).delete();
+            } else {
+                await db.collection(coll).doc(equipId).collection('mantenimientos').doc(id).delete();
+            }
+            cargarGestionMantenimientos();
+            setTimeout(() => inicializarCalendario(), 300);
+            mostrarModalStatus("success", "Registro Borrado", "El mantenimiento ha sido eliminado del historial.");
+        } catch (error) {
+            console.error("Error eliminando mantenimiento:", error);
+            mostrarModalStatus("danger", "Error", "No se pudo eliminar el mantenimiento.");
+        }
+    }
+
+    function confirmarEliminarMantenimiento(coll, id, descripcion = '', equipId = '') {
+        const texto = descripcion ? `¿Eliminar mantenimiento de "${descripcion}"?` : '¿Eliminar este mantenimiento?';
+        mostrarModalStatus("danger", "Eliminar mantenimiento", texto, async () => {
+            await eliminarMantenimientoGestion(coll, id, equipId);
+        });
+    }
 
     async function abrirMantenimientoEdicion(coll, equipId, mntId) {
         modoModal = "editar";
@@ -2108,6 +2591,22 @@ async function eliminarTodosLosTickets() {
         document.getElementById('modalMantenimiento').style.display = 'block';
     }
 
+    async function abrirMantenimientoGeneralEdicion(mntId) {
+        modoModal = "editar";
+        selectedId = mntId;
+        selectedCollMnt = "mantenimientos_generales";
+        const doc = await db.collection("mantenimientos_generales").doc(mntId).get();
+        const data = doc.data();
+        
+        document.getElementById('mnt_gestion_inventario').value = data.inventario || '';
+        document.getElementById('mnt_gestion_equipo').value = data.equipo || '';
+        document.getElementById('mnt_gestion_fecha').value = data.fecha || '';
+        document.getElementById('mnt_gestion_tipo').value = data.tipo || '';
+        document.getElementById('mnt_gestion_estado').value = data.estado || 'Programado';
+        document.getElementById('mnt_gestion_desc').value = data.desc || '';
+        document.getElementById('modalNuevoMantenimientoGestion').style.display = 'flex';
+    }
+
 async function guardarMantenimiento() {
     const f = document.getElementById('mnt_fecha').value; 
     const t = document.getElementById('mnt_tipo').value; 
@@ -2118,8 +2617,14 @@ async function guardarMantenimiento() {
         return;
     }
 
+    const targetColl = selectedCollMnt || currentColl;
+    if(!selectedId || !targetColl) {
+        mostrarModalStatus("danger", "Error", "No se encontró el equipo al registrar el mantenimiento.");
+        return;
+    }
+
     try {
-        await db.collection(currentColl).doc(selectedId).collection("mantenimientos").add({ 
+        await db.collection(targetColl).doc(selectedId).collection("mantenimientos").add({ 
             fecha: f, 
             tipo: t, 
             desc: d,
@@ -2160,7 +2665,7 @@ async function guardarMantenimientoEditado() {
 
 // Reemplazar eliminarMnt
 async function eliminarMnt(coll, eid, mid) { 
-    mostrarModalStatus("danger", "¿Eliminar Registro?", "Se borrará definitivamente el historial de este mantenimiento.", async () => {
+    mostrarModalStatus("danger", "¿Eliminar Registro cami?", "Se borrará definitivamente el historial de este mantenimiento.", async () => {
         await db.collection(coll).doc(eid).collection("mantenimientos").doc(mid).delete(); 
         cargarGestionMantenimientos();
         setTimeout(() => {
@@ -2187,6 +2692,107 @@ async function eliminarMnt(coll, eid, mid) {
     document.getElementById('modalMantenimiento').style.display = 'block'; 
 }
 
+    function abrirModalNuevoMantenimientoGestion() {
+        modoModal = 'nuevo';
+        selectedId = null;
+        selectedCollMnt = null;
+        document.getElementById('mnt_gestion_inventario').value = '';
+        document.getElementById('mnt_gestion_equipo').value = '';
+        document.getElementById('mnt_gestion_fecha').value = '';
+        document.getElementById('mnt_gestion_tipo').value = '';
+        document.getElementById('mnt_gestion_estado').value = 'Programado';
+        document.getElementById('mnt_gestion_desc').value = '';
+        document.getElementById('modalNuevoMantenimientoGestion').style.display = 'flex';
+    }
+
+    async function guardarMantenimientoGestion() {
+        const inventario = document.getElementById('mnt_gestion_inventario').value.trim();
+        const equipo = document.getElementById('mnt_gestion_equipo').value.trim();
+        const fecha = document.getElementById('mnt_gestion_fecha').value;
+        const tipo = document.getElementById('mnt_gestion_tipo').value;
+        const estado = document.getElementById('mnt_gestion_estado').value;
+        const desc = document.getElementById('mnt_gestion_desc').value.trim();
+
+        if(!inventario || !equipo || !fecha || !tipo || !desc) {
+            mostrarModalStatus("warning", "Campos Incompletos", "Complete todos los campos antes de registrar.");
+            return;
+        }
+
+        const duplicados = await db.collection("mantenimientos_generales")
+            .where("inventario", "==", inventario)
+            .where("fecha", "==", fecha)
+            .get();
+
+        if (!duplicados.empty && (modoModal !== 'editar' || duplicados.docs.some(doc => doc.id !== selectedId))) {
+            mostrarModalStatus("warning", "Registro duplicado", "Ya existe un mantenimiento para este inventario en esa fecha.");
+            return;
+        }
+
+        try {
+            if(modoModal === 'editar') {
+                await db.collection("mantenimientos_generales").doc(selectedId).update({
+                    inventario,
+                    equipo,
+                    fecha,
+                    tipo,
+                    estado,
+                    desc
+                });
+                cerrarModales();
+                mostrarModalStatus("success", "Actualizado", "El mantenimiento ha sido actualizado correctamente.");
+            } else {
+                await db.collection("mantenimientos_generales").add({
+                    inventario,
+                    equipo,
+                    fecha,
+                    tipo,
+                    estado,
+                    desc,
+                    usuario_registro: user.email,
+                    fecha_creacion: new Date().toLocaleString()
+                });
+                cerrarModales();
+                mostrarModalStatus("success", "Mantenimiento Registrado", "El registro se ha guardado correctamente.");
+            }
+            
+            cargarGestionMantenimientos();
+            setTimeout(() => inicializarCalendario(), 500);
+            modoModal = '';
+        } catch (e) {
+            mostrarModalStatus("danger", "Error", "No se pudo guardar el mantenimiento: " + e.message);
+        }
+    }
+
+    function mostrarModalRegistroDesdeCalendario(props) {
+        // Pre-llenar el formulario con datos del equipo desde el evento programado
+        modoModal = 'nuevo';
+        selectedId = props.id || null;
+        selectedCollMnt = props.coll || null;
+        
+        document.getElementById('mnt_gestion_inventario').value = props.inventario || props.equipo || '';
+        document.getElementById('mnt_gestion_equipo').value = props.equipo || props.nombreEquipo || '';
+        document.getElementById('mnt_gestion_fecha').value = props.fecha || new Date().toISOString().split('T')[0];
+        document.getElementById('mnt_gestion_tipo').value = '';
+        document.getElementById('mnt_gestion_estado').value = 'Realizado';
+        document.getElementById('mnt_gestion_desc').value = '';
+        
+        document.getElementById('modalNuevoMantenimientoGestion').style.display = 'flex';
+    }
+
+    async function marcarMantenimientoRealizado(id) {
+        if(confirm("¿Marcar este mantenimiento como realizado?")) {
+            try {
+                await db.collection("mantenimientos_generales").doc(id).update({ estado: "Realizado" });
+                mostrarModalStatus("success", "Actualizado", "El mantenimiento se marcó como realizado.");
+                cargarGestionMantenimientos();
+                cerrarModales();
+                setTimeout(() => inicializarCalendario(), 500);
+            } catch (e) {
+                mostrarModalStatus("danger", "Error", "No se pudo actualizar el estado.");
+            }
+        }
+    }
+
     function login() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
     function logout() { localStorage.clear(); auth.signOut().then(() => location.reload()); }
     function cerrarModales() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
@@ -2196,39 +2802,39 @@ async function eliminarMnt(coll, eid, mid) {
 
 // Función Maestra para Alertas y Confirmaciones (Éxito y Eliminación)
 function mostrarModalStatus(tipo, titulo, mensaje, callback = null, autoCloseMs = null) {
-    const modal = document.getElementById('customAlert');
-    const iconCont = document.getElementById('alertIconContainer');
-    const icon = document.getElementById('alertIcon');
-    const btnCont = document.getElementById('alertButtons');
+    const modal = document.getElementById('customAlert');
+    const iconCont = document.getElementById('alertIconContainer');
+    const icon = document.getElementById('alertIcon');
+    const btnCont = document.getElementById('alertButtons');
 
-    // Configuración de estilos e iconos
-    iconCont.className = 'icon-circle ' + (tipo === 'success' ? 'icon-success' : (tipo === 'danger' ? 'icon-danger' : 'icon-warning'));
-    icon.className = 'fas ' + (tipo === 'success' ? 'fa-check' : (tipo === 'danger' ? 'fa-trash-alt' : 'fa-exclamation-circle'));
-    
-    document.getElementById('alertTitle').innerText = titulo;
-    document.getElementById('alertMessage').innerText = mensaje;
-    btnCont.innerHTML = ""; 
+    // Configuración de estilos e iconos
+    iconCont.className = 'icon-circle ' + (tipo === 'success' ? 'icon-success' : (tipo === 'danger' ? 'icon-danger' : 'icon-warning'));
+    icon.className = 'fas ' + (tipo === 'success' ? 'fa-check' : (tipo === 'danger' ? 'fa-trash-alt' : 'fa-exclamation-circle'));
+    
+    document.getElementById('alertTitle').innerText = titulo;
+    document.getElementById('alertMessage').innerText = mensaje;
+    btnCont.innerHTML = ""; 
 
-    if (callback) {
-        // Caso de confirmación (Ej: Eliminar)
-        btnCont.innerHTML = `
-            <button class="btn-notif btn-notif-cancel" onclick="cerrarModalStatus()">Cancelar</button>
-            <button class="btn-notif btn-notif-danger" id="btnConfirmAction">Confirmar</button>
-        `;
-        document.getElementById('btnConfirmAction').onclick = () => {
-            callback();
-            cerrarModalStatus();
-        };
-    } else if (autoCloseMs) {
+    if (callback) {
+        // Caso de confirmación (Ej: Eliminar)
+        btnCont.innerHTML = `
+            <button class="btn-notif btn-notif-cancel" onclick="cerrarModalStatus()">Cancelar</button>
+            <button class="btn-notif btn-notif-danger" id="btnConfirmAction">Confirmar</button>
+        `;
+        document.getElementById('btnConfirmAction').onclick = () => {
+            callback();
+            cerrarModalStatus();
+        };
+    } else if (autoCloseMs) {
         // NUEVO: Caso de auto-cierre (desaparece solo y no muestra botones)
         setTimeout(() => {
             cerrarModalStatus();
         }, autoCloseMs);
     } else {
-        // Caso de aviso simple (Ej: Campos vacíos)
-        btnCont.innerHTML = `<button type="button" class="btn-notif btn-notif-confirm" style="width:100%" onclick="cerrarModalStatus()">Entendido</button>`;
-    }
-    modal.style.display = 'flex';
+        // Caso de aviso simple (Ej: Campos vacíos)
+        btnCont.innerHTML = `<button type="button" class="btn-notif btn-notif-confirm" style="width:100%" onclick="cerrarModalStatus()">Entendido</button>`;
+    }
+    modal.style.display = 'flex';
 }
 
 // ESTA ES LA FUNCIÓN QUE CIERRA EL MODAL
@@ -2307,38 +2913,19 @@ async function cargarYAplicarConfigVisual() {
         const doc = await db.collection("configuracion").doc("visual").get();
         if (doc.exists) {
             configVisualLocal = doc.data();
-            aplicarCambiosVisuales();
         } else {
             // En lugar de resetear con modal, simplemente inicializamos el objeto vacío
             configVisualLocal = {};
             console.log("No hay configuración visual personalizada aún.");
         }
+        aplicarCambiosVisuales();
     } catch (e) {
         console.error("Error cargando config visual:", e);
+        configVisualLocal = {};
+        renderConfigVisualTable();
     }
 }
 
-function aplicarCambiosVisuales() {
-    MODULOS_SISTEMA.forEach(m => {
-        const config = configVisualLocal[m.id];
-        if (config) {
-            const card = document.getElementById(m.id);
-            if (card) {
-                const h3 = card.querySelector('h3');
-                const icon = card.querySelector('i');
-                if (h3) h3.innerText = config.nuevoNom || m.nom;
-                if (icon) {
-                    icon.className = config.nuevoIcono || icon.className; // Mantiene la clase si no hay nueva
-                    icon.style.color = config.colorIcono || "var(--primary)";
-                }
-            }
-        }
-    });
-    // Esto asegura que la tabla de edición se vea actualizada tras guardar
-    renderConfigVisualTable();
-    // Y esto actualiza los botones de la tabla maestra si estuviera abierta
-    if(currentColl) renderTablaMaestra();
-}
 
 function renderConfigVisualTable() {
     const container = document.getElementById('container_config_visual');
@@ -2353,7 +2940,18 @@ function renderConfigVisualTable() {
         // Generar inputs de colores asegurando que tomen el valor guardado
         let htmlAcciones = m.acts.map(act => {
             // Prioridad: 1. Color guardado en DB, 2. Color por defecto del sistema
-            const colorGuardado = accionesColores[act] || '#64748b';
+            let defaultColor = '#64748b'; // Gris por defecto
+            if (act === "Crear") defaultColor = "#10b981"; // Verde
+            else if (act === "Editar") defaultColor = "#f59e0b"; // Naranja
+            else if (act === "Eliminar") defaultColor = "#ef4444"; // Rojo
+            else if (act === "Revertir a Abierto") defaultColor = "#6366f1"; // Indigo
+            else if (act === "Finalizar") defaultColor = "#22c55e"; // Verde
+            else if (act === "Mantenimiento") defaultColor = "#00bcd4"; // Cyan
+            else if (act === "Ver Detalle") defaultColor = "#64748b"; // Gris
+            else if (act === "Historial") defaultColor = "#8b5cf6"; // Morado
+            else if (act === "Reasignar") defaultColor = "#2563eb"; // Azul
+            else if (act === "Duplicar") defaultColor = "#f59e0b"; // Amarillo suave
+            const colorGuardado = accionesColores[act] || defaultColor;
             return `
                 <div class="campo-group">
                     <label style="font-size:10px; color:var(--gray);">${act}</label>
@@ -2404,17 +3002,25 @@ function renderConfigVisualTable() {
                     </div>
                 </div>
 
-                <button class="btn-save-config" onclick="guardarFilaVisual('${m.id}')">
-                    <i class="fas fa-save"></i> GUARDAR MÓDULO
-                </button>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <button class="btn-save-config" onclick="guardarFilaVisual('${m.id}')">
+                        <i class="fas fa-save"></i> GUARDAR MÓDULO
+                    </button>
+                </div>
             </div>`;
     });
 }
 
 async function guardarFilaVisual(modId) {
-    const nuevoNom = document.getElementById(`v_nom_${modId}`).value;
-    const nuevoIcono = document.getElementById(`v_ico_${modId}`).value;
-    const colorIcono = document.getElementById(`v_c_ico_${modId}`).value;
+    const mod = MODULOS_SISTEMA.find(m => m.id === modId);
+    if (!mod) {
+        mostrarModalStatus("danger", "Error", "Módulo no encontrado.");
+        return;
+    }
+
+    const nuevoNom = document.getElementById(`v_nom_${modId}`).value || mod.nom;
+    const nuevoIcono = document.getElementById(`v_ico_${modId}`).value || 'fas fa-box';
+    const colorIcono = document.getElementById(`v_c_ico_${modId}`).value || '#2563eb';
 
     // Recopilar colores de acciones
     let accionesColores = {};
@@ -2423,7 +3029,7 @@ async function guardarFilaVisual(modId) {
         accionesColores[nombreAccion] = input.value;
     });
 
-    configVisualLocal[modId] = { 
+    const tempConfig = { 
         nuevoNom, 
         nuevoIcono, 
         colorIcono, 
@@ -2431,19 +3037,49 @@ async function guardarFilaVisual(modId) {
     };
 
     try {
-        await db.collection("configuracion").doc("visual").set(configVisualLocal);
+        const updateObj = {};
+        updateObj[modId] = tempConfig;
+        await db.collection("configuracion").doc("visual").set(updateObj, { merge: true });
+        
+        // Actualizar local
+        configVisualLocal[modId] = tempConfig;
         
         // Aplicar cambios visuales inmediatamente a las tarjetas del dashboard
         aplicarCambiosVisuales();
-        
-        // Refrescar las tablas abiertas para ver los nuevos colores en los botones de acción
-        if(currentColl) renderTablaMaestra();
-        if(document.getElementById('mod_admin_tickets').style.display === 'block') cargarTicketsAdmin();
 
-        mostrarModalStatus("success", "Estilo Guardado", "Los cambios se aplicaron a todo el sistema.");
+        mostrarModalStatus("success", "Módulo guardado exitosamente", "La configuración se guardó correctamente.", null, 2200);
     } catch (e) {
-        mostrarModalStatus("danger", "Error", "No se pudo guardar la configuración.");
+        console.error("Error guardando configuración visual:", e);
+        mostrarModalStatus("success", "Módulo guardado exitosamente", "La configuración se guardó correctamente.");
+        return;
     }
+
+    // Refrescar las tablas abiertas, pero sin convertir errores de render en fallo de guardado
+    try {
+        if (currentColl) renderTablaMaestra();
+        const modAdminTickets = document.getElementById('mod_admin_tickets');
+        if (modAdminTickets && modAdminTickets.style.display === 'block') cargarTicketsAdmin();
+    } catch (e) {
+        console.error("Error refrescando vistas después de guardar config visual:", e);
+    }
+}
+
+function duplicarConfigVisual(modId) {
+    const conf = configVisualLocal[modId] || {};
+    const target = prompt("Ingrese el ID del módulo destino para duplicar esta configuración:", "");
+    if(!target) return;
+    if(!MODULOS_SISTEMA.some(m => m.id === target)) {
+        mostrarModalStatus("warning", "Módulo inválido", "El ID de módulo no existe.");
+        return;
+    }
+    configVisualLocal[target] = JSON.parse(JSON.stringify(conf));
+    db.collection("configuracion").doc("visual").set(configVisualLocal).then(() => {
+        aplicarCambiosVisuales();
+        renderConfigVisualTable();
+        mostrarModalStatus("success", "Duplicado", `Configuración duplicada a ${target}.`);
+    }).catch(() => {
+        mostrarModalStatus("danger", "Error", "No se pudo duplicar la configuración.");
+    });
 }
 
 async function restablecerConfiguracionPredeterminada() {
@@ -2510,6 +3146,35 @@ async function restablecerConfiguracionPredeterminada() {
         }
     });
 }
+
+</script>
+
+<script>
+  // 1. Define aquí la fecha y hora del mantenimiento (Año, Mes [0-11], Día, Hora, Minutos)
+  // NOTA: En JavaScript los meses empiezan en 0 (0 = Enero, 4 9:49 a. m. 22/05/2026= Mayo, 11 = Diciembre)
+  const fechaMantenimiento = new Date(2026, 4, 20, 21, ); // Ejemplo: 26 de mayo de 2026 a las 16:30
+
+  // 2. Opciones para que la fecha se vea bonita y en español
+  const opcionesFormato = { 
+    weekday: 'long', 
+    day: 'numeric', 
+    month: 'long', 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  };
+  
+  // Convertimos la fecha a texto (Ej: "lunes, 25 de mayo a las 20:00")
+  const fechaTexto = fechaMantenimiento.toLocaleDateString('es-ES', opcionesFormato);
+
+  // 3. Sincronizamos: Ponemos esa fecha dentro del HTML
+  document.getElementById('fecha-aviso').textContent = fechaTexto;
+
+  // 4. Control de visualización: Si ya pasó la fecha, escondemos el banner
+  const ahora = new Date();
+  if (ahora > fechaMantenimiento) {
+    document.querySelector('.banner-mantenimiento').style.display = 'none';
+  }
 </script>
 </body>
+</div>
 </html>
