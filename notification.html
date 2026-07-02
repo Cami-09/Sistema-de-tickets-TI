@@ -1,7 +1,0 @@
-db.collection("tickets").onSnapshot(snapshot => {
-  snapshot.docChanges().forEach(change => {
-    if (change.type === "added") {
-      alert("Nuevo ticket creado 🚨");
-    }
-  });
-});
