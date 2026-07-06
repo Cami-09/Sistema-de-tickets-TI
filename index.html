@@ -106,32 +106,47 @@
             filter: brightness(1.1);
         }
 
-        /* --- REDISEÑO ESTILO 'APPLE' PARA EL INICIO DE SESIÓN --- */
+        /* --- REDISEÑO PREMIUM PARA EL INICIO DE SESIÓN --- */
         #login { 
             display: none; 
             height: 100vh; 
             width: 100vw;
             position: fixed;
-            top: 0;
-            left: 0;
-            background: radial-gradient(circle at 10% 20%, rgba(241, 245, 249, 1) 0%, rgba(226, 232, 240, 1) 90%);
+            inset: 0;
+            background: linear-gradient(135deg, #020617 0%, #0f172a 35%, #1d4ed8 100%);
             justify-content: center; 
             align-items: center; 
-            z-index: 6000; /* Bloquea todo el sistema si no está logueado */
+            padding: 24px;
+            z-index: 6000;
+            overflow: hidden;
+        }
+
+        #login::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.32), transparent 30%),
+                        radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.25), transparent 28%);
+            pointer-events: none;
         }
 
         .login-card {
-            text-align: center; 
-            background: rgba(255, 255, 255, 0.85); 
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            padding: 50px 40px; 
-            border-radius: 28px; 
-            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.15), 
-                        0 0 0 1px rgba(255, 255, 255, 0.6) inset; 
-            width: 360px;
-            border: 1px solid rgba(226, 232, 240, 0.8);
+            position: relative;
+            z-index: 1;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            padding: 34px 30px;
+            border-radius: 28px;
+            box-shadow: 0 25px 60px -18px rgba(2, 6, 23, 0.45),
+                        0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+            width: min(430px, 100%);
+            border: 1px solid rgba(226, 232, 240, 0.9);
             animation: loginFadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
         @keyframes loginFadeUp {
@@ -139,29 +154,91 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        .login-hero {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .login-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #2563eb 0%, #0ea5e9 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 24px -10px rgba(37, 99, 235, 0.45);
+            flex-shrink: 0;
+        }
+
+        .login-icon i {
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .login-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
         .login-card h2 {
             font-size: 1.6rem;
             font-weight: 800;
             color: #0f172a;
-            margin: 0 0 8px 0;
+            margin: 0 0 6px 0;
             letter-spacing: -0.5px;
         }
 
         .login-card p {
-            font-size: 0.85rem;
-            color: #64748b;
-            margin: 0 0 30px 0;
+            font-size: 0.95rem;
+            color: #475569;
+            margin: 0;
             font-weight: 500;
+            line-height: 1.55;
+        }
+
+        .login-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .login-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 11px;
+            border-radius: 999px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #334155;
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        .login-pill i {
+            color: #2563eb;
         }
 
         /* Botón de Google Auténtico y Premium */
         .btn-google-login {
-            background: #ffffff;
-            color: #1e293b;
-            border: 1px solid #cbd5e1;
-            padding: 14px 24px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            border: none;
+            padding: 14px 22px;
             border-radius: 14px;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.95rem;
             cursor: pointer;
             width: 100%;
@@ -169,22 +246,26 @@
             align-items: center;
             justify-content: center;
             gap: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 12px 24px -10px rgba(37, 99, 235, 0.4);
             transition: all 0.2s ease;
         }
 
         .btn-google-login:hover {
-            background: #f8fafc;
-            border-color: #94a3b8;
             transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 16px 28px -12px rgba(37, 99, 235, 0.45);
+            filter: brightness(1.04);
         }
 
         .btn-google-login i {
-            font-size: 1.15rem;
-            background: linear-gradient(135deg, #4285F4 0%, #34A853 40%, #FBBC05 70%, #EA4335 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .login-footer {
+            text-align: center;
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 4px;
         }
         
         /* --- REDISEÑO PREMIUM DEL DASHBOARD PRINCIPAL --- */
@@ -332,9 +413,47 @@
         .campo-group label { font-weight: 700; font-size: 0.7rem; color: var(--gray); text-transform: uppercase; }
         .campo-group input, .campo-group select, .campo-group textarea { padding: 10px; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 13px; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; padding: 12px 10px; border-bottom: 2px solid #eee; color: var(--gray); font-size: 0.75rem; text-transform: uppercase; background: #f8fafc; }
-        td { padding: 10px; border-bottom: 1px solid #f1f5f9; font-size: 0.8rem; }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 12px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px -12px rgba(15, 23, 42, 0.12);
+        }
+        th {
+            text-align: left;
+            padding: 13px 14px;
+            border-bottom: 1px solid #e2e8f0;
+            color: #475569;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
+            font-weight: 700;
+        }
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.82rem;
+            color: #334155;
+            vertical-align: middle;
+        }
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #fbfdff;
+        }
+        tbody tr:hover {
+            background-color: #f4f8ff;
+        }
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
         
         .tk-card { text-align: left !important; border-left: 5px solid var(--primary); position: relative; }
         .tk-status { position: absolute; top: 15px; right: 15px; padding: 3px 8px; border-radius: 8px; font-size: 0.65rem; font-weight: bold; color: white; }
@@ -975,14 +1094,27 @@
 
 <div id="login">
     <div class="login-card">
-        <div style="width: 65px; height: 65px; background: #eff6ff; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
-            <i class="fas fa-shield-alt fa-2x" style="color: var(--primary);"></i>
+        <div class="login-hero">
+            <div class="login-icon">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+            <div>
+                <div class="login-kicker"><i class="fas fa-lock"></i> Acceso seguro</div>
+                <h2>SISPRO CAMI</h2>
+                <p>Sistema de gestión de tickets, inventario y soporte técnico para la operación diaria.</p>
+            </div>
         </div>
-        <h2>SISPRO UNICIENCIA</h2>
-        <p>Sistema de Gestión de Tickets e Inventario Técnico</p>
+
+        <div class="login-meta">
+            <div class="login-pill"><i class="fas fa-bolt"></i> Rápido y confiable</div>
+            <div class="login-pill"><i class="fas fa-sitemap"></i> Panel unificado</div>
+        </div>
+
         <button class="btn-google-login" onclick="login()">
             <i class="fab fa-google"></i> Continuar con Google
         </button>
+
+        <div class="login-footer">Inicia sesión con tu cuenta institucional para acceder al sistema.</div>
     </div>
 </div>
 
@@ -1788,7 +1920,6 @@ function verificarRol() {
                 "card_inv_obsoletos": ["Crear", "Editar", "Mantenimiento", "Historial", "Duplicar"],
                 "card_extensiones": ["Crear", "Editar", "Ver Detalle"],
                 "card_calendario": ["Ver"],
-                "card_stats": ["Ver"],
                 "card_aulas": ["Crear", "Editar", "Mantenimiento", "Historial"],
                 "card_impresoras": ["Crear", "Editar", "Ver Detalle", "Mantenimiento", "Historial"],
                 "card_gest_mantenimientos": ["Editar"]
@@ -1921,6 +2052,21 @@ let btnDel = checkPermission("card_historico_cerrados", "Eliminar") ? `<button c
                     (gestor === "" || t.asignado === gestor);
         });
         renderTablaHistorico(filtrados);
+    }
+
+    function restaurarModuloActivo() {
+        const moduloGuardado = localStorage.getItem('activeModulo');
+        if (!moduloGuardado) return false;
+
+        let paramsGuardados = {};
+        try {
+            paramsGuardados = JSON.parse(localStorage.getItem('activeParams') || '{}');
+        } catch (e) {
+            paramsGuardados = {};
+        }
+
+        abrir(moduloGuardado, paramsGuardados.coll || null, paramsGuardados.tit || null);
+        return true;
     }
 
     function abrir(id, mColl = null, mTit = null) {
@@ -4026,12 +4172,15 @@ async function verDetalleImpresora(id) {
             const dashboardContainer = document.getElementById('dashboard') || document.getElementById('panel-principal');
             if (dashboardContainer) dashboardContainer.style.display = 'grid';
             
-            // Cargar ecosistema de datos en paralelo
-            await cargarRoles();
-            await cargarYAplicarConfigVisual();
-            await cargarGestores();
+            // Cargar ecosistema de datos en paralelo para que la app se vea más fluida al refrescar
+            await Promise.allSettled([
+                cargarRoles(),
+                cargarYAplicarConfigVisual(),
+                cargarGestores()
+            ]);
             observarContadores();
             verificarRol();
+            restaurarModuloActivo();
         } else {
             // Si no está logueado, mostrar pantalla limpia de login
             user = null;
