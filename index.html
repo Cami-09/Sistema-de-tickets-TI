@@ -47,7 +47,7 @@
             box-sizing: border-box;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             
-            display: flex; 
+            display: none; /* Oculto por defecto para evitar parpadeo inicial */
             justify-content: space-between; 
             align-items: center; 
             box-shadow: 0 10px 30px -15px rgba(15, 23, 42, 0.5); 
@@ -108,7 +108,7 @@
 
         /* --- REDISEÑO PREMIUM PARA EL INICIO DE SESIÓN --- */
         #login { 
-            display: none; 
+            display: flex; /* Visible por defecto */
             height: 100vh; 
             width: 100vw;
             position: fixed;
@@ -269,27 +269,26 @@
         }
         
         /* --- REDISEÑO PREMIUM DEL DASHBOARD PRINCIPAL --- */
-        /* --- REDISEÑO HIGH-PREMIUM DEL DASHBOARD PRINCIPAL --- */
         .grid-main { 
-            display: grid; 
+            display: none; /* Oculto por defecto para evitar parpadeo */
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); 
             gap: 25px; 
             padding: 30px 20px;
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); /* Fondo con degradado suave que da profundidad */
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
             border-radius: 24px;
             box-shadow: inset 0 2px 8px rgba(15, 23, 42, 0.05);
             margin-top: 10px;
         }
         
         .card { 
-            background: rgba(255, 255, 255, 0.85); /* Fondo blanco semi-translúcido */
-            backdrop-filter: blur(8px); /* Efecto sutil de cristal esmerilado */
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
             padding: 35px 24px; 
             border-radius: 20px; 
             text-align: center; 
             cursor: pointer; 
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); /* Animación ultra fluida tipo Apple */
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             border: 1px solid rgba(255, 255, 255, 0.7); 
             box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.03), 0 2px 4px -1px rgba(15, 23, 42, 0.02);
             position: relative;
@@ -302,7 +301,7 @@
             content: '';
             position: absolute;
             top: 0; left: 0; width: 100%; height: 5px;
-            background: linear-gradient(90deg, #2563eb, #00bcd4, #8b5cf6); /* Degradado multicolor vivo */
+            background: linear-gradient(90deg, #2563eb, #00bcd4, #8b5cf6);
             opacity: 0;
             transition: opacity 0.4s ease;
         }
@@ -310,7 +309,7 @@
         /* Comportamiento al pasar el cursor (Hover) */
         .card:hover { 
             transform: translateY(-8px) scale(1.02); 
-            background: #ffffff; /* Se vuelve sólida al enfoque */
+            background: #ffffff;
             box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 10px 10px -5px rgba(15, 23, 42, 0.04); 
             border-color: rgba(37, 99, 235, 0.3); 
         }
@@ -321,7 +320,7 @@
         
         /* Estilización de los Iconos */
         .card i { 
-            font-size: 42px; /* Ligeramente más grande para mejor balance visual */
+            font-size: 42px;
             background: linear-gradient(135deg, #1e40af 0%, #2563eb 50%, #00bcd4 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -331,7 +330,7 @@
         }
         
         .card:hover i {
-            transform: scale(1.15) translateY(-2px); /* Animación de levitación elegante */
+            transform: scale(1.15) translateY(-2px);
         }
         
         /* Estilización de los Textos */
@@ -339,29 +338,22 @@
             margin: 0;
             font-size: 1rem;
             font-weight: 700;
-            color: #1e293b; /* Color pizarra oscuro profesional */
+            color: #1e293b;
             letter-spacing: -0.3px;
             line-height: 1.4;
             transition: color 0.3s;
         }
         
         .card:hover h3 {
-            color: #2563eb; /* El texto se ilumina con el color primario del sistema */
-        }
-        .card h3 {
-            margin: 0;
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--dark);
-            letter-spacing: -0.3px;
-            line-height: 1.3;
+            color: #2563eb;
         }
 
         /* --- ESTILIZACIÓN DE CONTADORES SUPERIORES --- */
         .container-stats-header { 
             display: flex; 
             gap: 20px; 
-            margin-top: 20px !important; 
+            margin-top: 35px !important; 
+            margin-bottom: 30px; 
             justify-content: center; 
             flex-wrap: wrap; 
         }
@@ -369,7 +361,7 @@
             border-radius: 16px; 
             padding: 16px 28px; 
             min-width: 160px; 
-            text-align: left; /* Alineado a la izquierda para verse tipo KPI ejecutivo */
+            text-align: left; 
             cursor: pointer; 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             color: white; 
@@ -396,7 +388,7 @@
         .stat-box span { font-weight: 800; font-size: 24px; line-height: 1; }
         .stat-box small { font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; font-size: 0.68rem; opacity: 0.9; margin-bottom: 2px; }
 
-        .modulo { display: none; background: white; padding: 25px; border-radius: 20px; min-height: 550px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); animation: fadeIn 0.3s ease; }
+        .modulo { display: none; background: white; padding: 25px; border-radius: 20px; min-height: 550px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); animation: fadeIn 0.3s ease; width: 100%; box-sizing: border-box; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
         
         .btn-agregar-master { background: linear-gradient(135deg, #2563eb, #1e40af); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; text-transform: uppercase; font-size: 0.8rem; }
@@ -460,7 +452,6 @@
         .search-container { display: flex; gap: 10px; margin-bottom: 15px; background: #f8fafc; padding: 10px; border-radius: 10px; flex-wrap: wrap; }
         .mantenimiento-item { border-bottom: 1px solid #eee; padding: 10px 0; }
 
-
         /* Mejoras de estilo para el calendario */
         #calendar { min-height: 640px; }
         #calendar .fc-daygrid-event {
@@ -497,393 +488,293 @@
         .action-item { font-size: 11px; display: flex; align-items: center; gap: 4px; color: var(--gray); font-weight: 600; cursor: pointer; }
 
         /* Mejora de la fuente en el área de descripción */
-    #tk_desc {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        font-size: 16px; /* Aumentamos el tamaño */
-        line-height: 1.5;
-        padding: 12px;
-        border: 2px solid #e2e8f0;
-        transition: border-color 0.3s;
-    }
-
-    #tk_desc:focus {
-        border-color: var(--primary);
-        outline: none;
-    }
-
-    /* Diseño mejorado para el contenedor del formulario de tickets */
-    #mod_enviar_ticket .grid-bonito {
-        background: #ffffff;
-        padding: 30px;
-        border-radius: 15px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        border: 1px solid #edf2f7;
-    }
-
-    #mod_enviar_ticket h2 {
-        font-size: 1.8rem;
-        margin-bottom: 25px;
-        letter-spacing: -0.5px;
-    }
-
-    /* Estilo para los iconos en las etiquetas */
-    .campo-group label i {
-        margin-right: 8px;
-        color: var(--primary);
-        width: 18px;
-        text-align: center;
-    }
-
-    /* Estilos para el Modal de Notificación */
-.modal-notif {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(5px);
-    align-items: center;
-    justify-content: center;
-    padding-top: 90px;
-    box-sizing: border-box;
-}
-
-.modal-notif-content {
-    background: white;
-    padding: 40px;
-    border-radius: 24px;
-    text-align: center;
-    max-width: 400px;
-    width: 90%;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    animation: modalSlideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-@keyframes modalSlideUp {
-    from { opacity: 0; transform: translateY(30px) scale(0.9); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.icon-circle {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 40px;
-    margin: 0 auto 20px;
-}
-
-.icon-circle.success {
-    background: #ecfdf5;
-    color: #10b981;
-    border: 4px solid #f0fdf4;
-}
-
-.btn-confirm {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 14px 40px;
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    width: 100%;
-    font-size: 1rem;
-    transition: all 0.3s;
-    margin-top: 10px;
-}
-
-.btn-confirm:hover {
-    background: #1e40af;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
-}
-
-/* Estilos para el Modal de Notificación Universal */
-.modal-notif {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background: rgba(15, 23, 42, 0.8);
-    backdrop-filter: blur(5px);
-    align-items: center; justify-content: center;
-}
-
-.modal-notif-content {
-    background: white;
-    padding: 35px;
-    border-radius: 24px;
-    text-align: center;
-    max-width: 380px;
-    width: 90%;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-    animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes modalPop {
-    from { opacity: 0; transform: scale(0.8); }
-    to { opacity: 1; transform: scale(1); }
-}
-
-.icon-circle {
-    width: 70px; height: 70px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 30px; margin: 0 auto 15px;
-}
-
-/* Variaciones de Iconos */
-.icon-success { background: #ecfdf5; color: #10b981; border: 3px solid #d1fae5; }
-.icon-danger { background: #fef2f2; color: #ef4444; border: 3px solid #fee2e2; }
-
-.btn-notif {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: 0.2s;
-}
-
-.btn-notif-confirm { background: var(--primary); color: white; }
-.btn-notif-danger { background: var(--danger); color: white; }
-.btn-notif-cancel { background: var(--bg); color: var(--gray); }
-
-/* Color para advertencias/errores en el icono */
-.icon-warning { 
-    background: #fffbeb; 
-    color: #f59e0b; 
-    border: 3px solid #fef3c7; 
-}
-
-/* --- DISEÑO ADAPTATIVO AVANZADO --- */
-/* 1. Forzamos que los módulos nazcan ocultos para evitar el parpadeo */
-.modulo {
-    display: none; 
-    background: white;
-    padding: 25px;
-    border-radius: 20px;
-    min-height: 550px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-    animation: fadeIn 0.3s ease;
-    width: 100%;
-    box-sizing: border-box; /* Vital para que el padding no desplace el contenido */
-}
-
-#mod_enviar_ticket.modulo {
-    display: none; /* Asegura que no parpadee al cargar */
-    flex-direction: column;
-    align-items: center;
-    background-color: #f8fafc;
-    width: 100%;
-    padding: 20px;
-}
-
-/* Contenedor tipo tarjeta centrado */
-.ticket-card {
-    background: white;
-    width: 100%;
-    max-width: 850px; 
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-    border: 1px solid #edf2f7;
-    margin: 20px auto; /* Centrado horizontal en PC */
-    box-sizing: border-box;
-}
-
-/* Sistema de Rejilla para los campos */
-.ticket-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2 Columnas en PC */
-    gap: 20px;
-    margin-top: 20px;
-}
-
-/* Clase para elementos que ocupan todo el ancho (Nombre, Descripción, Botón) */
-.span-full {
-    grid-column: span 2;
-}
-
-/* Reglas específicas para Celulares (Centrado Perfecto) */
-    @media (max-width: 768px) {
-        #mod_enviar_ticket {
-            padding: 10px !important; /* Espacio uniforme en los 4 lados */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        #tk_desc {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            transition: border-color 0.3s;
         }
 
-        #mod_enviar_ticket .ticket-card {
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 10px 0 !important; /* Elimina márgenes laterales que puedan empujar */
-            padding: 20px !important;
-            box-sizing: border-box; /* Asegura que el padding no estire el div */
+        #tk_desc:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        /* Diseño mejorado para el contenedor del formulario de tickets */
+        #mod_enviar_ticket .grid-bonito {
+            background: #ffffff;
+            padding: 30px;
             border-radius: 15px;
-        }
-
-        #mod_enviar_ticket .grid-bonito, 
-        #mod_enviar_ticket .ticket-grid {
-            grid-template-columns: 1fr !important; 
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important; /* El padding ya lo da la card */
-        }
-
-        /* Ajuste para que los inputs no se salgan */
-        #mod_enviar_ticket input, 
-        #mod_enviar_ticket select, 
-        #mod_enviar_ticket textarea {
-            width: 100% !important;
-            box-sizing: border-box;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #edf2f7;
         }
 
         #mod_enviar_ticket h2 {
-            font-size: 1.3rem;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            letter-spacing: -0.5px;
+        }
+
+        .campo-group label i {
+            margin-right: 8px;
+            color: var(--primary);
+            width: 18px;
             text-align: center;
         }
-    }
 
-    /* Estilos para los selectores de estado en el chequeo */
-.estado-selector {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 5px;
-}
-.btn-estado {
-    flex: 1;
-    padding: 8px;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    background: white;
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 0.75rem;
-    transition: 0.3s;
-    color: var(--gray);
-}
-.btn-estado.active-funcional {
-    background-color: #dcfce7;
-    border-color: #22c55e;
-    color: #166534;
-}
-.btn-estado.active-falla {
-    background-color: #fee2e2;
-    border-color: #ef4444;
-    color: #991b1b;
-}
-.chequeo-item-label {
-    font-weight: 700;
-    font-size: 0.8rem;
-    color: var(--dark);
-    margin-top: 10px;
-    display: block;
-}
+        /* Estilos para el Modal de Notificación Universal */
+        .modal-notif {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(5px);
+            align-items: center; justify-content: center;
+        }
 
-.card-chequeo {
-    background: #f8fafc;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 15px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-}
-.card-chequeo-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #e2e8f0;
-    padding-bottom: 8px;
-    margin-bottom: 10px;
-}
-.card-chequeo-header b { font-size: 0.85rem; color: var(--dark); }
-.card-chequeo-header small { color: var(--gray); font-size: 0.75rem; }
+        .modal-notif-content {
+            background: white;
+            padding: 35px;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 380px;
+            width: 90%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
 
-.grid-resultados-hist {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-}
-.res-item {
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 4px 8px;
-    border-radius: 6px;
-    display: flex;
-    justify-content: space-between;
-}
-.res-funcional { background: #dcfce7; color: #166534; }
-.res-falla { background: #fee2e2; color: #991b1b; }
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
 
-/* --- DISEÑO PERSONALIZACIÓN VISUAL (REFORMADO Y RESPONSIVO) --- */
-.config-grid-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 20px;
-    padding: 10px 0;
-}
+        .icon-circle {
+            width: 70px; height: 70px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 30px; margin: 0 auto 15px;
+        }
 
-.config-card {
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
+        /* Variaciones de Iconos */
+        .icon-success { background: #ecfdf5; color: #10b981; border: 3px solid #d1fae5; }
+        .icon-danger { background: #fef2f2; color: #ef4444; border: 3px solid #fee2e2; }
+        .icon-warning { background: #fffbeb; color: #f59e0b; border: 3px solid #fef3c7; }
 
-.config-card-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-bottom: 2px solid #f1f5f9;
-    padding-bottom: 12px;
-}
+        .btn-notif {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.2s;
+        }
 
-.config-card-header i {
-    font-size: 1.5rem;
-    min-width: 45px;
-    height: 45px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #f8fafc;
-    border-radius: 10px;
-}
+        .btn-notif-confirm { background: var(--primary); color: white; }
+        .btn-notif-danger { background: var(--danger); color: white; }
+        .btn-notif-cancel { background: var(--bg); color: var(--gray); }
 
-.grid-colores-acciones {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 10px;
-}
+        #mod_enviar_ticket.modulo {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f8fafc;
+            width: 100%;
+            padding: 20px;
+        }
 
-/* Ajustes para dispositivos móviles */
-@media (max-width: 600px) {
-    .config-grid-cards {
-        grid-template-columns: 1fr; /* Una sola columna en móvil */
-    }
-    
-    .grid-colores-acciones {
-        grid-template-columns: 1fr 1fr; /* Dos columnas pequeñas de colores */
-    }
+        .ticket-card {
+            background: white;
+            width: 100%;
+            max-width: 850px; 
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid #edf2f7;
+            margin: 20px auto;
+            box-sizing: border-box;
+        }
 
-    .config-card {
-        padding: 15px;
-    }
-}
+        .ticket-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
 
-/* --- REDISEÑO PREMIUM PARA MODALES DE VISUALIZACIÓN --- */
+        .span-full {
+            grid-column: span 2;
+        }
+
+        @media (max-width: 768px) {
+            #mod_enviar_ticket {
+                padding: 10px !important;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #mod_enviar_ticket .ticket-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 10px 0 !important;
+                padding: 20px !important;
+                box-sizing: border-box;
+                border-radius: 15px;
+            }
+
+            #mod_enviar_ticket .grid-bonito, 
+            #mod_enviar_ticket .ticket-grid {
+                grid-template-columns: 1fr !important; 
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            #mod_enviar_ticket input, 
+            #mod_enviar_ticket select, 
+            #mod_enviar_ticket textarea {
+                width: 100% !important;
+                box-sizing: border-box;
+            }
+
+            #mod_enviar_ticket h2 {
+                font-size: 1.3rem;
+                text-align: center;
+            }
+        }
+
+        .estado-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        .btn-estado {
+            flex: 1;
+            padding: 8px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.75rem;
+            transition: 0.3s;
+            color: var(--gray);
+        }
+        .btn-estado.active-funcional {
+            background-color: #dcfce7;
+            border-color: #22c55e;
+            color: #166534;
+        }
+        .btn-estado.active-falla {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+        .chequeo-item-label {
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--dark);
+            margin-top: 10px;
+            display: block;
+        }
+
+        .card-chequeo {
+            background: #f8fafc;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .card-chequeo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+        .card-chequeo-header b { font-size: 0.85rem; color: var(--dark); }
+        .card-chequeo-header small { color: var(--gray); font-size: 0.75rem; }
+
+        .grid-resultados-hist {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .res-item {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .res-funcional { background: #dcfce7; color: #166534; }
+        .res-falla { background: #fee2e2; color: #991b1b; }
+
+        .config-grid-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            padding: 10px 0;
+        }
+
+        .config-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .config-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 12px;
+        }
+
+        .config-card-header i {
+            font-size: 1.5rem;
+            min-width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8fafc;
+            border-radius: 10px;
+        }
+
+        .grid-colores-acciones {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .config-grid-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .grid-colores-acciones {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .config-card {
+                padding: 15px;
+            }
+        }
+
         .modal-view-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -893,7 +784,7 @@
         }
 
         .modal-view-card {
-            background: #f8fafc; /* Fondo gris pizarra muy suave */
+            background: #f8fafc;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 14px 18px;
@@ -913,7 +804,7 @@
         .modal-view-card label {
             font-size: 0.68rem;
             font-weight: 800;
-            color: #64748b; /* Gris sofisticado para las etiquetas */
+            color: #64748b;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -921,15 +812,12 @@
         .modal-view-card span {
             font-size: 0.9rem;
             font-weight: 600;
-            color: #1e293b; /* Texto oscuro de alta lectura */
-            
-            /* --- NUEVO: CONTROL ULTRA DE DESBORDE VERTICAL --- */
-            white-space: pre-wrap;       /* Respeta saltos de línea automáticos y manuales */
-            word-wrap: break-word;       /* Rompe cadenas de texto largas si es necesario */
-            word-break: break-word;      /* Fuerza el salto al llegar al límite del contenedor */
+            color: #1e293b;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            word-break: break-word;
         }
 
-        /* Contenedores especiales para campos anchos (como descripciones o respuestas) */
         .modal-view-full {
             grid-column: span 2;
         }
@@ -941,7 +829,7 @@
         }
 
         .modal-view-highlight {
-            background: #eff6ff !important; /* Tono azul sutil para resaltar datos clave */
+            background: #eff6ff !important;
             border-color: #bfdbfe !important;
         }
 
@@ -950,7 +838,7 @@
         }
 
         .modal-view-success {
-            background: #f0fdf4 !important; /* Tono verde para respuestas o soluciones exitosas */
+            background: #f0fdf4 !important;
             border-color: #bbf7d0 !important;
         }
 
@@ -958,9 +846,8 @@
             color: #15803d !important;
         }
 
-        /* --- COLORES DINÁMICOS PARA TARJETAS DE PRIORIDAD --- */
         .prioridad-baja {
-            background: #f0fdf4 !important; /* Verde menta suave */
+            background: #f0fdf4 !important;
             border-color: #bbf7d0 !important;
         }
         .prioridad-baja span {
@@ -968,7 +855,7 @@
         }
 
         .prioridad-media {
-            background: #fffbeb !important; /* Ámbar/Naranja suave */
+            background: #fffbeb !important;
             border-color: #fef3c7 !important;
         }
         .prioridad-media span {
@@ -976,15 +863,14 @@
         }
 
         .prioridad-alta {
-            background: #fef2f2 !important; /* Rojo carmesí suave */
+            background: #fef2f2 !important;
             border-color: #fee2e2 !important;
         }
         .prioridad-alta span {
             color: #991b1b !important;
-            font-weight: 800 !important; /* Un poco más grueso por ser alerta */
+            font-weight: 800 !important;
         }
 
-        /* --- ANIMACIÓN PREMIUM PARA ELEMENTOS EN PROCESO --- */
         @keyframes pulso-proceso {
             0% {
                 box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5);
@@ -992,7 +878,7 @@
             }
             50% {
                 box-shadow: 0 0 0 10px rgba(245, 158, 11, 0);
-                transform: scale(1.02); /* Crece sutilmente */
+                transform: scale(1.02);
             }
             100% {
                 box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
@@ -1000,26 +886,16 @@
             }
         }
 
-        /* Clase animada para las tarjetas en proceso */
         .animacion-proceso {
             animation: pulso-proceso 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
-            border: 1.5px solid var(--warning) !important; /* Resalta el borde en naranja */
-        }
-
-        /* --- AJUSTE DE ESPACIADO DE LOS CONTADORES (SEPARACIÓN DEL HEADER) --- */
-        .container-stats-header { 
-            display: flex; 
-            gap: 20px; 
-            margin-top: 35px !important;    /* <-- NUEVO: Descolgar del header para que respire */
-            margin-bottom: 30px; 
-            justify-content: center; 
-            flex-wrap: wrap; 
+            border: 1.5px solid var(--warning) !important;
         }
     </style>
 </head>
+<body>
 
 <div class="banner-mantenimiento">
-  ⚠️ <strong>Aviso:</strong> Mantenimiento programado para el: <span id="fecha-aviso">Cargando fecha...</span>
+    ⚠️ <strong>Aviso:</strong> Mantenimiento programado para el: <span id="fecha-aviso">Cargando fecha...</span>
 </div>
     
 <div id="modalChequeoAula" class="modal">
@@ -1079,12 +955,11 @@
         </div>
         <h3 id="alertTitle">Título</h3>
         <p id="alertMessage">Mensaje de la operación.</p>
-        <div id="alertButtons" style="display:flex; gap:10px; margin-top:20px;">
-            </div>
+        <div id="alertButtons" style="display:flex; gap:10px; margin-top:20px;"></div>
     </div>
 </div>
 
-<header>
+<header id="main_header">
     <strong><i class="fas fa-laptop-code" style="margin-right: 8px; color: #3b82f6;"></i>SISPRO UNICIENCIA - SISTEMA DE TICKETS E INVENTARIO</strong>
     <div style="display:flex; align-items:center; gap:15px;">
         <span id="user_info"><i class="fas fa-user-circle"></i> Cargando usuario...</span>
@@ -1119,225 +994,225 @@
 </div>
 
 <div class="container-stats-header" id="stats_contadores_visibles" style="display:none;">
-        <div class="stat-box abierto" onclick="abrir('mod_admin_tickets')">
-            <i class="fas fa-folder-open"></i>
-            <div class="stat-box-info">
-                <small>Abiertos</small>
-                <span id="count_abiertos">0</span>
-            </div>
+    <div class="stat-box abierto" onclick="abrir('mod_admin_tickets')">
+        <i class="fas fa-folder-open"></i>
+        <div class="stat-box-info">
+            <small>Abiertos</small>
+            <span id="count_abiertos">0</span>
         </div>
-        
-        <div class="stat-box proceso" id="box_proceso" onclick="abrir('mod_admin_tickets')">
-            <i class="fas fa-spinner" id="icono_proceso"></i>
-            <div class="stat-box-info">
-                <small>En Proceso</small>
-                <span id="count_proceso">0</span>
-            </div>
+    </div>
+    
+    <div class="stat-box proceso" id="box_proceso" onclick="abrir('mod_admin_tickets')">
+        <i class="fas fa-spinner" id="icono_proceso"></i>
+        <div class="stat-box-info">
+            <small>En Proceso</small>
+            <span id="count_proceso">0</span>
         </div>
-        
-        <div class="stat-box cerrado" onclick="abrir('mod_historico_cerrados')">
-            <i class="fas fa-check-circle"></i>
-            <div class="stat-box-info">
-                <small>Cerrados</small>
-                <span id="count_cerrados">0</span>
-            </div>
+    </div>
+    
+    <div class="stat-box cerrado" onclick="abrir('mod_historico_cerrados')">
+        <i class="fas fa-check-circle"></i>
+        <div class="stat-box-info">
+            <small>Cerrados</small>
+            <span id="count_cerrados">0</span>
+        </div>
+    </div>
+</div>
+
+<div id="panel-principal" class="grid-main">
+    <div class="card" id="card_mis_tickets" onclick="abrir('mod_mis_tickets')"><i class="fas fa-ticket-alt"></i><h3>Mis Tickets</h3></div>
+    <div class="card" id="card_enviar_ticket" onclick="abrir('mod_enviar_ticket')"><i class="fas fa-paper-plane"></i><h3>Enviar Ticket</h3></div>
+    <div class="card" id="card_admin_tickets" onclick="abrir('mod_admin_tickets')"><i class="fas fa-tasks"></i><h3>Admin Tickets</h3></div>
+    <div class="card" id="card_historico_cerrados" onclick="abrir('mod_historico_cerrados')"><i class="fas fa-archive"></i><h3>Histórico Tickets Cerrados</h3></div>
+    
+    <div class="card" id="card_inv_admin" onclick="abrir_maestro('inventario', 'Equipos Administrativos')"><i class="fas fa-laptop"></i><h3>Equipos Administrativos</h3></div>
+    <div class="card" id="card_inv_salas" onclick="abrir_maestro('inventario_salas', 'Equipos Salas')"><i class="fas fa-desktop"></i><h3>Equipos Salas</h3></div>
+    <div class="card" id="card_inv_obsoletos" onclick="abrir_maestro('equipos_obsoletos', 'Equipos Obsoletos')"><i class="fas fa-dumpster"></i><h3>Equipos Obsoletos</h3></div>
+    <div class="card" id="card_extensiones" onclick="abrir_maestro('extensiones', 'Extensiones Administrativos')"><i class="fas fa-phone-volume"></i><h3>Extensiones Administrativos</h3></div>
+
+    <div class="card" id="card_calendario" onclick="abrir('mod_calendario')"><i class="fas fa-calendar-alt"></i><h3>Calendario</h3></div>
+    <div class="card" id="card_stats" onclick="abrir('mod_stats')"><i class="fas fa-chart-pie"></i><h3>Estadísticas</h3></div>
+    <div class="card" id="card_usuarios" onclick="abrir_maestro('usuarios', 'Usuarios')"><i class="fas fa-users-cog"></i><h3>Usuarios</h3></div>
+    <div class="card" id="card_aulas" onclick="abrir_maestro('aulas_dti', 'Aulas DTI')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
+    <div class="card" id="card_impresoras" onclick="abrir_maestro('impresoras', 'Impresoras')"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
+    <div class="card" id="card_gest_mantenimientos" onclick="abrir('mod_gest_mantenimientos')"><i class="fas fa-tools"></i><h3>Gestión Mantenimientos</h3></div>
+    <div class="card" id="card_preferencias" onclick="abrir('mod_preferencias')"><i class="fas fa-cogs"></i><h3>Gestión Preferencias</h3></div>
+    <div class="card" id="card_config_visual" onclick="abrir('mod_config_visual')"><i class="fas fa-palette"></i><h3>Personalización</h3></div>
+    <div class="card" id="card_cargar_csv" onclick="abrir('mod_cargar_csv')">
+        <i class="fas fa-file-csv"></i>
+        <h3>Cargar Equipos CSV</h3>
+    </div>
+</div>
+
+<div id="mod_historico_cerrados" class="modulo">
+    <button onclick="volver()" class="btn-gray">⬅ Volver</button>
+    <h2 style="margin-top:15px;"><i class="fas fa-archive"></i> Histórico de Tickets Cerrados</h2>
+    
+    <div class="search-container">
+        <div class="campo-group" style="flex:1;">
+            <label>Dependencia</label>
+            <input type="text" id="filtro_hist_dep" placeholder="Filtrar por dependencia..." onkeyup="filtrarHistoricoCerrados()">
+        </div>
+        <div class="campo-group" style="flex:1;">
+            <label>Campus</label>
+            <select id="filtro_hist_campus" onchange="filtrarHistoricoCerrados()">
+                <option value="">Todos los Campus</option>
+                <option>Bucaramanga</option>
+                <option>Bogotá</option>
+                <option>Tunja</option>
+            </select>
+        </div>
+        <div class="campo-group" style="flex:1;">
+            <label>Gestor</label>
+            <select id="filtro_hist_gestor" onchange="filtrarHistoricoCerrados()">
+                <option value="">Todos los Gestores</option>
+            </select>
         </div>
     </div>
 
-    <div id="panel-principal" class="grid-main">
-        <div class="card" id="card_mis_tickets" onclick="abrir('mod_mis_tickets')"><i class="fas fa-ticket-alt"></i><h3>Mis Tickets</h3></div>
-        <div class="card" id="card_enviar_ticket" onclick="abrir('mod_enviar_ticket')"><i class="fas fa-paper-plane"></i><h3>Enviar Ticket</h3></div>
-        <div class="card" id="card_admin_tickets" onclick="abrir('mod_admin_tickets')"><i class="fas fa-tasks"></i><h3>Admin Tickets</h3></div>
-        <div class="card" id="card_historico_cerrados" onclick="abrir('mod_historico_cerrados')"><i class="fas fa-archive"></i><h3>Histórico Tickets Cerrados</h3></div>
-        
-        <div class="card" id="card_inv_admin" onclick="abrir_maestro('inventario', 'Equipos Administrativos')"><i class="fas fa-laptop"></i><h3>Equipos Administrativos</h3></div>
-        <div class="card" id="card_inv_salas" onclick="abrir_maestro('inventario_salas', 'Equipos Salas')"><i class="fas fa-desktop"></i><h3>Equipos Salas</h3></div>
-        <div class="card" id="card_inv_obsoletos" onclick="abrir_maestro('equipos_obsoletos', 'Equipos Obsoletos')"><i class="fas fa-dumpster"></i><h3>Equipos Obsoletos</h3></div>
-        <div class="card" id="card_extensiones" onclick="abrir_maestro('extensiones', 'Extensiones Administrativos')"><i class="fas fa-phone-volume"></i><h3>Extensiones Administrativos</h3></div>
-
-        <div class="card" id="card_calendario" onclick="abrir('mod_calendario')"><i class="fas fa-calendar-alt"></i><h3>Calendario</h3></div>
-        <div class="card" id="card_stats" onclick="abrir('mod_stats')"><i class="fas fa-chart-pie"></i><h3>Estadísticas</h3></div>
-        <div class="card" id="card_usuarios" onclick="abrir_maestro('usuarios', 'Usuarios')"><i class="fas fa-users-cog"></i><h3>Usuarios</h3></div>
-        <div class="card" id="card_aulas" onclick="abrir_maestro('aulas_dti', 'Aulas DTI')"><i class="fas fa-school"></i><h3>Aulas DTI</h3></div>
-        <div class="card" id="card_impresoras" onclick="abrir_maestro('impresoras', 'Impresoras')"><i class="fas fa-print"></i><h3>Impresoras</h3></div>
-        <div class="card" id="card_gest_mantenimientos" onclick="abrir('mod_gest_mantenimientos')"><i class="fas fa-tools"></i><h3>Gestión Mantenimientos</h3></div>
-        <div class="card" id="card_preferencias" onclick="abrir('mod_preferencias')"><i class="fas fa-cogs"></i><h3>Gestión Preferencias</h3></div>
-        <div class="card" id="card_config_visual" onclick="abrir('mod_config_visual')"><i class="fas fa-palette"></i><h3>Personalización</h3></div>
-        <div class="card" id="card_cargar_csv" onclick="abrir('mod_cargar_csv')">
-            <i class="fas fa-file-csv"></i>
-            <h3>Cargar Equipos CSV</h3>
-        </div>
+    <div style="overflow-x:auto; margin-top:15px;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Solicitado Por</th>
+                    <th>Tipo</th>
+                    <th>Dependencia</th>
+                    <th>Prioridad</th>
+                    <th>Campus</th>
+                    <th>Gestores</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tbody_historico_cerrados"></tbody>
+        </table>
     </div>
+</div>
 
-    <div id="mod_historico_cerrados" class="modulo">
+<div id="mod_preferencias" class="modulo">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <button onclick="volver()" class="btn-gray">⬅ Volver</button>
-        <h2 style="margin-top:15px;"><i class="fas fa-archive"></i> Histórico de Tickets Cerrados</h2>
-        
-        <div class="search-container">
-            <div class="campo-group" style="flex:1;">
-                <label>Dependencia</label>
-                <input type="text" id="filtro_hist_dep" placeholder="Filtrar por dependencia..." onkeyup="filtrarHistoricoCerrados()">
-            </div>
-            <div class="campo-group" style="flex:1;">
-                <label>Campus</label>
-                <select id="filtro_hist_campus" onchange="filtrarHistoricoCerrados()">
-                    <option value="">Todos los Campus</option>
-                    <option>Bucaramanga</option>
-                    <option>Bogotá</option>
-                    <option>Tunja</option>
-                </select>
-            </div>
-            <div class="campo-group" style="flex:1;">
-                <label>Gestor</label>
-                <select id="filtro_hist_gestor" onchange="filtrarHistoricoCerrados()">
-                    <option value="">Todos los Gestores</option>
-                </select>
-            </div>
-        </div>
-
-        <div style="overflow-x:auto; margin-top:15px;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Solicitado Por</th>
-                        <th>Tipo</th>
-                        <th>Dependencia</th>
-                        <th>Prioridad</th>
-                        <th>Campus</th>
-                        <th>Gestores</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody_historico_cerrados"></tbody>
-            </table>
-        </div>
+        <h2 style="margin:0;"><i class="fas fa-cogs"></i> Gestión de Preferencias y Roles</h2>
+        <button class="btn-agregar-master" onclick="abrirModalRol('nuevo')"><i class="fas fa-plus"></i> Agregar Rol</button>
     </div>
-
-    <div id="mod_preferencias" class="modulo">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <button onclick="volver()" class="btn-gray">⬅ Volver</button>
-            <h2 style="margin:0;"><i class="fas fa-cogs"></i> Gestión de Preferencias y Roles</h2>
-            <button class="btn-agregar-master" onclick="abrirModalRol('nuevo')"><i class="fas fa-plus"></i> Agregar Rol</button>
-        </div>
-        <div style="overflow-x:auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Nombre del Rol</th>
-                        <th>Módulos Visibles</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody_roles"></tbody>
-            </table>
-        </div>
+    <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre del Rol</th>
+                    <th>Módulos Visibles</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tbody_roles"></tbody>
+        </table>
     </div>
+</div>
 
-    <div id="mod_gest_mantenimientos" class="modulo">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <button onclick="volver()" class="btn-gray">⬅ Volver</button>
-            <h2 style="margin:0;"><i class="fas fa-tools"></i> Gestión de Mantenimientos</h2>
-            <button class="btn-agregar-master" onclick="abrirModalNuevoMantenimientoGestion()"><i class="fas fa-plus"></i> Registrar Nuevo</button>
-        </div>
-        <div style="overflow-x:auto; margin-top:15px;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Equipo</th>
-                        <th>Ubicación</th>
-                        <th>Tipo</th>
-                        <th>Descripción</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody_gest_mantenimientos"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="mod_maestro" class="modulo">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <button onclick="volver()" class="btn-gray">⬅ Volver</button>
-            <h2 id="m_titulo" style="margin:0;"></h2>
-            <button class="btn-agregar-master" id="btn_maestro_nuevo" onclick="abrirModalRegistro('nuevo')"><i class="fas fa-plus"></i> Nuevo</button>
-        </div>
-        <div class="search-container" id="m_search_container" style="display:none;">
-            <input type="text" id="m_search" placeholder="Buscar..." style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;" onkeyup="filtrarMaestro()">
-        </div>
-        <div id="maestro_filter_panel" style="display:none; gap: 12px; margin-bottom: 15px; padding: 14px; border: 1px solid #e5e7eb; border-radius: 14px; background: #f8fafc;">
-            <div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit,minmax(220px,1fr));">
-                <div class="campo-group"><label>Inventario</label><input type="text" id="filtro_inv_num" placeholder="Buscar inventario..." style="width:100%;"></div>
-                <div class="campo-group"><label>Nombre Responsable</label><input type="text" id="filtro_responsable" placeholder="Buscar persona..." style="width:100%;"></div>
-                <div class="campo-group"><label>Campus</label><input type="text" id="filtro_cam" placeholder="Buscar campus..." style="width:100%;"></div>
-                <div class="campo-group"><label>Fecha de Mantenimiento</label><input type="date" id="filtro_fecha_mantenimiento" style="width:100%;"></div>
-                <div class="campo-group"><label>IP</label><input type="text" id="filtro_ip" placeholder="Buscar IP..." style="width:100%;"></div>
-            </div>
-            <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:8px;">
-                <button class="btn-gray" onclick="limpiarFiltroMaestro()" style="padding:10px 16px;">Limpiar filtro</button>
-                <button class="btn-agregar-master" onclick="aplicarFiltroMaestro()" style="padding:10px 16px;">Aplicar filtro</button>
-            </div>
-        </div>
-        <div style="overflow-x:auto;"><table><thead id="m_thead"></thead><tbody id="m_tbody"></tbody></table></div>
-    </div>
-
-    <div id="mod_mis_tickets" class="modulo">
+<div id="mod_gest_mantenimientos" class="modulo">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <button onclick="volver()" class="btn-gray">⬅ Volver</button>
-        <div id="mis_tk_container" class="grid-main" style="margin-top:20px;"></div>
+        <h2 style="margin:0;"><i class="fas fa-tools"></i> Gestión de Mantenimientos</h2>
+        <button class="btn-agregar-master" onclick="abrirModalNuevoMantenimientoGestion()"><i class="fas fa-plus"></i> Registrar Nuevo</button>
     </div>
-
-    <div id="mod_admin_tickets" class="modulo">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-            <button onclick="volver()" class="btn-gray">⬅ Volver</button>
-            <h2 style="margin:0; color:var(--dark);">Administración de Tickets</h2>
-            <button id="btn_eliminar_todos_tk_admin" onclick="eliminarTodosLosTickets()" style="background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; display: none; align-items: center; gap: 8px; font-size: 0.8rem; text-transform: uppercase;">
-                <i class="fas fa-trash-alt"></i> Eliminar Todos
-            </button>
-        </div>
-        <div style="overflow-x:auto;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Usuario</th>
-                        <th>Tipo</th>
-                        <th>Estado</th>
-                        <th>Gestor</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tbody_admin_tickets"></tbody>
-            </table>
-        </div>
+    <div style="overflow-x:auto; margin-top:15px;">
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Equipo</th>
+                    <th>Ubicación</th>
+                    <th>Tipo</th>
+                    <th>Descripción</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tbody_gest_mantenimientos"></tbody>
+        </table>
     </div>
+</div>
 
-    <div id="mod_stats" class="modulo">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <button onclick="volver()" class="btn-gray">Volver</button>
-            <div style="display:flex; align-items:center; gap:10px;">
-                <label style="font-weight:bold; font-size:0.8rem;">Filtrar por:</label>
-                <select id="filtro_stats" onchange="cargarGraficaActualizada()" style="padding:8px; border-radius:8px; border:1px solid #ddd;">
-                    <option value="estado">Estado del Ticket</option>
-                    <option value="tipo">Tipo de Requerimiento</option>
-                    <option value="asignado">Gestor Asignado</option>
-                    <option value="campus">Campus</option>
-                </select>
-            </div>
-        </div>
-        <div style="position: relative; height: 400px; width: 100%; max-width: 750px; margin: 0 auto;">
-            <canvas id="miGrafica"></canvas>
-        </div>
-    </div>
-
-    <div id="mod_calendario" class="modulo">
+<div id="mod_maestro" class="modulo">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <button onclick="volver()" class="btn-gray">⬅ Volver</button>
-        <h3 style="margin-top:15px; color:var(--dark);"><i class="fas fa-tools"></i> Cronograma de Mantenimientos</h3>
-        <div id="calendar" style="margin-top:10px;"></div>
+        <h2 id="m_titulo" style="margin:0;"></h2>
+        <button class="btn-agregar-master" id="btn_maestro_nuevo" onclick="abrirModalRegistro('nuevo')"><i class="fas fa-plus"></i> Nuevo</button>
     </div>
+    <div class="search-container" id="m_search_container" style="display:none;">
+        <input type="text" id="m_search" placeholder="Buscar..." style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;" onkeyup="filtrarMaestro()">
+    </div>
+    <div id="maestro_filter_panel" style="display:none; gap: 12px; margin-bottom: 15px; padding: 14px; border: 1px solid #e5e7eb; border-radius: 14px; background: #f8fafc;">
+        <div style="display:grid; gap:12px; grid-template-columns: repeat(auto-fit,minmax(220px,1fr));">
+            <div class="campo-group"><label>Inventario</label><input type="text" id="filtro_inv_num" placeholder="Buscar inventario..." style="width:100%;"></div>
+            <div class="campo-group"><label>Nombre Responsable</label><input type="text" id="filtro_responsable" placeholder="Buscar persona..." style="width:100%;"></div>
+            <div class="campo-group"><label>Campus</label><input type="text" id="filtro_cam" placeholder="Buscar campus..." style="width:100%;"></div>
+            <div class="campo-group"><label>Fecha de Mantenimiento</label><input type="date" id="filtro_fecha_mantenimiento" style="width:100%;"></div>
+            <div class="campo-group"><label>IP</label><input type="text" id="filtro_ip" placeholder="Buscar IP..." style="width:100%;"></div>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:8px;">
+            <button class="btn-gray" onclick="limpiarFiltroMaestro()" style="padding:10px 16px;">Limpiar filtro</button>
+            <button class="btn-agregar-master" onclick="aplicarFiltroMaestro()" style="padding:10px 16px;">Aplicar filtro</button>
+        </div>
+    </div>
+    <div style="overflow-x:auto;"><table><thead id="m_thead"></thead><tbody id="m_tbody"></tbody></table></div>
+</div>
 
-    <div id="mod_enviar_ticket" class="modulo">
+<div id="mod_mis_tickets" class="modulo">
+    <button onclick="volver()" class="btn-gray">⬅ Volver</button>
+    <div id="mis_tk_container" class="grid-main" style="margin-top:20px; display:grid;"></div>
+</div>
+
+<div id="mod_admin_tickets" class="modulo">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <button onclick="volver()" class="btn-gray">⬅ Volver</button>
+        <h2 style="margin:0; color:var(--dark);">Administración de Tickets</h2>
+        <button id="btn_eliminar_todos_tk_admin" onclick="eliminarTodosLosTickets()" style="background: var(--danger); color: white; border: none; padding: 10px 20px; border-radius: 10px; font-weight: 700; cursor: pointer; display: none; align-items: center; gap: 8px; font-size: 0.8rem; text-transform: uppercase;">
+            <i class="fas fa-trash-alt"></i> Eliminar Todos
+        </button>
+    </div>
+    <div style="overflow-x:auto;">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usuario</th>
+                    <th>Tipo</th>
+                    <th>Estado</th>
+                    <th>Gestor</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tbody_admin_tickets"></tbody>
+        </table>
+    </div>
+</div>
+
+<div id="mod_stats" class="modulo">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <button onclick="volver()" class="btn-gray">Volver</button>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <label style="font-weight:bold; font-size:0.8rem;">Filtrar por:</label>
+            <select id="filtro_stats" onchange="cargarGraficaActualizada()" style="padding:8px; border-radius:8px; border:1px solid #ddd;">
+                <option value="estado">Estado del Ticket</option>
+                <option value="tipo">Tipo de Requerimiento</option>
+                <option value="asignado">Gestor Asignado</option>
+                <option value="campus">Campus</option>
+            </select>
+        </div>
+    </div>
+    <div style="position: relative; height: 400px; width: 100%; max-width: 750px; margin: 0 auto;">
+        <canvas id="miGrafica"></canvas>
+    </div>
+</div>
+
+<div id="mod_calendario" class="modulo">
+    <button onclick="volver()" class="btn-gray">⬅ Volver</button>
+    <h3 style="margin-top:15px; color:var(--dark);"><i class="fas fa-tools"></i> Cronograma de Mantenimientos</h3>
+    <div id="calendar" style="margin-top:10px;"></div>
+</div>
+
+<div id="mod_enviar_ticket" class="modulo">
     <div style="width: 100%; max-width: 850px;">
         <button onclick="volver()" class="btn-gray">⬅ Volver</button>
     </div>
@@ -1405,7 +1280,7 @@
                     <option>Consultorio Jurídico (Asesores)</option>
                     <option>Asignación y Reparto</option>
                     <option>Consultorio Jurídico G-Púrpura</option>
-                    </select>
+                </select>
             </div>
             <div class="campo-group">
                 <label><i class="fas fa-tools"></i> Tipo de Requerimiento</label>
@@ -1614,8 +1489,7 @@
         </h3>
         <p id="hist_aula_nombre" style="text-align: center; font-weight: bold; color: var(--gray); margin-bottom: 20px;"></p>
         
-        <div id="hist_chequeos_container" style="display: flex; flex-direction: column; gap: 15px;">
-            </div>
+        <div id="hist_chequeos_container" style="display: flex; flex-direction: column; gap: 15px;"></div>
 
         <div style="margin-top: 25px; text-align: right;">
             <button class="btn-gray" onclick="cerrarModales()">Cerrar Historial</button>
@@ -1650,7 +1524,8 @@
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <button onclick="volver()" class="btn-gray">⬅ Volver</button>
         <h2 style="margin:0; color:var(--dark);"><i class="fas fa-file-csv"></i> Carga Masiva de Equipos (CSV)</h2>
-        <div></div> </div>
+        <div></div> 
+    </div>
     
     <div class="ticket-card" style="max-width: 750px; margin: 30px auto; text-align: center;">
         <i class="fas fa-cloud-upload-alt fa-4x" style="color: var(--primary); margin-bottom: 20px;"></i>
@@ -1721,19 +1596,15 @@
     const auth = firebase.auth();
     const storage = firebase.storage();
 
-    // --- CONTROLADORES GLOBALES DE ESTADO ---
-    // --- CONTROLADORES GLOBALES DE ESTADO ---
     let user, userRole, currentColl, localData = [], selectedId, modoModal = "nuevo", miChart = null, listaGestoresGlobal = [], nombreRealUsuario = "";
     let selectedMntId = null, selectedCollMnt = null, selectedEquipIdMnt = null;
     let listaRolesGlobal = [], dataHistoricoCerrados = [];
     let currentPermissions = {}; 
     let enviandoTicketActualmente = false; 
     
-    // --- CONFIGURACIONES LOCALES UNIFICADAS ---
-    let configVisualLocal = {}; // <-- Deja SOLAMENTE esta. Asegúrate de borrar 'estadosChequeoActual' de aquí si ya existe abajo.
+    let configVisualLocal = {};
     let estadosChequeoActual = { equipos: '', perifericos: '', red: '', aseo: '', video: '' };
 
-    // --- ARQUITECTURA DE MÓDULOS ---
     const MODULOS_SISTEMA = [
         {id: "card_mis_tickets", nom: "Mis Tickets", acts: ["Ver Detalle"]},
         {id: "card_enviar_ticket", nom: "Enviar Ticket", acts: ["Crear"]},
@@ -1753,7 +1624,6 @@
         {id: "card_inv_obsoletos", nom: "Equipos Obsoletos", acts: ["Crear", "Editar", "Eliminar", "Mantenimiento", "Historial", "Duplicar"]},
         {id: "card_cargar_csv", nom: "Cargar Equipos CSV", acts: ["Cargar Masivo"]} 
     ];
-
 
     function getBtnStyle(modId, nombreAccion) {
         const configMod = configVisualLocal[modId] || {};
@@ -1788,13 +1658,11 @@
                     listaRolesGlobal.push({id: doc.id, ...data});
                 });
 
-                // Si ya hay un usuario logueado, reaplicamos sus privilegios al instante
-                // para que cualquier cambio de rol en vivo surta efecto inmediatamente.
                 if (user && userRole) {
                     aplicarPrivilegios(userRole, nombreRealUsuario);
                 }
 
-                resolve(); // Libera el await inicial para que el sistema continúe cargando
+                resolve();
             });
         });
     }
@@ -1815,22 +1683,18 @@
                 }
             });
             
-            // Inyectar los números en las etiquetas
             if(document.getElementById('count_abiertos')) document.getElementById('count_abiertos').innerText = ab;
             if(document.getElementById('count_proceso')) document.getElementById('count_proceso').innerText = pr;
             if(document.getElementById('count_cerrados')) document.getElementById('count_cerrados').innerText = ce;
 
-            // --- LÓGICA DE ANIMACIÓN DINÁMICA ---
             const cajaProceso = document.getElementById('box_proceso');
             const iconoProceso = document.getElementById('icono_proceso');
 
             if (cajaProceso && iconoProceso) {
                 if (pr > 0) {
-                    // Si hay tickets en proceso: activamos el pulso y hacemos girar el icono
                     cajaProceso.classList.add('animacion-proceso');
                     iconoProceso.classList.add('fa-spin');
                 } else {
-                    // Si está en 0: removemos todo para que se quede estático y limpio
                     cajaProceso.classList.remove('animacion-proceso');
                     iconoProceso.classList.remove('fa-spin');
                 }
@@ -1851,35 +1715,31 @@
         });
     }
 
-    // --- NUEVO SISTEMA DE ROL EN TIEMPO REAL ---
     let unsubscribeUser = null;
 
-function verificarRol() {
-    if (!user) return;
+    function verificarRol() {
+        if (!user) return;
 
-    // Matamos el listener anterior si existe para evitar duplicados en memoria
-    if (unsubscribeUser) {
-        unsubscribeUser();
-    }
-
-    // Permiso maestro de seguridad
-    if (user.email.toLowerCase() === "camicarmona1212@gmail.com") {
-        aplicarPrivilegios("Admin", "Admin Maestro");
-        return;
-    }
-
-    // Limpiamos espacios y forzamos minúsculas para asegurar la coincidencia exacta
-    const correoLimpio = user.email.trim().toLowerCase();
-
-    unsubscribeUser = db.collection("usuarios").where("cor", "==", correoLimpio).onSnapshot(snap => {
-        if(!snap.empty) {
-            const d = snap.docs[0].data();
-            aplicarPrivilegios(d.rol, d.nom);
-        } else {
-            aplicarPrivilegios("Usuario", "Invitado");
+        if (unsubscribeUser) {
+            unsubscribeUser();
         }
-    });
-}
+
+        if (user.email.toLowerCase() === "camicarmona1212@gmail.com") {
+            aplicarPrivilegios("Admin", "Admin Maestro");
+            return;
+        }
+
+        const correoLimpio = user.email.trim().toLowerCase();
+
+        unsubscribeUser = db.collection("usuarios").where("cor", "==", correoLimpio).onSnapshot(snap => {
+            if(!snap.empty) {
+                const d = snap.docs[0].data();
+                aplicarPrivilegios(d.rol, d.nom);
+            } else {
+                aplicarPrivilegios("Usuario", "Invitado");
+            }
+        });
+    }
 
     function aplicarPrivilegios(rolAsignado, nombreReal) {
         userRole = rolAsignado;
@@ -1888,18 +1748,14 @@ function verificarRol() {
         const userInfoEl = document.getElementById('user_info');
         if (userInfoEl) userInfoEl.innerText = `${user.email} (${userRole})`;
 
-        // Ocultar todas las tarjetas y contadores para renderizar desde cero
         document.querySelectorAll('.card').forEach(el => el.style.display = 'none');
         const statsHeader = document.getElementById('stats_contadores_visibles');
         if(statsHeader) statsHeader.style.display = 'none';
 
-        // Inicializar permisos limpios
         currentPermissions = {};
         let modulosVisiblesIds = [];
 
-        // 1. EVALUACIÓN Y ASIGNACIÓN DE PERMISOS SEGÚN EL ROL
         if (userRole === "Admin") {
-            // El Administrador tiene acceso total a todos los módulos y todas sus acciones
             MODULOS_SISTEMA.forEach(m => {
                 currentPermissions[m.id] = [...m.acts];
                 modulosVisiblesIds.push(m.id);
@@ -1909,7 +1765,6 @@ function verificarRol() {
             if(btnEliminarTodos) btnEliminarTodos.style.display = 'flex';
 
         } else if (userRole === "Gestor") {
-            // Gestor recibe los módulos y acciones por defecto acordados, sin Reasignar en Admin Tickets
             const permisosGestor = {
                 "card_mis_tickets": ["Ver Detalle"],
                 "card_enviar_ticket": ["Crear"],
@@ -1931,7 +1786,6 @@ function verificarRol() {
             if(btnEliminarTodos) btnEliminarTodos.style.display = 'none';
 
         } else if (userRole === "Usuario") {
-            // Rol común de usuario final (Estudiante / Docente / Administrativo no TI)
             currentPermissions = {
                 "card_mis_tickets": ["Ver Detalle"],
                 "card_enviar_ticket": ["Crear"]
@@ -1941,20 +1795,15 @@ function verificarRol() {
             if(btnEliminarTodos) btnEliminarTodos.style.display = 'none';
 
         } else {
-            // ROLES PERSONALIZADOS: Buscar el rol dinámico creado en el módulo de preferencias
             const rolDB = listaRolesGlobal.find(r => r.nombre === userRole);
             if (rolDB) {
-                // Almacenar las acciones asignadas de forma limpia
                 currentPermissions = rolDB.accionesPermitidas || {};
-                // Los módulos visibles corresponden a las llaves que tienen acciones asignadas o al array de módulos
                 modulosVisiblesIds = rolDB.modulos || Object.keys(currentPermissions);
                 
-                // Mostrar contadores estadísticos superiores si el rol personalizado tiene acceso a Admin Tickets o Histórico
                 if ((modulosVisiblesIds.includes("card_admin_tickets") || modulosVisiblesIds.includes("card_historico_cerrados")) && statsHeader) {
                     statsHeader.style.display = 'flex';
                 }
             } else {
-                // Si el rol no se encuentra, dejar como Usuario Invitado por seguridad
                 currentPermissions = {
                     "card_mis_tickets": ["Ver Detalle"],
                     "card_enviar_ticket": ["Crear"]
@@ -1965,17 +1814,14 @@ function verificarRol() {
             if(btnEliminarTodos) btnEliminarTodos.style.display = 'none';
         }
 
-        // 2. VISUALIZACIÓN DINÁMICA DE TARJETAS EN EL DASHBOARD
         modulosVisiblesIds.forEach(id => {
             const cardEl = document.getElementById(id);
             if (cardEl) cardEl.style.display = 'block';
         });
 
-        // 3. REFRESCAR COMPONENTES Y TABLAS INTERNAS
         if (typeof aplicarCambiosVisuales === "function") aplicarCambiosVisuales();
         if (typeof renderTablaRoles === "function") renderTablaRoles();
 
-        // Si el usuario está dentro de un módulo maestro abierto, actualizar visibilidad del botón "Nuevo"
         const btnNuevo = document.getElementById('btn_maestro_nuevo');
         if(currentColl && btnNuevo) {
             const modIdMap = {
@@ -1992,7 +1838,6 @@ function verificarRol() {
             renderTablaMaestra();
         }
 
-        // Si el módulo de administración de tickets está activo en pantalla, actualizar su flujo
         if(document.getElementById('mod_admin_tickets').style.display === 'block') {
            const btnEliminarTodosAdmin = document.getElementById('btn_eliminar_todos_tk_admin');
            if (btnEliminarTodosAdmin) btnEliminarTodosAdmin.style.display = userRole === "Admin" ? 'flex' : 'none';
@@ -2000,9 +1845,6 @@ function verificarRol() {
         }
     }
 
-    // --- FIN SISTEMA DE ROL EN TIEMPO REAL ---
-
-    // Lógica para Histórico de Cerrados
     async function cargarHistoricoCerrados() {
         const tb = document.getElementById('tbody_historico_cerrados');
         tb.innerHTML = "<tr><td colspan='8' style='text-align:center;'>Cargando historial...</td></tr>";
@@ -2015,31 +1857,26 @@ function verificarRol() {
     }
 
     function renderTablaHistorico(data) {
-    const tb = document.getElementById('tbody_historico_cerrados');
-    tb.innerHTML = "";
-    data.forEach(t => {
-        // Obtenemos los botones conectándolos con el diseño visual personalizado
-        let btnDet = checkPermission("card_historico_cerrados", "Ver Detalle") ? `<button ${getBtnStyle("card_historico_cerrados", "Ver Detalle")} onclick="verDetalleTicket('${t.id}')" title="Ver Detalle"><i class="fas fa-eye"></i></button>` : "";
-        
-        // BOTÓN REVERTIR: Ahora obedece 100% al sistema dinámico de roles
-let btnRev = checkPermission("card_historico_cerrados", "Revertir a Abierto") ? `<button ${getBtnStyle("card_historico_cerrados", "Revertir a Abierto")} onclick="revertirAAbierto('${t.id}')" title="Reabrir Ticket"><i class="fas fa-undo"></i></button>` : "";
-
-// (Opcional pero recomendado) BOTÓN ELIMINAR: También lo conectamos al sistema de roles
-let btnDel = checkPermission("card_historico_cerrados", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${t.id}', 'tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>` : "";
-        
-        tb.innerHTML += `<tr>
-            <td>#${t.id.substring(0,5)}</td>
-            <td><b>${t.solicitante}</b></td>
-            <td>${t.tipo}</td>
-            <td>${t.dependencia}</td>
-            <td>${t.prioridad}</td>
-            <td>${t.campus}</td>
-            <td>${t.asignado}</td>
-            <td>${btnDet}${btnRev}${btnDel}</td>
-        </tr>`;
-    });
-    if(data.length === 0) tb.innerHTML = "<tr><td colspan='8' style='text-align:center;'>No se encontraron tickets cerrados</td></tr>";
-}
+        const tb = document.getElementById('tbody_historico_cerrados');
+        tb.innerHTML = "";
+        data.forEach(t => {
+            let btnDet = checkPermission("card_historico_cerrados", "Ver Detalle") ? `<button ${getBtnStyle("card_historico_cerrados", "Ver Detalle")} onclick="verDetalleTicket('${t.id}')" title="Ver Detalle"><i class="fas fa-eye"></i></button>` : "";
+            let btnRev = checkPermission("card_historico_cerrados", "Revertir a Abierto") ? `<button ${getBtnStyle("card_historico_cerrados", "Revertir a Abierto")} onclick="revertirAAbierto('${t.id}')" title="Reabrir Ticket"><i class="fas fa-undo"></i></button>` : "";
+            let btnDel = checkPermission("card_historico_cerrados", "Eliminar") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${t.id}', 'tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>` : "";
+            
+            tb.innerHTML += `<tr>
+                <td>#${t.id.substring(0,5)}</td>
+                <td><b>${t.solicitante}</b></td>
+                <td>${t.tipo}</td>
+                <td>${t.dependencia}</td>
+                <td>${t.prioridad}</td>
+                <td>${t.campus}</td>
+                <td>${t.asignado}</td>
+                <td>${btnDet}${btnRev}${btnDel}</td>
+            </tr>`;
+        });
+        if(data.length === 0) tb.innerHTML = "<tr><td colspan='8' style='text-align:center;'>No se encontraron tickets cerrados</td></tr>";
+    }
 
     function filtrarHistoricoCerrados() {
         const dep = document.getElementById('filtro_hist_dep').value.toLowerCase();
@@ -2117,7 +1954,6 @@ let btnDel = checkPermission("card_historico_cerrados", "Eliminar") ? `<button c
             cargarTicketsAdmin();
             const btnEliminarTodosAdmin = document.getElementById('btn_eliminar_todos_tk_admin');
             if (btnEliminarTodosAdmin) {
-                // Solo se muestra si el rol es exactamente "Admin"
                 btnEliminarTodosAdmin.style.display = userRole === "Admin" ? 'flex' : 'none';
             }
         }
@@ -2125,11 +1961,10 @@ let btnDel = checkPermission("card_historico_cerrados", "Eliminar") ? `<button c
         if(id === 'mod_stats') setTimeout(cargarGraficaActualizada, 350);
         if(id === 'mod_calendario') setTimeout(inicializarCalendario, 300);
         if(id === 'mod_gest_mantenimientos') {
-            document.getElementById('tbody_gest_mantenimientos').innerHTML = "<tr><td colspan='6' style='text-align:center;'>Cargando...</td></tr>";
+            document.getElementById('tbody_gest_mantenimientos').innerHTML = "<tr><td colspan='7' style='text-align:center;'>Cargando...</td></tr>";
             cargarGestionMantenimientos();
         }
 
-        // Control del botón AGREGAR ROL en Preferencias
         if(id === 'mod_preferencias') {
             const btnNuevoRol = document.querySelector('#mod_preferencias .btn-agregar-master');
             if(btnNuevoRol) {
@@ -2158,8 +1993,6 @@ let btnDel = checkPermission("card_historico_cerrados", "Eliminar") ? `<button c
             snap.forEach(doc => {
                 const t = doc.data();
                 const col = t.estado === "Abierto" ? "var(--primary)" : (t.estado === "Cerrado" ? "var(--success)" : "var(--warning)");
-                
-                // --- NUEVO: Detectar si el estado es En Proceso para activar la clase de animación ---
                 const claseAnimacion = (t.estado === "En Proceso" || t.estado === "En Proceso cami") ? "animacion-proceso" : "";
 
                 container.innerHTML += `
@@ -2236,27 +2069,6 @@ let btnDel = checkPermission("card_historico_cerrados", "Eliminar") ? `<button c
         document.getElementById('modalRol').style.display = 'block';
     }
 
-    function duplicarRol(id) {
-        const r = listaRolesGlobal.find(x => x.id === id);
-        if(!r) return;
-        abrirModalRol('nuevo');
-        document.getElementById('rol_nombre').value = `Copia de ${r.nombre}`;
-        setTimeout(() => {
-            const modsGuardados = r.modulos || [];
-            const permsGuardados = r.accionesPermitidas || {};
-            document.querySelectorAll('.chk-rol-mod').forEach(chk => {
-                if(modsGuardados.includes(chk.value)) {
-                    chk.checked = true;
-                    toggleAccionesRol(chk.value, true);
-                    const acts = permsGuardados[chk.value] || [];
-                    document.querySelectorAll(`.chk-act-rol[data-mod="${chk.value}"]`).forEach(aCheck => {
-                        aCheck.checked = acts.includes(aCheck.value);
-                    });
-                }
-            });
-        }, 100);
-    }
-
     function toggleAccionesRol(modId, checked) {
         const div = document.getElementById(`div_acts_${modId}`);
         div.style.opacity = checked ? "1" : "0.3";
@@ -2265,35 +2077,35 @@ let btnDel = checkPermission("card_historico_cerrados", "Eliminar") ? `<button c
     }
 
     async function guardarRol() {
-    const nombre = document.getElementById('rol_nombre').value;
-    const modulos = Array.from(document.querySelectorAll('.chk-rol-mod:checked')).map(c => c.value);
-    
-    if(!nombre) {
-        mostrarModalStatus("warning", "Campo Requerido", "Por favor asigne un nombre al nuevo rol.");
-        return;
-    }
-
-    let accionesPermitidas = {};
-    modulos.forEach(m => {
-        accionesPermitidas[m] = Array.from(document.querySelectorAll(`.chk-act-rol[data-mod="${m}"]:checked`)).map(a => a.value);
-    });
-
-    const data = { nombre, modulos, accionesPermitidas };
-    
-    try {
-        if(modoModal === 'nuevo') {
-            await db.collection("roles").add(data);
-            mostrarModalStatus("success", "Rol Creado", `El rol "${nombre}" se ha configurado correctamente.`);
-        } else {
-            await db.collection("roles").doc(selectedId).update(data);
-            mostrarModalStatus("success", "Rol Actualizado", `Los permisos del rol "${nombre}" han sido modificados.`);
+        const nombre = document.getElementById('rol_nombre').value;
+        const modulos = Array.from(document.querySelectorAll('.chk-rol-mod:checked')).map(c => c.value);
+        
+        if(!nombre) {
+            mostrarModalStatus("warning", "Campo Requerido", "Por favor asigne un nombre al nuevo rol.");
+            return;
         }
-        await cargarRoles();
-        cerrarModales(); 
-    } catch (e) {
-        mostrarModalStatus("danger", "Error", "No se pudo guardar el rol en la base de datos.");
+
+        let accionesPermitidas = {};
+        modulos.forEach(m => {
+            accionesPermitidas[m] = Array.from(document.querySelectorAll(`.chk-act-rol[data-mod="${m}"]:checked`)).map(a => a.value);
+        });
+
+        const data = { nombre, modulos, accionesPermitidas };
+        
+        try {
+            if(modoModal === 'nuevo') {
+                await db.collection("roles").add(data);
+                mostrarModalStatus("success", "Rol Creado", `El rol "${nombre}" se ha configurado correctamente.`);
+            } else {
+                await db.collection("roles").doc(selectedId).update(data);
+                mostrarModalStatus("success", "Rol Actualizado", `Los permisos del rol "${nombre}" han sido modificados.`);
+            }
+            await cargarRoles();
+            cerrarModales(); 
+        } catch (e) {
+            mostrarModalStatus("danger", "Error", "No se pudo guardar el rol en la base de datos.");
+        }
     }
-}
 
     function renderTablaRoles() {
         const tb = document.getElementById('tbody_roles');
@@ -2301,17 +2113,14 @@ let btnDel = checkPermission("card_historico_cerrados", "Eliminar") ? `<button c
         tb.innerHTML = "";
 
         listaRolesGlobal.forEach(r => {
-            // 1. Verificamos permisos específicamente para el módulo de Preferencias
             const puedeEditar = checkPermission("card_preferencias", "Editar");
             const puedeEliminar = checkPermission("card_preferencias", "Eliminar");
 
-            // 2. Construimos los botones solo si el permiso existe
             let btnEdit = puedeEditar ? 
                 `<button class="btn-acc bg-info-e" onclick="abrirModalRol('editar','${r.id}')" title="Editar Rol"><i class="fas fa-edit"></i></button>` : "";
             let btnDel = puedeEliminar ? 
                 `<button class="btn-acc bg-d-red" onclick="eliminarRol('${r.id}')" title="Eliminar Rol"><i class="fas fa-trash"></i></button>` : "";
 
-            // 3. Renderizamos la fila
             tb.innerHTML += `
                 <tr>
                     <td><b>${r.nombre}</b></td>
@@ -2331,81 +2140,74 @@ let btnDel = checkPermission("card_historico_cerrados", "Eliminar") ? `<button c
     }
 
     async function eliminarRol(id) {
-    mostrarModalStatus("danger", "¿Eliminar Rol?", "Los usuarios asociados a este rol podrían perder acceso a sus funciones.", async () => {
-        await db.collection("roles").doc(id).delete();
-        setTimeout(() => {
-            mostrarModalStatus("success", "Rol Eliminado", "El rol ha sido removido del sistema.");
-        }, 300);
-    });
-}
-
-    // CORRECCIÓN: FUNCIÓN ENVIAR TICKET CON MODAL DE CARGA DE IMAGEN Y BLOQUEO
-async function enviarTicket() {
-    // --- NUEVO: Bloqueo anti-doble clic ---
-    if (enviandoTicketActualmente) {
-        mostrarModalStatus("warning", "Procesando", "Tu solicitud ya se está enviando. Por favor, espera un momento.");
-        return;
-    }
-
-    const nom = document.getElementById('tk_nom_user').value;
-    const d = document.getElementById('tk_desc').value;
-    
-    if(!nom || !d) {
-        mostrarModalStatus("warning", "Campos Incompletos", "Por favor, complete su nombre y la descripción antes de enviar el ticket.");
-        return;
-    }
-
-    enviandoTicketActualmente = true; // --- NUEVO: Se cierra el candado ---
-
-    try {
-        let urlDescarga = "";
-
-        // 2. Guardado en Firestore
-        const contadorRef = db.collection("configuracion").doc("contadores");
-        
-        await db.runTransaction(async (transaction) => {
-            const contadorDoc = await transaction.get(contadorRef);
-            const nuevoIdNum = contadorDoc.data().ticket_actual + 1;
-            transaction.update(contadorRef, { ticket_actual: nuevoIdNum });
-
-            let asig = "Pendiente";
-            if(listaGestoresGlobal.length > 0) {
-                asig = listaGestoresGlobal[Math.floor(Math.random() * listaGestoresGlobal.length)].nom;
-            }
-
-            transaction.set(db.collection("tickets").doc(nuevoIdNum.toString()), {
-                ticket_id_numerico: nuevoIdNum,
-                solicitante: nom,
-                usuario: user.email,
-                campus: document.getElementById('tk_campus').value,
-                prioridad: document.getElementById('tk_prioridad').value,
-                dependencia: document.getElementById('tk_dep').value,
-                tipo: document.getElementById('tk_tipo').value,
-                desc: d,
-                imagen: urlDescarga,
-                estado: "Abierto",
-                asignado: asig,
-                fecha: new Date().toLocaleString()
-            });
+        mostrarModalStatus("danger", "¿Eliminar Rol?", "Los usuarios asociados a este rol podrían perder acceso a sus funciones.", async () => {
+            await db.collection("roles").doc(id).delete();
+            setTimeout(() => {
+                mostrarModalStatus("success", "Rol Eliminado", "El rol ha sido removido del sistema.");
+            }, 300);
         });
-
-        // 3. Notificación y Limpieza
-        cerrarModales();
-
-        // Al terminar todo, sobrescribimos el modal de carga por el modal de éxito final con autocierre
-        mostrarModalStatus("success", "¡Solicitud Enviada!", "Tu ticket ha sido registrado y un gestor será asignado pronto.", null, 2500);
-        
-        document.getElementById('tk_nom_user').value = "";
-        document.getElementById('tk_desc').value = "";
-
-        volver();
-        
-    } catch (e) {
-        mostrarModalStatus("danger", "Error de Envío", "No se pudo procesar tu ticket. Revisa tu conexión.");
-    } finally {
-        enviandoTicketActualmente = false; // --- NUEVO: Se abre el candado al final pase lo que pase ---
     }
-}
+
+    async function enviarTicket() {
+        if (enviandoTicketActualmente) {
+            mostrarModalStatus("warning", "Procesando", "Tu solicitud ya se está enviando. Por favor, espera un momento.");
+            return;
+        }
+
+        const nom = document.getElementById('tk_nom_user').value;
+        const d = document.getElementById('tk_desc').value;
+        
+        if(!nom || !d) {
+            mostrarModalStatus("warning", "Campos Incompletos", "Por favor, complete su nombre y la descripción antes de enviar el ticket.");
+            return;
+        }
+
+        enviandoTicketActualmente = true;
+
+        try {
+            let urlDescarga = "";
+            const contadorRef = db.collection("configuracion").doc("contadores");
+            
+            await db.runTransaction(async (transaction) => {
+                const contadorDoc = await transaction.get(contadorRef);
+                const nuevoIdNum = contadorDoc.data().ticket_actual + 1;
+                transaction.update(contadorRef, { ticket_actual: nuevoIdNum });
+
+                let asig = "Pendiente";
+                if(listaGestoresGlobal.length > 0) {
+                    asig = listaGestoresGlobal[Math.floor(Math.random() * listaGestoresGlobal.length)].nom;
+                }
+
+                transaction.set(db.collection("tickets").doc(nuevoIdNum.toString()), {
+                    ticket_id_numerico: nuevoIdNum,
+                    solicitante: nom,
+                    usuario: user.email,
+                    campus: document.getElementById('tk_campus').value,
+                    prioridad: document.getElementById('tk_prioridad').value,
+                    dependencia: document.getElementById('tk_dep').value,
+                    tipo: document.getElementById('tk_tipo').value,
+                    desc: d,
+                    imagen: urlDescarga,
+                    estado: "Abierto",
+                    asignado: asig,
+                    fecha: new Date().toLocaleString()
+                });
+            });
+
+            cerrarModales();
+            mostrarModalStatus("success", "¡Solicitud Enviada!", "Tu ticket ha sido registrado y un gestor será asignado pronto.", null, 2500);
+            
+            document.getElementById('tk_nom_user').value = "";
+            document.getElementById('tk_desc').value = "";
+
+            volver();
+            
+        } catch (e) {
+            mostrarModalStatus("danger", "Error de Envío", "No se pudo procesar tu ticket. Revisa tu conexión.");
+        } finally {
+            enviandoTicketActualmente = false;
+        }
+    }
 
     function cargarTicketsAdmin() {
         const tb = document.getElementById('tbody_admin_tickets');
@@ -2414,27 +2216,23 @@ async function enviarTicket() {
         db.collection("tickets").onSnapshot(snap => {
             if(!tb) return;
             
-            let htmlRows = ""; // <-- SOLUCIÓN: Usamos una variable temporal para concatenar todo
+            let htmlRows = "";
             
             snap.forEach(doc => {
                 const t = doc.data(); 
-                // Filtros de visualización
                 if(t.estado === "Cerrado") return;
                 if(userRole === "Gestor" && t.asignado !== nombreRealUsuario) return;
                 
-                // Definición de botones pasando AMBOS parámetros (Módulo y Acción)
                 let btnDet = checkPermission(activeModId, "Ver Detalle") ? `<button ${getBtnStyle(activeModId, "Ver Detalle")} onclick="verDetalleTicket('${doc.id}')" title="Ver detalle"><i class="fas fa-eye"></i></button>` : "";
                 let btnEdit = checkPermission(activeModId, "Editar") ? `<button ${getBtnStyle(activeModId, "Editar")} onclick="actEstado('${doc.id}','En Proceso')" title="En proceso"><i class="fas fa-clock"></i></button>` : "";
                 let btnRe = checkPermission(activeModId, "Reasignar") ? `<button ${getBtnStyle(activeModId, "Reasignar")} onclick="abrirRe('${doc.id}')" title="Reasignar"><i class="fas fa-user-edit"></i></button>` : "";
                 let btnFin = checkPermission(activeModId, "Finalizar") ? `<button ${getBtnStyle(activeModId, "Finalizar")} onclick="abrirModalCierre('${doc.id}')" title="Finalizar"><i class="fas fa-check-circle"></i></button>` : "";
                 
-                // Botón de Revertir (Funcionalidad solicitada)
                 let btnRev = (t.estado === "En Proceso" && checkPermission(activeModId, "Revertir a Abierto")) ? 
                              `<button ${getBtnStyle(activeModId, "Revertir a Abierto")} onclick="revertirAAbierto('${doc.id}')" title="Revertir a Abierto"><i class="fas fa-undo"></i></button>` : "";
                 
                 let btnDel = (userRole === "Admin") ? `<button class="btn-acc bg-d-red" onclick="eliminar('${doc.id}', 'tickets')" title="Eliminar"><i class="fas fa-trash"></i></button>` : "";
                 
-                // Construcción de la fila en la variable (No en el DOM directamente)
                 htmlRows += `<tr>
                     <td>#${doc.id}</td>
                     <td>${t.solicitante}</td>
@@ -2445,7 +2243,6 @@ async function enviarTicket() {
                 </tr>`;
             });
             
-            // <-- Inyectamos todo de golpe al final (Esto elimina el lag por completo)
             tb.innerHTML = htmlRows || "<tr><td colspan='6' style='text-align:center;'>No hay tickets activos</td></tr>";
         });
     }
@@ -2454,7 +2251,6 @@ async function enviarTicket() {
         const doc = await db.collection("tickets").doc(id).get(); 
         const t = doc.data(); 
         
-        // Determinar el color del estado para un badge elegante
         const colEstado = t.estado === "Abierto" ? "#2563eb" : (t.estado === "Cerrado" ? "#10b981" : "#f59e0b");
 
         let imgHTML = t.imagen ? `
@@ -2539,149 +2335,127 @@ async function enviarTicket() {
     function abrirModalCierre(id) { selectedId = id; document.getElementById('tk_respuesta_cierre').value = ""; document.getElementById('modalCerrarTicket').style.display = 'block'; }
     
     async function ejecutarCierreConComentario() { 
-    const r = document.getElementById('tk_respuesta_cierre').value; 
-    
-    if(!r) {
-        mostrarModalStatus("warning", "Respuesta Necesaria", "Debe indicar la solución brindada para poder finalizar el ticket.");
-        return;
-    }
-    
-    try {
-        await db.collection("tickets").doc(selectedId).update({ 
-            estado: "Cerrado", 
-            respuesta: r, 
-            fecha_cierre: new Date().toLocaleString() 
-        }); 
+        const r = document.getElementById('tk_respuesta_cierre').value; 
         
-        cerrarModales(); 
-        mostrarModalStatus("success", "Ticket Finalizado", "El ticket ha sido marcado como Cerrado exitosamente.");
-    } catch (e) {
-        mostrarModalStatus("danger", "Error", "No se pudo cerrar el ticket. Intente de nuevo.");
+        if(!r) {
+            mostrarModalStatus("warning", "Respuesta Necesaria", "Debe indicar la solución brindada para poder finalizar el ticket.");
+            return;
+        }
+        
+        try {
+            await db.collection("tickets").doc(selectedId).update({ 
+                estado: "Cerrado", 
+                respuesta: r, 
+                fecha_cierre: new Date().toLocaleString() 
+            }); 
+            
+            cerrarModales(); 
+            mostrarModalStatus("success", "Ticket Finalizado", "El ticket ha sido marcado como Cerrado exitosamente.");
+        } catch (e) {
+            mostrarModalStatus("danger", "Error", "No se pudo cerrar el ticket. Intente de nuevo.");
+        }
     }
-}
 
     async function revertirAAbierto(id) {
-    mostrarModalStatus("warning", "¿Revertir Estado?", "El ticket volverá a estado 'Abierto'.", async () => {
-        try {
-            // Se cambia el estado y se borra la fecha de cierre de la base de datos
-            await db.collection("tickets").doc(id).update({ 
-                estado: "Abierto",
-                fecha_cierre: firebase.firestore.FieldValue.delete()
-            });
-            mostrarModalStatus("success", "Estado Actualizado", "El ticket ha sido reabierto exitosamente.");
-            
-            // Forzamos el refresco de la tabla si el usuario está en el histórico
-            if (document.getElementById('mod_historico_cerrados').style.display === 'block') {
-                cargarHistoricoCerrados();
+        mostrarModalStatus("warning", "¿Revertir Estado?", "El ticket volverá a estado 'Abierto'.", async () => {
+            try {
+                await db.collection("tickets").doc(id).update({ 
+                    estado: "Abierto", 
+                    fecha_cierre: firebase.firestore.FieldValue.delete()
+                });
+                mostrarModalStatus("success", "Estado Actualizado", "El ticket ha sido reabierto exitosamente.");
+                
+                if (document.getElementById('mod_historico_cerrados').style.display === 'block') {
+                    cargarHistoricoCerrados();
+                }
+            } catch (e) {
+                mostrarModalStatus("danger", "Error", "No se pudo cambiar el estado.");
             }
-        } catch (e) {
-            mostrarModalStatus("danger", "Error", "No se pudo cambiar el estado.");
-        }
-    });
-}
+        });
+    }
 
     async function eliminar(id, coll) {
-    mostrarModalStatus("danger", "¿Eliminar Registro?", "Esta acción es permanente y no se puede deshacer.", async () => {
-        await db.collection(coll || currentColl).doc(id).delete();
-        // Opcional: mostrar éxito tras borrar
-        setTimeout(() => {
-            mostrarModalStatus("success", "Eliminado", "El registro ha sido borrado.");
-        }, 300);
-    });
-}
-
-    // ======================================================
-// FUNCIÓN PARA ELIMINAR TODOS LOS TICKETS (OPTIMIZADA CON BATCH Y PROGRESO)
-// ======================================================
-async function eliminarTodosLosTickets() {
-    // Doble validación de seguridad
-    if (userRole !== "Admin") {
-        mostrarModalStatus("danger", "Acceso Denegado", "Solo el administrador maestro puede eliminar todos los tickets del sistema.");
-        return;
+        mostrarModalStatus("danger", "¿Eliminar Registro?", "Esta acción es permanente y no se puede deshacer.", async () => {
+            await db.collection(coll || currentColl).doc(id).delete();
+            setTimeout(() => {
+                mostrarModalStatus("success", "Eliminado", "El registro ha sido borrado.");
+            }, 300);
+        });
     }
 
-    // 1. Mostrar el modal de confirmación normal (pasamos función vacía para que pinte los botones)
-    mostrarModalStatus("danger", "⚠️ ¿ELIMINAR TODOS LOS TICKETS?", "Esta acción es permanente, irreversible y borrará absolutamente todo el historial de tickets del sistema. ¿Estás seguro?", () => {});
+    async function eliminarTodosLosTickets() {
+        if (userRole !== "Admin") {
+            mostrarModalStatus("danger", "Acceso Denegado", "Solo el administrador maestro puede eliminar todos los tickets del sistema.");
+            return;
+        }
 
-    // 2. Sobrescribir inmediatamente el evento del botón Confirmar para evitar que el modal se cierre
-    const btnConfirm = document.getElementById('btnConfirmAction');
-    if (btnConfirm) {
-        btnConfirm.onclick = async () => {
-            try {
-                // Cambiar UI a estado de "Cargando" sin cerrar el modal
-                document.getElementById('alertIconContainer').className = 'icon-circle icon-warning';
-                document.getElementById('alertIcon').className = 'fas fa-spinner fa-spin';
-                document.getElementById('alertButtons').innerHTML = ""; // Ocultar botones
-                document.getElementById('alertMessage').innerHTML = `Calculando registros a eliminar...`;
+        mostrarModalStatus("danger", "⚠️ ¿ELIMINAR TODOS LOS TICKETS?", "Esta acción es permanente, irreversible y borrará absolutamente todo el historial de tickets del sistema. ¿Estás seguro?", () => {});
 
-                const snapshot = await db.collection("tickets").get();
-                const totalTickets = snapshot.size;
+        const btnConfirm = document.getElementById('btnConfirmAction');
+        if (btnConfirm) {
+            btnConfirm.onclick = async () => {
+                try {
+                    document.getElementById('alertIconContainer').className = 'icon-circle icon-warning';
+                    document.getElementById('alertIcon').className = 'fas fa-spinner fa-spin';
+                    document.getElementById('alertButtons').innerHTML = "";
+                    document.getElementById('alertMessage').innerHTML = `Calculando registros a eliminar...`;
 
-                if (totalTickets === 0) {
-                    mostrarModalStatus("warning", "Sin Registros", "No hay tickets en el sistema para eliminar.");
-                    return;
-                }
+                    const snapshot = await db.collection("tickets").get();
+                    const totalTickets = snapshot.size;
 
-                document.getElementById('alertMessage').innerHTML = `Eliminando tickets... <b>0%</b> completado.<br><small style="color:var(--gray);">Por favor, no cierre esta ventana.</small>`;
-
-                // 3. Usar WriteBatch (Lotes) es la forma nativa y más rápida de Firebase para borrado masivo
-                const lotes = [];
-                let loteActual = db.batch();
-                let operaciones = 0;
-
-                // Preparar los lotes de eliminación
-                snapshot.docs.forEach((doc) => {
-                    loteActual.delete(doc.ref);
-                    operaciones++;
-                    // Firebase permite un máximo de 500 operaciones por lote
-                    if (operaciones === 500) {
-                        lotes.push(loteActual);
-                        loteActual = db.batch();
-                        operaciones = 0;
+                    if (totalTickets === 0) {
+                        mostrarModalStatus("warning", "Sin Registros", "No hay tickets en el sistema para eliminar.");
+                        return;
                     }
-                });
 
-                // Empujar el último lote si quedaron operaciones pendientes
-                if (operaciones > 0) lotes.push(loteActual);
+                    document.getElementById('alertMessage').innerHTML = `Eliminando tickets... <b>0%</b> completado.<br><small style="color:var(--gray);">Por favor, no cierre esta ventana.</small>`;
 
-                let lotesCompletados = 0;
-                const totalLotes = lotes.length;
+                    const lotes = [];
+                    let loteActual = db.batch();
+                    let operaciones = 0;
 
-                // 4. Ejecutar los lotes uno por uno y actualizar la UI con el progreso
-                for (const lote of lotes) {
-                    await lote.commit(); // Aquí ocurre la magia masiva de Firebase
-                    lotesCompletados++;
-                    const porcentaje = Math.round((lotesCompletados / totalLotes) * 100);
-                    document.getElementById('alertMessage').innerHTML = `Eliminando tickets... <b>${porcentaje}%</b> completado.<br><small style="color:var(--gray);">Por favor, no cierre esta ventana.</small>`;
+                    snapshot.docs.forEach((doc) => {
+                        loteActual.delete(doc.ref);
+                        operaciones++;
+                        if (operaciones === 500) {
+                            lotes.push(loteActual);
+                            loteActual = db.batch();
+                            operaciones = 0;
+                        }
+                    });
+
+                    if (operaciones > 0) lotes.push(loteActual);
+
+                    let lotesCompletados = 0;
+                    const totalLotes = lotes.length;
+
+                    for (const lote of lotes) {
+                        await lote.commit();
+                        lotesCompletados++;
+                        const porcentaje = Math.round((lotesCompletados / totalLotes) * 100);
+                        document.getElementById('alertMessage').innerHTML = `Eliminando tickets... <b>${porcentaje}%</b> completado.<br><small style="color:var(--gray);">Por favor, no cierre esta ventana.</small>`;
+                    }
+
+                    await db.collection("configuracion").doc("contadores").update({ ticket_actual: 0 });
+
+                    mostrarModalStatus("success", "Limpieza Exitosa", "Todos los tickets han sido borrados masivamente del sistema.", null, 3000);
+                    cargarTicketsAdmin();
+
+                } catch (error) {
+                    console.error("Error masivo: ", error);
+                    mostrarModalStatus("danger", "Error del Sistema", "Ocurrió un problema de red o base de datos al intentar borrar los tickets.");
                 }
-
-                // Opcional: Resetear el contador maestro de tickets a 0
-                await db.collection("configuracion").doc("contadores").update({ ticket_actual: 0 });
-
-                // 5. Mostrar modal de éxito que se cierra solo después de 3 segundos
-                mostrarModalStatus("success", "Limpieza Exitosa", "Todos los tickets han sido borrados masivamente del sistema.", null, 3000);
-                
-                // Refrescar la tabla para que quede en blanco
-                cargarTicketsAdmin();
-
-            } catch (error) {
-                console.error("Error masivo: ", error);
-                mostrarModalStatus("danger", "Error del Sistema", "Ocurrió un problema de red o base de datos al intentar borrar los tickets.");
-            }
-        };
+            };
+        }
     }
-}
 
     function renderTablaMaestra(dataFiltrada = null) {
         const b = document.getElementById('m_tbody'); if(!b) return;
         const h = document.getElementById('m_thead'); if(!h) return;
         
         const displayData = dataFiltrada || localData;
-        
-        // 1. Identificar el ID del módulo para traer sus colores personalizados
         const activeModId = `card_${currentColl === 'inventario' ? 'inv_admin' : (currentColl === 'inventario_salas' ? 'inv_salas' : (currentColl === 'equipos_obsoletos' ? 'inv_obsoletos' : (currentColl === 'aulas_dti' ? 'aulas' : currentColl)))}`;
 
-        // CONFIGURACIÓN DE CABECERAS
         if(currentColl === 'extensiones') {
             h.innerHTML = `<tr><th>Nombre</th><th>Dependencia</th><th>Extensión</th><th>Tipo</th><th>Acciones</th></tr>`;
         } else if(currentColl === 'usuarios') {
@@ -2691,11 +2465,10 @@ async function eliminarTodosLosTickets() {
         }
         if(currentColl === 'impresoras') {
             h.innerHTML = `<tr><th>Nombre</th><th>Tipo</th><th>IP</th><th>Impresiones</th><th>F. Mantenimiento</th><th>Acciones</th></tr>`;
-       }
+        }
 
-        let htmlRows = ""; // <-- SOLUCIÓN: Variable temporal para evitar congelamientos
+        let htmlRows = "";
 
-        // 2. Renderizado de filas
         displayData.forEach(e => {
             let btns = "";
             let rowHTML = "";
@@ -2714,12 +2487,11 @@ async function eliminarTodosLosTickets() {
                 rowHTML = `<tr><td>${e.nom || ''}</td><td>${e.cor || ''}</td><td>${e.rol || ''}</td><td>${btns}</td></tr>`;
 
             } else if(currentColl === 'impresoras') {
-               // Definición clara para Impresoras - Orden: Editar -> Ver Detalle -> Eliminar
-               if(checkPermission(activeModId, "Editar")) btns += `<button ${getBtnStyle(activeModId, "Editar")} onclick="abrirModalRegistro('editar','${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>`;
-               if(checkPermission(activeModId, "Ver Detalle")) btns += `<button ${getBtnStyle(activeModId, "Ver Detalle")} onclick="verDetalleImpresora('${e.id}')" title="Ver Detalle"><i class="fas fa-eye"></i></button>`;
-               if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','impresoras')" title="Eliminar"><i class="fas fa-trash"></i></button>`;
+                if(checkPermission(activeModId, "Editar")) btns += `<button ${getBtnStyle(activeModId, "Editar")} onclick="abrirModalRegistro('editar','${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>`;
+                if(checkPermission(activeModId, "Ver Detalle")) btns += `<button ${getBtnStyle(activeModId, "Ver Detalle")} onclick="verDetalleImpresora('${e.id}')" title="Ver Detalle"><i class="fas fa-eye"></i></button>`;
+                if(userRole === "Admin") btns += `<button class="btn-acc bg-d-red" onclick="eliminar('${e.id}','impresoras')" title="Eliminar"><i class="fas fa-trash"></i></button>`;
     
-               rowHTML = `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.ip || ''}</td><td>${e.cant_imp || '0'}</td><td>${e.f_mantenimiento || 'N/A'}</td><td>${btns}</td></tr>`;
+                rowHTML = `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.ip || ''}</td><td>${e.cant_imp || '0'}</td><td>${e.f_mantenimiento || 'N/A'}</td><td>${btns}</td></tr>`;
             
             } else {
                 if(checkPermission(activeModId, "Editar")) btns += `<button ${getBtnStyle(activeModId, "Editar")} onclick="abrirModalRegistro('editar','${e.id}')" title="Editar"><i class="fas fa-edit"></i></button>`;
@@ -2733,63 +2505,61 @@ async function eliminarTodosLosTickets() {
                 rowHTML = `<tr><td><b>${e.nom || ''}</b></td><td>${e.tip || ''}</td><td>${e.mod || ''}</td><td>${e.ser || ''}</td><td>${e.res || ''}</td><td>${e.dep || ''}</td><td>${e.cam || ''}</td><td>${btns}</td></tr>`;
             }
             
-            htmlRows += rowHTML; // Acumular en lugar de imprimir
+            htmlRows += rowHTML;
         });
         
-        b.innerHTML = htmlRows; // Inyectar de golpe al final
+        b.innerHTML = htmlRows;
     }
 
     async function verHistorialAulas(id, nombreAula) {
-    const container = document.getElementById('hist_chequeos_container');
-    document.getElementById('hist_aula_nombre').innerText = "Aula: " + nombreAula;
-    container.innerHTML = "<p style='text-align:center;'>Cargando historial...</p>";
-    
-    document.getElementById('modalHistorialChequeos').style.display = 'block';
+        const container = document.getElementById('hist_chequeos_container');
+        document.getElementById('hist_aula_nombre').innerText = "Aula: " + nombreAula;
+        container.innerHTML = "<p style='text-align:center;'>Cargando historial...</p>";
+        
+        document.getElementById('modalHistorialChequeos').style.display = 'block';
 
-    try {
-        const snap = await db.collection("aulas_dti").doc(id)
-                             .collection("chequeos")
-                             .orderBy("fecha", "desc").get();
+        try {
+            const snap = await db.collection("aulas_dti").doc(id)
+                                 .collection("chequeos")
+                                 .orderBy("fecha", "desc").get();
 
-        if (snap.empty) {
-            container.innerHTML = "<p style='text-align:center; color:var(--gray);'>No hay registros de chequeo para esta aula.</p>";
-            return;
-        }
+            if (snap.empty) {
+                container.innerHTML = "<p style='text-align:center; color:var(--gray);'>No hay registros de chequeo para esta aula.</p>";
+                return;
+            }
 
-        container.innerHTML = "";
-        snap.forEach(doc => {
-            const data = doc.data();
-            const res = data.resultados || {};
-            
-            // Función auxiliar para determinar clase de color
-            const getClase = (val) => val === 'Funcional' ? 'res-funcional' : 'res-falla';
+            container.innerHTML = "";
+            snap.forEach(doc => {
+                const data = doc.data();
+                const res = data.resultados || {};
+                const getClase = (val) => val === 'Funcional' ? 'res-funcional' : 'res-falla';
 
-            container.innerHTML += `
-                <div class="card-chequeo">
-                    <div class="card-chequeo-header">
-                        <b><i class="fas fa-user-edit"></i> ${data.usuario.split('@')[0]}</b>
-                        <small><i class="far fa-calendar-alt"></i> ${data.fecha}</small>
-                    </div>
-                    <div class="grid-resultados-hist">
-                        <div class="res-item ${getClase(res.equipos)}"><span>Equipos:</span> <span>${res.equipos || 'N/A'}</span></div>
-                        <div class="res-item ${getClase(res.perifericos)}"><span>Periféricos:</span> <span>${res.perifericos || 'N/A'}</span></div>
-                        <div class="res-item ${getClase(res.red)}"><span>Red:</span> <span>${res.red || 'N/A'}</span></div>
-                        <div class="res-item ${getClase(res.aseo)}"><span>Aseo:</span> <span>${res.aseo || 'N/A'}</span></div>
-                        <div class="res-item ${getClase(res.video)}"><span>Video:</span> <span>${res.video || 'N/A'}</span></div>
-                    </div>
-                    ${data.observaciones ? `
-                        <div style="margin-top:10px; font-size:0.75rem; background:#fff; padding:8px; border-radius:6px; border-left:3px solid var(--primary);">
-                            <b>Obs:</b> ${data.observaciones}
+                container.innerHTML += `
+                    <div class="card-chequeo">
+                        <div class="card-chequeo-header">
+                            <b><i class="fas fa-user-edit"></i> ${data.usuario.split('@')[0]}</b>
+                            <small><i class="far fa-calendar-alt"></i> ${data.fecha}</small>
                         </div>
-                    ` : ''}
-                </div>
-            `;
-        });
-    } catch (error) {
-        console.error("Error al cargar historial:", error);
-        container.innerHTML = "<p style='text-align:center; color:red;'>Error al cargar los datos.</p>";
+                        <div class="grid-resultados-hist">
+                            <div class="res-item ${getClase(res.equipos)}"><span>Equipos:</span> <span>${res.equipos || 'N/A'}</span></div>
+                            <div class="res-item ${getClase(res.perifericos)}"><span>Periféricos:</span> <span>${res.perifericos || 'N/A'}</span></div>
+                            <div class="res-item ${getClase(res.red)}"><span>Red:</span> <span>${res.red || 'N/A'}</span></div>
+                            <div class="res-item ${getClase(res.aseo)}"><span>Aseo:</span> <span>${res.aseo || 'N/A'}</span></div>
+                            <div class="res-item ${getClase(res.video)}"><span>Video:</span> <span>${res.video || 'N/A'}</span></div>
+                        </div>
+                        ${data.observaciones ? `
+                            <div style="margin-top:10px; font-size:0.75rem; background:#fff; padding:8px; border-radius:6px; border-left:3px solid var(--primary);">
+                                <b>Obs:</b> ${data.observaciones}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+        } catch (error) {
+            console.error("Error al cargar historial:", error);
+            container.innerHTML = "<p style='text-align:center; color:red;'>Error al cargar los datos.</p>";
+        }
     }
-}
 
     function verOjitoExtension(id) {
         const d = localData.find(x => x.id === id);
@@ -2825,7 +2595,6 @@ async function eliminarTodosLosTickets() {
         const f = document.getElementById('form_dinamico');
         f.innerHTML = "";
         
-        // Configuramos el estilo de la cuadrícula a 3 columnas para inventarios
         if (currentColl === 'inventario' || currentColl === 'inventario_salas') {
             f.style.gridTemplateColumns = "repeat(3, 1fr)";
         } else {
@@ -2839,7 +2608,6 @@ async function eliminarTodosLosTickets() {
             const roles = ["Admin", "Gestor", "Usuario", ...listaRolesGlobal.map(r => r.nombre)];
             fields = [["Nombre","nom"],["Correo","cor"],["Rol","rol","select", [...new Set(roles)]]];
         } else if(currentColl === 'inventario' || currentColl === 'inventario_salas' || currentColl === 'equipos_obsoletos') {
-            // CAMPOS SEGÚN LA IMAGEN DE REFERENCIA
             fields = [
                 ["Pc", "nom"], ["Tipo", "tip", "select", ["Portátil", "Todo en Uno", "Torre"]], ["Modelo", "mod"],
                 ["Inventario", "inv_num"], ["Sistema Operativo", "so", "select", ["Windows 10", "Windows 11", "Linux", "MacOS"]], ["Procesador", "proc"],
@@ -2849,19 +2617,17 @@ async function eliminarTodosLosTickets() {
                 ["Extension", "ext_tel"], ["Fecha de mantenimiento", "f_ingreso", "date"]
             ];
         } else if (currentColl === 'impresoras') {
-    // Diseño vertical para impresoras
-    f.style.gridTemplateColumns = "1fr"; 
-    fields = [
-        ["Nombre de la Impresora", "nom"],
-        ["Dirección IP", "ip"],
-        ["Cantidad de Impresiones", "cant_imp", "number"],
-        ["Tipo de Impresora", "tip", "select", ["Tóner", "Color", "Multifuncional"]],
-        ["Fecha de Mantenimiento", "f_mantenimiento", "date"]
-    ];
-} else {
-    // Resto de maestros (Aulas, etc.)
-    fields = [["Nombre","nom"],["Tipo","tip"],["Modelo","mod"],["Serial","ser"],["Responsable","res"],["Dependencia","dep"],["Campus","cam","select",["Bucaramanga","Bogotá","Tunja"]]];
-}
+            f.style.gridTemplateColumns = "1fr"; 
+            fields = [
+                ["Nombre de la Impresora", "nom"],
+                ["Dirección IP", "ip"],
+                ["Cantidad de Impresiones", "cant_imp", "number"],
+                ["Tipo de Impresora", "tip", "select", ["Tóner", "Color", "Multifuncional"]],
+                ["Fecha de Mantenimiento", "f_mantenimiento", "date"]
+            ];
+        } else {
+            fields = [["Nombre","nom"],["Tipo","tip"],["Modelo","mod"],["Serial","ser"],["Responsable","res"],["Dependencia","dep"],["Campus","cam","select",["Bucaramanga","Bogotá","Tunja"]]];
+        }
 
         fields.forEach(x => {
             let inp = "";
@@ -2949,53 +2715,50 @@ async function eliminarTodosLosTickets() {
     }
 
     async function guardarDatoMaestro() {
-    let o = {};
-    let camposVacios = false;
-    
-    // Recopilar datos y validar obligatorios
-    document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => {
-        // No validamos como obligatorios Extensión, Correo o Fecha si no se quieren poner
-        if(!i.value && i.id !== 'ext_tel' && i.id !== 'cor_res' && i.id !== 'f_ingreso') {
-            camposVacios = true;
-        }
+        let o = {};
+        let camposVacios = false;
         
-        // MODIFICACIÓN: Forzar el correo a minúsculas y sin espacios residuales
-        if (i.id === 'cor') {
-            o[i.id] = i.value.trim().toLowerCase();
-        } else {
-            o[i.id] = i.value;
+        document.querySelectorAll('#form_dinamico input, #form_dinamico select').forEach(i => {
+            if(!i.value && i.id !== 'ext_tel' && i.id !== 'cor_res' && i.id !== 'f_ingreso') {
+                camposVacios = true;
+            }
+            
+            if (i.id === 'cor') {
+                o[i.id] = i.value.trim().toLowerCase();
+            } else {
+                o[i.id] = i.value;
+            }
+        });
+
+        if(camposVacios) {
+            mostrarModalStatus("warning", "Atención", "Por favor complete los campos obligatorios del formulario.");
+            return;
         }
-    });
 
-    if(camposVacios) {
-        mostrarModalStatus("warning", "Atención", "Por favor complete los campos obligatorios del formulario.");
-        return;
-    }
+        const nombresColes = {
+            'usuarios': 'Usuario',
+            'inventario': 'Equipo Administrativo',
+            'inventario_salas': 'Equipo de Sala',
+            'equipos_obsoletos': 'Equipo Obsoleto',
+            'extensiones': 'Extensión',
+            'aulas_dti': 'Aula',
+            'impresoras': 'Impresora'
+        };
+        const etiqueta = nombresColes[currentColl] || 'Registro';
 
-    const nombresColes = {
-        'usuarios': 'Usuario',
-        'inventario': 'Equipo Administrativo',
-        'inventario_salas': 'Equipo de Sala',
-        'equipos_obsoletos': 'Equipo Obsoleto',
-        'extensiones': 'Extensión',
-        'aulas_dti': 'Aula',
-        'impresoras': 'Impresora'
-    };
-    const etiqueta = nombresColes[currentColl] || 'Registro';
-
-    try {
-        if(modoModal === 'editar') {
-            await db.collection(currentColl).doc(selectedId).update(o);
-            mostrarModalStatus("success", "Actualización Exitosa", `La información del ${etiqueta} ha sido actualizada.`);
-        } else {
-            await db.collection(currentColl).add(o);
-            mostrarModalStatus("success", "Registro Exitoso", `El nuevo ${etiqueta} se ha guardado en el sistema.`);
+        try {
+            if(modoModal === 'editar') {
+                await db.collection(currentColl).doc(selectedId).update(o);
+                mostrarModalStatus("success", "Actualización Exitosa", `La información del ${etiqueta} ha sido actualizada.`);
+            } else {
+                await db.collection(currentColl).add(o);
+                mostrarModalStatus("success", "Registro Exitoso", `El nuevo ${etiqueta} se ha guardado en el sistema.`);
+            }
+            cerrarModales(); 
+        } catch (e) {
+            mostrarModalStatus("danger", "Error de Guardado", "Hubo un problema al conectar con la base de datos.");
         }
-        cerrarModales(); 
-    } catch (e) {
-        mostrarModalStatus("danger", "Error de Guardado", "Hubo un problema al conectar con la base de datos.");
     }
-}
 
     async function cargarGraficaActualizada() {
         const f = document.getElementById('filtro_stats').value;
@@ -3016,23 +2779,22 @@ async function eliminarTodosLosTickets() {
                 datasets: [{ 
                     label: 'Cantidad de Tickets',
                     data: Object.values(conteo), 
-                    // Colores profesionales con degradado ligero (Alpha 0.7)
                     backgroundColor: [
-                        'rgba(37, 99, 235, 0.75)',   // Azul corporativo
-                        'rgba(16, 185, 129, 0.75)',  // Verde esmeralda
-                        'rgba(245, 158, 11, 0.75)',  // Ámbar
-                        'rgba(239, 68, 68, 0.75)',   // Carmesí
-                        'rgba(139, 92, 246, 0.75)',  // Violeta
-                        'rgba(6, 182, 212, 0.75)'    // Turquesa
+                        'rgba(37, 99, 235, 0.75)',
+                        'rgba(16, 185, 129, 0.75)',
+                        'rgba(245, 158, 11, 0.75)',
+                        'rgba(239, 68, 68, 0.75)',
+                        'rgba(139, 92, 246, 0.75)',
+                        'rgba(6, 182, 212, 0.75)'
                     ],
                     borderColor: [
                         '#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'
                     ],
                     borderWidth: 2,
-                    borderRadius: { topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 }, // Solo redondeado arriba
+                    borderRadius: { topLeft: 8, topRight: 8, bottomLeft: 0, bottomRight: 0 },
                     borderSkipped: false,
-                    barPercentage: 0.5, // Hace las barras más estilizadas y delgadas
-                    maxBarThickness: 40  // Evita que se deformen si hay muy pocos datos
+                    barPercentage: 0.5,
+                    maxBarThickness: 40
                 }] 
             },
             options: { 
@@ -3040,10 +2802,10 @@ async function eliminarTodosLosTickets() {
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        display: false // Ocultamos la etiqueta repetitiva de arriba
+                        display: false
                     },
                     tooltip: {
-                        backgroundColor: '#0f172a', // Tooltip oscuro elegante
+                        backgroundColor: '#0f172a',
                         titleFont: { size: 13, weight: '700' },
                         bodyFont: { size: 13 },
                         padding: 12,
@@ -3056,17 +2818,17 @@ async function eliminarTodosLosTickets() {
                             color: '#475569',
                             font: { weight: '700', size: 11 }
                         },
-                        grid: { display: false } // Quitamos rejilla vertical para máxima limpieza
+                        grid: { display: false }
                     },
                     y: {
                         beginAtZero: true,
                         ticks: {
-                            stepSize: 1, // Números enteros para los tickets
+                            stepSize: 1,
                             color: '#64748b',
                             font: { weight: '600', size: 11 }
                         },
                         grid: { 
-                            color: '#f1f5f9', // Líneas horizontales de guía muy sutiles
+                            color: '#f1f5f9',
                             drawBorder: false
                         }
                     }
@@ -3085,12 +2847,9 @@ async function eliminarTodosLosTickets() {
                 const evs = [];
                 const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti", "equipos_obsoletos"];
                 
-                // Optimización: obtener todos los equipos en paralelo
                 const promesasEquipos = colecciones.map(coll => db.collection(coll).get());
                 const snapshotsEquipos = await Promise.all(promesasEquipos);
                 
-                // No agregamos fechas de compra/ingreso como eventos para evitar dobles entradas en el calendario.
-                // Solo cargamos los mantenimientos registrados en las subcolecciones y en la colección de mantenimientos generales.
                 const promesasMantenimientos = [];
                 const generalMaintenanceKeys = new Set();
                 
@@ -3106,7 +2865,6 @@ async function eliminarTodosLosTickets() {
                     });
                 }
                 
-                // Agregar mantenimientos generales y registrar claves existentes para evitar duplicados de evento
                 promesasMantenimientos.push(
                     db.collection("mantenimientos_generales").get()
                         .then(mnts => {
@@ -3128,16 +2886,14 @@ async function eliminarTodosLosTickets() {
                             const tipo = d.tipo || 'Mantenimiento';
                             let backgroundColor;
                             
-                            // TODOS los mantenimientos registrados se ven NEGROS
-                            // Solo los programados pendientes se ven de colores
                             if(d.estado === 'Programado') {
                                 if(tipo.toLowerCase().includes('preventivo')) {
-                                    backgroundColor = '#8b5cf6';  // Púrpura para preventivos programados
+                                    backgroundColor = '#8b5cf6';
                                 } else {
-                                    backgroundColor = '#ef4444';  // Rojo para correctivos programados
+                                    backgroundColor = '#ef4444';
                                 }
                             } else {
-                                backgroundColor = '#000000';  // Negro para todos los registrados
+                                backgroundColor = '#000000';
                             }
                             
                             evs.push({
@@ -3193,8 +2949,6 @@ async function eliminarTodosLosTickets() {
                         mnts.forEach(m => {
                             const d = m.data();
                             const tipo = d.tipo || 'Mantenimiento';
-                            
-                            // Misma lógica: todos los mantenimientos registrados son NEGROS
                             let backgroundColor;
                             if(d.estado === 'Programado') {
                                 if(tipo.toLowerCase().includes('preventivo')) {
@@ -3203,7 +2957,7 @@ async function eliminarTodosLosTickets() {
                                     backgroundColor = '#ef4444';
                                 }
                             } else {
-                                backgroundColor = '#000000';  // Negro para todos los registrados
+                                backgroundColor = '#000000';
                             }
                             
                             evs.push({
@@ -3240,13 +2994,11 @@ async function eliminarTodosLosTickets() {
                 const props = info.event.extendedProps;
                 cerrarModales();
                 
-                // Si es un equipo, mostrar opción de registrar mantenimiento
                 if(props.esEquipo) {
                     mostrarModalRegistroDesdeCalendario(props);
                     return;
                 }
                 
-                // Si es un mantenimiento, mostrar detalles
                 const modal = document.getElementById('modalDetalleMantenimiento');
                 if (!modal) return;
                 document.getElementById('detalle_mantenimiento_usuario').innerText = props.persona || 'Sin registro';
@@ -3255,7 +3007,6 @@ async function eliminarTodosLosTickets() {
                 document.getElementById('detalle_mantenimiento_equipo').innerText = props.equipo || 'Equipo';
                 document.getElementById('detalle_mantenimiento_descripcion').innerText = props.descripcion || 'Sin descripción';
                 
-                // Mostrar botón para marcar como realizado solo en mantenimientos generales programados
                 const btnRealizado = document.getElementById('btn_marcar_realizado');
                 if(btnRealizado) {
                     if(props.esGeneral && props.estado === 'Programado') {
@@ -3276,19 +3027,14 @@ async function eliminarTodosLosTickets() {
         const tb = document.getElementById('tbody_gest_mantenimientos');
         if(!tb) return;
         
-        // Si ya hay datos previos, no mostramos el "Cargando" para que no parpadee
         if(tb.innerHTML === "") tb.innerHTML = "<tr><td colspan='7' style='text-align:center;'>Cargando mantenimientos...</td></tr>";
         
         const colecciones = ["inventario", "inventario_salas", "impresoras", "aulas_dti", "equipos_obsoletos"];
         let promesasGlobales = [];
 
         try {
-            // Ejecutamos la lectura de todas las colecciones al mismo tiempo
             for(let coll of colecciones) {
                 promesasGlobales.push(db.collection(coll).get().then(async (equipos) => {
-                    let mantenimientosDeEstaColl = [];
-                    
-                    // Usamos Promise.all para leer todos los mantenimientos de esta colección en paralelo
                     const mntPromesas = equipos.docs.map(async (equip) => {
                         const eData = equip.data();
                         const mnts = await db.collection(coll).doc(equip.id).collection("mantenimientos").get();
@@ -3306,7 +3052,6 @@ async function eliminarTodosLosTickets() {
                 }));
             }
 
-            // Agregar mantenimientos generales
             promesasGlobales.push(
                 db.collection("mantenimientos_generales").get().then(mnts => {
                     return mnts.docs.map(m => ({
@@ -3319,8 +3064,6 @@ async function eliminarTodosLosTickets() {
             );
 
             const todosLosMantenimientos = (await Promise.all(promesasGlobales)).flat();
-            
-            // Ordenar por fecha (más reciente primero) antes de renderizar
             todosLosMantenimientos.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
             renderizarMantenimientosOptimizado(todosLosMantenimientos);
@@ -3344,7 +3087,6 @@ async function eliminarTodosLosTickets() {
                 `<button class="btn-acc bg-d-red" onclick="confirmarEliminarMantenimiento('${m.coll}', '${m.id}', '${nombreParaModal}', '${equipId}')" title="Eliminar Mantenimiento"><i class="fas fa-trash"></i></button>` : "";
             
             if(m.esGeneral) {
-                // Mantenimiento general
                 btnEdit = checkPermission("card_gest_mantenimientos", "Editar") ? 
                     `<button class="btn-acc bg-info-e" onclick="abrirMantenimientoGeneralEdicion('${m.id}')"><i class="fas fa-edit"></i></button>` : "";
                 
@@ -3362,7 +3104,6 @@ async function eliminarTodosLosTickets() {
                     <td>${btnEdit}${btnDel}</td>
                 </tr>`;
             } else {
-                // Mantenimiento de equipo (colecciones antiguas)
                 btnEdit = checkPermission("card_gest_mantenimientos", "Editar") ? 
                     `<button class="btn-acc bg-info-e" onclick="abrirMantenimientoEdicion('${m.coll}', '${m.equipId}', '${m.id}')"><i class="fas fa-edit"></i></button>` : "";
                 
@@ -3436,73 +3177,61 @@ async function eliminarTodosLosTickets() {
         document.getElementById('modalNuevoMantenimientoGestion').style.display = 'flex';
     }
 
-async function guardarMantenimiento() {
-    const f = document.getElementById('mnt_fecha').value; 
-    const t = document.getElementById('mnt_tipo').value; 
-    const d = document.getElementById('mnt_desc').value;
-    
-    if(!f || !d) {
-        mostrarModalStatus("warning", "Datos Incompletos", "Debe ingresar la fecha y la descripción del mantenimiento.");
-        return;
-    }
-
-    const targetColl = selectedCollMnt || currentColl;
-    if(!selectedId || !targetColl) {
-        mostrarModalStatus("danger", "Error", "No se encontró el equipo al registrar el mantenimiento.");
-        return;
-    }
-
-    try {
-        await db.collection(targetColl).doc(selectedId).collection("mantenimientos").add({ 
-            fecha: f, 
-            tipo: t, 
-            desc: d,
-            usuario_registro: user.email 
-        });
-        cerrarModales(); 
-        mostrarModalStatus("success", "Mantenimiento Registrado", "Se ha guardado el historial técnico correctamente.");
-    } catch (e) {
-        mostrarModalStatus("danger", "Error", "No se pudo registrar el mantenimiento.");
-    }
-}
-
-// Función para editar un mantenimiento existente (Desde el módulo de gestión)
-async function guardarMantenimientoEditado() {
-    const f = document.getElementById('mnt_fecha').value;
-    const t = document.getElementById('mnt_tipo').value;
-    const d = document.getElementById('mnt_desc').value;
-    
-    if(!f || !d) {
-        mostrarModalStatus("warning", "Campos Vacíos", "No puede dejar la fecha o descripción en blanco.");
-        return;
-    }
-
-    try {
-        await db.collection(selectedCollMnt).doc(selectedEquipIdMnt).collection("mantenimientos").doc(selectedId).update({ 
-            fecha: f, 
-            tipo: t, 
-            desc: d 
-        });
+    async function guardarMantenimiento() {
+        const f = document.getElementById('mnt_fecha').value; 
+        const t = document.getElementById('mnt_tipo').value; 
+        const d = document.getElementById('mnt_desc').value;
         
-        cerrarModales(); 
-        mostrarModalStatus("success", "Cambios Guardados", "El registro de mantenimiento ha sido actualizado con éxito.");
-        cargarGestionMantenimientos(); // Refresca la tabla automáticamente
-    } catch (e) {
-        mostrarModalStatus("danger", "Error de Actualización", "Hubo un problema al modificar el registro.");
-    }
-}
+        if(!f || !d) {
+            mostrarModalStatus("warning", "Datos Incompletos", "Debe ingresar la fecha y la descripción del mantenimiento.");
+            return;
+        }
 
-// Reemplazar eliminarMnt
-async function eliminarMnt(coll, eid, mid) { 
-    mostrarModalStatus("danger", "¿Eliminar Registro cami?", "Se borrará definitivamente el historial de este mantenimiento.", async () => {
-        await db.collection(coll).doc(eid).collection("mantenimientos").doc(mid).delete(); 
-        cargarGestionMantenimientos();
-        setTimeout(() => {
-            mostrarModalStatus("success", "Registro Borrado", "El mantenimiento ha sido eliminado del historial.");
-        }, 300);
-    });
-}
-    
+        const targetColl = selectedCollMnt || currentColl;
+        if(!selectedId || !targetColl) {
+            mostrarModalStatus("danger", "Error", "No se encontró el equipo al registrar el mantenimiento.");
+            return;
+        }
+
+        try {
+            await db.collection(targetColl).doc(selectedId).collection("mantenimientos").add({ 
+                fecha: f, 
+                tipo: t, 
+                desc: d,
+                usuario_registro: user.email 
+            });
+            cerrarModales(); 
+            mostrarModalStatus("success", "Mantenimiento Registrado", "Se ha guardado el historial técnico correctamente.");
+        } catch (e) {
+            mostrarModalStatus("danger", "Error", "No se pudo registrar el mantenimiento.");
+        }
+    }
+
+    async function guardarMantenimientoEditado() {
+        const f = document.getElementById('mnt_fecha').value;
+        const t = document.getElementById('mnt_tipo').value;
+        const d = document.getElementById('mnt_desc').value;
+        
+        if(!f || !d) {
+            mostrarModalStatus("warning", "Campos Vacíos", "No puede dejar la fecha o descripción en blanco.");
+            return;
+        }
+
+        try {
+            await db.collection(selectedCollMnt).doc(selectedEquipIdMnt).collection("mantenimientos").doc(selectedId).update({ 
+                fecha: f, 
+                tipo: t, 
+                desc: d 
+            });
+            
+            cerrarModales(); 
+            mostrarModalStatus("success", "Cambios Guardados", "El registro de mantenimiento ha sido actualizado con éxito.");
+            cargarGestionMantenimientos();
+        } catch (e) {
+            mostrarModalStatus("danger", "Error de Actualización", "Hubo un problema al modificar el registro.");
+        }
+    }
+
     async function verHistorial(id) {
         const content = document.getElementById('historial_content');
         const snap = await db.collection(currentColl).doc(id).collection("mantenimientos").orderBy("fecha","desc").get();
@@ -3512,14 +3241,13 @@ async function eliminarMnt(coll, eid, mid) {
     }
 
     function abrirMantenimiento(id) { 
-    selectedId = id; 
-    document.getElementById('mnt_modal_title').innerText = "Registrar Mantenimiento";
-    document.getElementById('mnt_fecha').value = "";
-    document.getElementById('mnt_desc').value = "";
-    // Aseguramos que el botón de guardar llame a la función correcta
-    document.getElementById('btn_guardar_mnt').onclick = guardarMantenimiento;
-    document.getElementById('modalMantenimiento').style.display = 'block'; 
-}
+        selectedId = id; 
+        document.getElementById('mnt_modal_title').innerText = "Registrar Mantenimiento";
+        document.getElementById('mnt_fecha').value = "";
+        document.getElementById('mnt_desc').value = "";
+        document.getElementById('btn_guardar_mnt').onclick = guardarMantenimiento;
+        document.getElementById('modalMantenimiento').style.display = 'block'; 
+    }
 
     function abrirModalNuevoMantenimientoGestion() {
         modoModal = 'nuevo';
@@ -3593,7 +3321,6 @@ async function eliminarMnt(coll, eid, mid) {
     }
 
     function mostrarModalRegistroDesdeCalendario(props) {
-        // Pre-llenar el formulario con datos del equipo desde el evento programado
         modoModal = 'nuevo';
         selectedId = props.id || null;
         selectedCollMnt = props.coll || null;
@@ -3629,120 +3356,107 @@ async function eliminarMnt(coll, eid, mid) {
     function abrirRe(id) { selectedId = id; const s = document.getElementById('re_gestor_new'); s.innerHTML = ""; listaGestoresGlobal.forEach(g => s.innerHTML += `<option value="${g.nom}">${g.nom}</option>`); document.getElementById('modalReasignar').style.display = 'block'; }
     async function ejecutarReasignar() { await db.collection("tickets").doc(selectedId).update({ asignado: document.getElementById('re_gestor_new').value }); cerrarModales(); }
 
-// Función Maestra para Alertas y Confirmaciones (Éxito y Eliminación)
-function mostrarModalStatus(tipo, titulo, mensaje, callback = null, autoCloseMs = null) {
-    const modal = document.getElementById('customAlert');
-    const iconCont = document.getElementById('alertIconContainer');
-    const icon = document.getElementById('alertIcon');
-    const btnCont = document.getElementById('alertButtons');
+    function mostrarModalStatus(tipo, titulo, mensaje, callback = null, autoCloseMs = null) {
+        const modal = document.getElementById('customAlert');
+        const iconCont = document.getElementById('alertIconContainer');
+        const icon = document.getElementById('alertIcon');
+        const btnCont = document.getElementById('alertButtons');
 
-    // Configuración de estilos e iconos
-    iconCont.className = 'icon-circle ' + (tipo === 'success' ? 'icon-success' : (tipo === 'danger' ? 'icon-danger' : 'icon-warning'));
-    icon.className = 'fas ' + (tipo === 'success' ? 'fa-check' : (tipo === 'danger' ? 'fa-trash-alt' : 'fa-exclamation-circle'));
-    
-    document.getElementById('alertTitle').innerText = titulo;
-    document.getElementById('alertMessage').innerText = mensaje;
-    btnCont.innerHTML = ""; 
+        iconCont.className = 'icon-circle ' + (tipo === 'success' ? 'icon-success' : (tipo === 'danger' ? 'icon-danger' : 'icon-warning'));
+        icon.className = 'fas ' + (tipo === 'success' ? 'fa-check' : (tipo === 'danger' ? 'fa-trash-alt' : 'fa-exclamation-circle'));
+        
+        document.getElementById('alertTitle').innerText = titulo;
+        document.getElementById('alertMessage').innerText = mensaje;
+        btnCont.innerHTML = ""; 
 
-    if (callback) {
-        // Caso de confirmación (Ej: Eliminar)
-        btnCont.innerHTML = `
-            <button class="btn-notif btn-notif-cancel" onclick="cerrarModalStatus()">Cancelar</button>
-            <button class="btn-notif btn-notif-danger" id="btnConfirmAction">Confirmar</button>
-        `;
-        document.getElementById('btnConfirmAction').onclick = () => {
-            callback();
-            cerrarModalStatus();
-        };
-    } else if (autoCloseMs) {
-        // NUEVO: Caso de auto-cierre (desaparece solo y no muestra botones)
-        setTimeout(() => {
-            cerrarModalStatus();
-        }, autoCloseMs);
-    } else {
-        // Caso de aviso simple (Ej: Campos vacíos)
-        btnCont.innerHTML = `<button type="button" class="btn-notif btn-notif-confirm" style="width:100%" onclick="cerrarModalStatus()">Entendido</button>`;
-    }
-    modal.style.display = 'flex';
-}
-
-// ESTA ES LA FUNCIÓN QUE CIERRA EL MODAL
-function cerrarModalStatus() {
-    const modal = document.getElementById('customAlert');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-}
-    
-function abrirModalChequeo(id, nombre) {
-    selectedId = id;
-    document.getElementById('aula_nombre_chequeo').innerText = "Aula: " + nombre;
-    document.getElementById('txt_obs_chequeo').value = "";
-    
-    // Resetear botones y objeto de estados
-    estadosChequeoActual = { equipos: '', perifericos: '', red: '', aseo: '', video: '' };
-    document.querySelectorAll('.btn-estado').forEach(btn => {
-        btn.classList.remove('active-funcional', 'active-falla');
-    });
-    
-    document.getElementById('modalChequeoAula').style.display = 'block';
-}
-
-function seleccionarEstado(elemento, valor) {
-    const contenedor = elemento.parentElement;
-    const itemKey = contenedor.getAttribute('data-item');
-    
-    // Quitar clases activas de los hermanos en ese grupo
-    contenedor.querySelectorAll('.btn-estado').forEach(btn => {
-        btn.classList.remove('active-funcional', 'active-falla');
-    });
-
-    // Agregar clase según el valor
-    if (valor === 'Funcional') {
-        elemento.classList.add('active-funcional');
-    } else {
-        elemento.classList.add('active-falla');
+        if (callback) {
+            btnCont.innerHTML = `
+                <button class="btn-notif btn-notif-cancel" onclick="cerrarModalStatus()">Cancelar</button>
+                <button class="btn-notif btn-notif-danger" id="btnConfirmAction">Confirmar</button>
+            `;
+            document.getElementById('btnConfirmAction').onclick = () => {
+                callback();
+                cerrarModalStatus();
+            };
+        } else if (autoCloseMs) {
+            setTimeout(() => {
+                cerrarModalStatus();
+            }, autoCloseMs);
+        } else {
+            btnCont.innerHTML = `<button type="button" class="btn-notif btn-notif-confirm" style="width:100%" onclick="cerrarModalStatus()">Entendido</button>`;
+        }
+        modal.style.display = 'flex';
     }
 
-    // Guardar en el objeto
-    estadosChequeoActual[itemKey] = valor;
-}
-
-async function guardarChequeoAula() {
-    // Validar que se hayan seleccionado todos los estados
-    const incompletos = Object.values(estadosChequeoActual).some(v => v === '');
-    if(incompletos) {
-        mostrarModalStatus("warning", "Faltan datos", "Por favor seleccione el estado de todos los ítems antes de guardar.");
-        return;
+    function cerrarModalStatus() {
+        const modal = document.getElementById('customAlert');
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+        
+    function abrirModalChequeo(id, nombre) {
+        selectedId = id;
+        document.getElementById('aula_nombre_chequeo').innerText = "Aula: " + nombre;
+        document.getElementById('txt_obs_chequeo').value = "";
+        
+        estadosChequeoActual = { equipos: '', perifericos: '', red: '', aseo: '', video: '' };
+        document.querySelectorAll('.btn-estado').forEach(btn => {
+            btn.classList.remove('active-funcional', 'active-falla');
+        });
+        
+        document.getElementById('modalChequeoAula').style.display = 'block';
     }
 
-    const obs = document.getElementById('txt_obs_chequeo').value;
-
-    try {
-        await db.collection("aulas_dti").doc(selectedId).collection("chequeos").add({
-            fecha: new Date().toLocaleString(),
-            usuario: user.email,
-            resultados: estadosChequeoActual, // Se guarda como objeto {equipos: "Funcional", ...}
-            observaciones: obs
+    function seleccionarEstado(elemento, valor) {
+        const contenedor = elemento.parentElement;
+        const itemKey = contenedor.getAttribute('data-item');
+        
+        contenedor.querySelectorAll('.btn-estado').forEach(btn => {
+            btn.classList.remove('active-funcional', 'active-falla');
         });
 
-        cerrarModales();
-        mostrarModalStatus("success", "¡Chequeo Registrado!", "El historial del aula ha sido actualizado.");
-    } catch (error) {
-        console.error("Error:", error);
-        mostrarModalStatus("danger", "Error", "No se pudo guardar el chequeo.");
-    }
-}
+        if (valor === 'Funcional') {
+            elemento.classList.add('active-funcional');
+        } else {
+            elemento.classList.add('active-falla');
+        }
 
-// 1. Cargar configuración desde Firebase y aplicar a la UI
-async function cargarYAplicarConfigVisual() {
+        estadosChequeoActual[itemKey] = valor;
+    }
+
+    async function guardarChequeoAula() {
+        const incompletos = Object.values(estadosChequeoActual).some(v => v === '');
+        if(incompletos) {
+            mostrarModalStatus("warning", "Faltan datos", "Por favor seleccione el estado de todos los ítems antes de guardar.");
+            return;
+        }
+
+        const obs = document.getElementById('txt_obs_chequeo').value;
+
+        try {
+            await db.collection("aulas_dti").doc(selectedId).collection("chequeos").add({
+                fecha: new Date().toLocaleString(),
+                usuario: user.email,
+                resultados: estadosChequeoActual,
+                observaciones: obs
+            });
+
+            cerrarModales();
+            mostrarModalStatus("success", "¡Chequeo Registrado!", "El historial del aula ha sido actualizado.");
+        } catch (error) {
+            console.error("Error:", error);
+            mostrarModalStatus("danger", "Error", "No se pudo guardar el chequeo.");
+        }
+    }
+
+    async function cargarYAplicarConfigVisual() {
         try {
             const doc = await db.collection("configuracion").doc("visual").get();
             if (doc.exists) {
                 configVisualLocal = doc.data();
             } else {
                 configVisualLocal = {};
-                console.log("Inicializando contenedor visual por defecto.");
             }
             aplicarCambiosVisuales();
             if (document.getElementById('container_config_visual') && document.getElementById('mod_config_visual').style.display === 'block') {
@@ -3754,163 +3468,136 @@ async function cargarYAplicarConfigVisual() {
         }
     }
 
+    function renderConfigVisualTable() {
+        const container = document.getElementById('container_config_visual');
+        if (!container) return;
+        container.innerHTML = "";
 
-function renderConfigVisualTable() {
-    const container = document.getElementById('container_config_visual');
-    if (!container) return;
-    container.innerHTML = "";
-
-    MODULOS_SISTEMA.forEach(m => {
-        // Obtenemos la configuración guardada o un objeto vacío
-        const conf = configVisualLocal[m.id] || {};
-        const accionesColores = conf.accionesColores || {};
-        
-        // Generar inputs de colores asegurando que tomen el valor guardado
-        let htmlAcciones = m.acts.map(act => {
-            // Prioridad: 1. Color guardado en DB, 2. Color por defecto del sistema
-            let defaultColor = '#64748b'; // Gris por defecto
-            if (act === "Crear") defaultColor = "#10b981"; // Verde
-            else if (act === "Editar") defaultColor = "#f59e0b"; // Naranja
-            else if (act === "Eliminar") defaultColor = "#ef4444"; // Rojo
-            else if (act === "Revertir a Abierto") defaultColor = "#6366f1"; // Indigo
-            else if (act === "Finalizar") defaultColor = "#22c55e"; // Verde
-            else if (act === "Mantenimiento") defaultColor = "#00bcd4"; // Cyan
-            else if (act === "Ver Detalle") defaultColor = "#64748b"; // Gris
-            else if (act === "Historial") defaultColor = "#8b5cf6"; // Morado
-            else if (act === "Reasignar") defaultColor = "#2563eb"; // Azul
-            else if (act === "Duplicar") defaultColor = "#f59e0b"; // Amarillo suave
-            const colorGuardado = accionesColores[act] || defaultColor;
-            return `
-                <div class="campo-group">
-                    <label style="font-size:10px; color:var(--gray);">${act}</label>
-                    <input type="color" class="v_c_act_specific" 
-                           data-mod="${m.id}" 
-                           data-act="${act}" 
-                           value="${colorGuardado}" 
-                           style="height:35px; width:100%; border:1.5px solid #e2e8f0; border-radius:6px; cursor:pointer; padding:2px;">
-                </div>
-            `;
-        }).join('');
-
-        container.innerHTML += `
-            <div class="config-card">
-                <div class="config-card-header">
-                    <i class="${conf.nuevoIcono || 'fas fa-box'}" style="color: ${conf.colorIcono || '#2563eb'}"></i>
-                    <div style="overflow: hidden;">
-                        <strong style="display:block; font-size:1rem; white-space: nowrap; text-overflow: ellipsis;">${conf.nuevoNom || m.nom}</strong>
-                        <small style="color:var(--gray); font-size:0.7rem;">ID: ${m.id}</small>
-                    </div>
-                </div>
-
-                <div class="grid-bonito" style="grid-template-columns: 1fr; gap:12px;">
+        MODULOS_SISTEMA.forEach(m => {
+            const conf = configVisualLocal[m.id] || {};
+            const accionesColores = conf.accionesColores || {};
+            
+            let htmlAcciones = m.acts.map(act => {
+                let defaultColor = '#64748b';
+                if (act === "Crear") defaultColor = "#10b981";
+                else if (act === "Editar") defaultColor = "#f59e0b";
+                else if (act === "Eliminar") defaultColor = "#ef4444";
+                else if (act === "Revertir a Abierto") defaultColor = "#6366f1";
+                else if (act === "Finalizar") defaultColor = "#22c55e";
+                else if (act === "Mantenimiento") defaultColor = "#00bcd4";
+                else if (act === "Ver Detalle") defaultColor = "#64748b";
+                else if (act === "Historial") defaultColor = "#8b5cf6";
+                else if (act === "Reasignar") defaultColor = "#2563eb";
+                else if (act === "Duplicar") defaultColor = "#f59e0b";
+                const colorGuardado = accionesColores[act] || defaultColor;
+                return `
                     <div class="campo-group">
-                        <span class="config-section-title">Identidad del Módulo</span>
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                            <div>
-                                <label>Nombre</label>
-                                <input type="text" id="v_nom_${m.id}" value="${conf.nuevoNom || m.nom}" style="width:100%;">
+                        <label style="font-size:10px; color:var(--gray);">${act}</label>
+                        <input type="color" class="v_c_act_specific" 
+                               data-mod="${m.id}" 
+                               data-act="${act}" 
+                               value="${colorGuardado}" 
+                               style="height:35px; width:100%; border:1.5px solid #e2e8f0; border-radius:6px; cursor:pointer; padding:2px;">
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML += `
+                <div class="config-card">
+                    <div class="config-card-header">
+                        <i class="${conf.nuevoIcono || 'fas fa-box'}" style="color: ${conf.colorIcono || '#2563eb'}"></i>
+                        <div style="overflow: hidden;">
+                            <strong style="display:block; font-size:1rem; white-space: nowrap; text-overflow: ellipsis;">${conf.nuevoNom || m.nom}</strong>
+                            <small style="color:var(--gray); font-size:0.7rem;">ID: ${m.id}</small>
+                        </div>
+                    </div>
+
+                    <div class="grid-bonito" style="grid-template-columns: 1fr; gap:12px;">
+                        <div class="campo-group">
+                            <span class="config-section-title">Identidad del Módulo</span>
+                            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                                <div>
+                                    <label>Nombre</label>
+                                    <input type="text" id="v_nom_${m.id}" value="${conf.nuevoNom || m.nom}" style="width:100%;">
+                                </div>
+                                <div>
+                                    <label>Icono (FA)</label>
+                                    <input type="text" id="v_ico_${m.id}" value="${conf.nuevoIcono || 'fas fa-box'}" style="width:100%;">
+                                </div>
                             </div>
-                            <div>
-                                <label>Icono (FA)</label>
-                                <input type="text" id="v_ico_${m.id}" value="${conf.nuevoIcono || 'fas fa-box'}" style="width:100%;">
+                        </div>
+
+                        <div class="campo-group">
+                            <label>Color Icono Principal</label>
+                            <input type="color" id="v_c_ico_${m.id}" value="${conf.colorIcono || '#2563eb'}" style="width:100%; height:35px; border:1.5px solid #e2e8f0; border-radius:6px;">
+                        </div>
+
+                        <div class="action-colors-container">
+                            <span class="config-section-title">Colores de Botones</span>
+                            <div class="grid-colores-acciones">
+                                ${htmlAcciones}
                             </div>
                         </div>
                     </div>
 
-                    <div class="campo-group">
-                        <label>Color Icono Principal</label>
-                        <input type="color" id="v_c_ico_${m.id}" value="${conf.colorIcono || '#2563eb'}" style="width:100%; height:35px; border:1.5px solid #e2e8f0; border-radius:6px;">
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <button class="btn-save-config" onclick="guardarFilaVisual('${m.id}')">
+                            <i class="fas fa-save"></i> GUARDAR MÓDULO
+                        </button>
                     </div>
-
-                    <div class="action-colors-container">
-                        <span class="config-section-title">Colores de Botones</span>
-                        <div class="grid-colores-acciones">
-                            ${htmlAcciones}
-                        </div>
-                    </div>
-                </div>
-
-                <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <button class="btn-save-config" onclick="guardarFilaVisual('${m.id}')">
-                        <i class="fas fa-save"></i> GUARDAR MÓDULO
-                    </button>
-                </div>
-            </div>`;
-    });
-}
-
-async function guardarFilaVisual(modId) {
-    const mod = MODULOS_SISTEMA.find(m => m.id === modId);
-    if (!mod) {
-        mostrarModalStatus("danger", "Error", "Módulo no encontrado.");
-        return;
+                </div>`;
+        });
     }
 
-    const nuevoNom = document.getElementById(`v_nom_${modId}`).value || mod.nom;
-    const nuevoIcono = document.getElementById(`v_ico_${modId}`).value || 'fas fa-box';
-    const colorIcono = document.getElementById(`v_c_ico_${modId}`).value || '#2563eb';
+    async function guardarFilaVisual(modId) {
+        const mod = MODULOS_SISTEMA.find(m => m.id === modId);
+        if (!mod) {
+            mostrarModalStatus("danger", "Error", "Módulo no encontrado.");
+            return;
+        }
 
-    // Recopilar colores de acciones
-    let accionesColores = {};
-    document.querySelectorAll(`.v_c_act_specific[data-mod="${modId}"]`).forEach(input => {
-        const nombreAccion = input.getAttribute('data-act');
-        accionesColores[nombreAccion] = input.value;
-    });
+        const nuevoNom = document.getElementById(`v_nom_${modId}`).value || mod.nom;
+        const nuevoIcono = document.getElementById(`v_ico_${modId}`).value || 'fas fa-box';
+        const colorIcono = document.getElementById(`v_c_ico_${modId}`).value || '#2563eb';
 
-    const tempConfig = { 
-        nuevoNom, 
-        nuevoIcono, 
-        colorIcono, 
-        accionesColores 
-    };
+        let accionesColores = {};
+        document.querySelectorAll(`.v_c_act_specific[data-mod="${modId}"]`).forEach(input => {
+            const nombreAccion = input.getAttribute('data-act');
+            accionesColores[nombreAccion] = input.value;
+        });
 
-    try {
-        const updateObj = {};
-        updateObj[modId] = tempConfig;
-        await db.collection("configuracion").doc("visual").set(updateObj, { merge: true });
-        
-        // Actualizar local
-        configVisualLocal[modId] = tempConfig;
-        
-        // Aplicar cambios visuales inmediatamente a las tarjetas del dashboard
-        aplicarCambiosVisuales();
+        const tempConfig = { 
+            nuevoNom, 
+            nuevoIcono, 
+            colorIcono, 
+            accionesColores 
+        };
 
-        mostrarModalStatus("success", "Módulo guardado exitosamente", "La configuración se guardó correctamente.", null, 2200);
-    } catch (e) {
-        console.error("Error guardando configuración visual:", e);
-        mostrarModalStatus("success", "Módulo guardado exitosamente", "La configuración se guardó correctamente.");
-        return;
+        try {
+            const updateObj = {};
+            updateObj[modId] = tempConfig;
+            await db.collection("configuracion").doc("visual").set(updateObj, { merge: true });
+            
+            configVisualLocal[modId] = tempConfig;
+            aplicarCambiosVisuales();
+
+            mostrarModalStatus("success", "Módulo guardado exitosamente", "La configuración se guardó correctamente.", null, 2200);
+        } catch (e) {
+            console.error("Error guardando configuración visual:", e);
+            mostrarModalStatus("success", "Módulo guardado exitosamente", "La configuración se guardó correctamente.");
+            return;
+        }
+
+        try {
+            if (currentColl) renderTablaMaestra();
+            const modAdminTickets = document.getElementById('mod_admin_tickets');
+            if (modAdminTickets && modAdminTickets.style.display === 'block') cargarTicketsAdmin();
+        } catch (e) {
+            console.error("Error refrescando vistas después de guardar config visual:", e);
+        }
     }
 
-    // Refrescar las tablas abiertas, pero sin convertir errores de render en fallo de guardado
-    try {
-        if (currentColl) renderTablaMaestra();
-        const modAdminTickets = document.getElementById('mod_admin_tickets');
-        if (modAdminTickets && modAdminTickets.style.display === 'block') cargarTicketsAdmin();
-    } catch (e) {
-        console.error("Error refrescando vistas después de guardar config visual:", e);
-    }
-}
-
-function duplicarConfigVisual(modId) {
-    const conf = configVisualLocal[modId] || {};
-    const target = prompt("Ingrese el ID del módulo destino para duplicar esta configuración:", "");
-    if(!target) return;
-    if(!MODULOS_SISTEMA.some(m => m.id === target)) {
-        mostrarModalStatus("warning", "Módulo inválido", "El ID de módulo no existe.");
-        return;
-    }
-    configVisualLocal[target] = JSON.parse(JSON.stringify(conf));
-    db.collection("configuracion").doc("visual").set(configVisualLocal).then(() => {
-        aplicarCambiosVisuales();
-        renderConfigVisualTable();
-        mostrarModalStatus("success", "Duplicado", `Configuración duplicada a ${target}.`);
-    }).catch(() => {
-        mostrarModalStatus("danger", "Error", "No se pudo duplicar la configuración.");
-    });
-}
-
-function aplicarCambiosVisuales() {
+    function aplicarCambiosVisuales() {
         MODULOS_SISTEMA.forEach(m => {
             const tarjeta = document.getElementById(m.id);
             if (tarjeta) {
@@ -3923,7 +3610,6 @@ function aplicarCambiosVisuales() {
                 if (icono) {
                     icono.className = conf.nuevoIcono || 'fas fa-box';
                     icono.style.color = conf.colorIcono || 'var(--primary)';
-                    // Re-aplicamos soporte para el degradado webkit de iconos por defecto si no tienen color personalizado
                     if(!conf.colorIcono) {
                         icono.style.background = 'linear-gradient(135deg, var(--primary), #1d4ed8)';
                         icono.style.webkitBackgroundClip = 'text';
@@ -3938,241 +3624,213 @@ function aplicarCambiosVisuales() {
         });
     }
 
-async function restablecerConfiguracionPredeterminada() {
-    let base = {};
-    
-    // Mapeo manual de iconos originales para que no se pierdan al resetear
-    const iconosOriginales = {
-        "card_mis_tickets": "fas fa-ticket-alt",
-        "card_enviar_ticket": "fas fa-paper-plane",
-        "card_admin_tickets": "fas fa-tasks",
-        "card_historico_cerrados": "fas fa-archive",
-        "card_inv_admin": "fas fa-laptop",
-        "card_inv_salas": "fas fa-desktop",
-        "card_inv_obsoletos": "fas fa-dumpster",
-        "card_extensiones": "fas fa-phone-volume",
-        "card_calendario": "fas fa-calendar-alt",
-        "card_stats": "fas fa-chart-pie",
-        "card_usuarios": "fas fa-users-cog",
-        "card_aulas": "fas fa-school",
-        "card_impresoras": "fas fa-print",
-        "card_gest_mantenimientos": "fas fa-tools",
-        "card_preferencias": "fas fa-cogs",
-        "card_config_visual": "fas fa-palette",
-        "card_cargar_csv": "fas fa-file-csv"
-    };
-
-    MODULOS_SISTEMA.forEach(m => {
-        const defaultActions = {};
-        m.acts.forEach(act => {
-            if (act === "Editar") defaultActions[act] = "#f59e0b";
-            else if (act === "Ver Detalle") defaultActions[act] = "#64748b";
-            else if (act === "Mantenimiento") defaultActions[act] = "#00bcd4";
-            else if (act === "Historial") defaultActions[act] = "#8b5cf6";
-            else if (act === "Finalizar") defaultActions[act] = "#22c55e";
-            else if (act === "Reasignar") defaultActions[act] = "#2563eb";
-            else defaultActions[act] = "#64748b";
-        });
-
-        base[m.id] = { 
-            nuevoNom: m.nom, 
-            nuevoIcono: iconosOriginales[m.id] || "fas fa-box", 
-            colorIcono: "#2563eb", 
-            accionesColores: defaultActions 
-        };
-    });
-    
-    mostrarModalStatus("warning", "Restablecer Sistema", "Se eliminarán todos los colores personalizados y nombres editados. ¿Continuar?", async () => {
-        try {
-            // 1. Limpiar localStorage para evitar que se abra un módulo viejo con colores viejos
-            localStorage.removeItem('activeModulo');
-            localStorage.removeItem('activeParams');
-
-            // 2. Guardar configuración original en Firebase
-            await db.collection("configuracion").doc("visual").set(base);
-            
-            // 3. Notificación de éxito y recarga forzada
-            mostrarModalStatus("success", "Sistema Reiniciado", "Los valores de fábrica han sido aplicados.");
-            
-            setTimeout(() => {
-                location.reload();
-            }, 1000);
-            
-        } catch (e) {
-            mostrarModalStatus("danger", "Error", "No se pudo conectar con la base de datos.");
-        }
-    });
-}
-
-</script>
-
-<script>
-  // 1. Define aquí la fecha y hora del mantenimiento (Año, Mes [0-11], Día, Hora, Minutos)
-  // NOTA: En JavaScript los meses empiezan en 0 (0 = Enero, 4 9:49 a. m. 22/05/2026= Mayo, 11 = Diciembre)
-  const fechaMantenimiento = new Date(2026, 4, 20, 21, ); // Ejemplo: 26 de mayo de 2026 a las 16:30
-
-  // 2. Opciones para que la fecha se vea bonita y en español
-  const opcionesFormato = { 
-    weekday: 'long', 
-    day: 'numeric', 
-    month: 'long', 
-    hour: '2-digit', 
-    minute: '2-digit' 
-  };
-  
-  // Convertimos la fecha a texto (Ej: "lunes, 25 de mayo a las 20:00")
-  const fechaTexto = fechaMantenimiento.toLocaleDateString('es-ES', opcionesFormato);
-
-  // 3. Sincronizamos: Ponemos esa fecha dentro del HTML
-  document.getElementById('fecha-aviso').textContent = fechaTexto;
-
-  // 4. Control de visualización: Si ya pasó la fecha, escondemos el banner
-  const ahora = new Date();
-  if (ahora > fechaMantenimiento) {
-    document.querySelector('.banner-mantenimiento').style.display = 'none';
-  }
-
-  function actualizarNombreArchivoCSV(input) {
-    const label = document.getElementById('nombre_archivo_csv');
-    if (input.files.length > 0) {
-        label.innerHTML = `<i class="fas fa-check-circle"></i> Archivo listo: ${input.files[0].name}`;
-    } else {
-        label.innerHTML = "";
-    }
-}
-
-async function procesarCSVEquipos() {
-    // 1. Validación estricta de seguridad: Solo Admin o si se le otorgó el permiso explícito en Preferencias
-    if (userRole !== "Admin" && !checkPermission("card_cargar_csv", "Cargar Masivo")) {
-        mostrarModalStatus("danger", "Acceso Denegado", "Solo los administradores pueden realizar cargas masivas en el sistema.");
-        return;
-    }
-
-    const input = document.getElementById('file_csv_equipos');
-    if (!input.files || input.files.length === 0) {
-        mostrarModalStatus("warning", "Archivo requerido", "Por favor seleccione un archivo CSV primero.");
-        return;
-    }
-
-    const file = input.files[0];
-    const reader = new FileReader();
-
-    reader.onload = async function(e) {
-        const text = e.target.result;
-        // Separamos por líneas y filtramos cualquier fila vacía al final del archivo
-        const lineas = text.split(/\r?\n/).filter(l => l.trim() !== '');
+    async function restablecerConfiguracionPredeterminada() {
+        let base = {};
         
-        if (lineas.length <= 1) {
-            mostrarModalStatus("warning", "Archivo vacío", "El CSV no contiene datos válidos o solo tiene la cabecera.");
+        const iconosOriginales = {
+            "card_mis_tickets": "fas fa-ticket-alt",
+            "card_enviar_ticket": "fas fa-paper-plane",
+            "card_admin_tickets": "fas fa-tasks",
+            "card_historico_cerrados": "fas fa-archive",
+            "card_inv_admin": "fas fa-laptop",
+            "card_inv_salas": "fas fa-desktop",
+            "card_inv_obsoletos": "fas fa-dumpster",
+            "card_extensiones": "fas fa-phone-volume",
+            "card_calendario": "fas fa-calendar-alt",
+            "card_stats": "fas fa-chart-pie",
+            "card_usuarios": "fas fa-users-cog",
+            "card_aulas": "fas fa-school",
+            "card_impresoras": "fas fa-print",
+            "card_gest_mantenimientos": "fas fa-tools",
+            "card_preferencias": "fas fa-cogs",
+            "card_config_visual": "fas fa-palette",
+            "card_cargar_csv": "fas fa-file-csv"
+        };
+
+        MODULOS_SISTEMA.forEach(m => {
+            const defaultActions = {};
+            m.acts.forEach(act => {
+                if (act === "Editar") defaultActions[act] = "#f59e0b";
+                else if (act === "Ver Detalle") defaultActions[act] = "#64748b";
+                else if (act === "Mantenimiento") defaultActions[act] = "#00bcd4";
+                else if (act === "Historial") defaultActions[act] = "#8b5cf6";
+                else if (act === "Finalizar") defaultActions[act] = "#22c55e";
+                else if (act === "Reasignar") defaultActions[act] = "#2563eb";
+                else defaultActions[act] = "#64748b";
+            });
+
+            base[m.id] = { 
+                nuevoNom: m.nom, 
+                nuevoIcono: iconosOriginales[m.id] || "fas fa-box", 
+                colorIcono: "#2563eb", 
+                accionesColores: defaultActions 
+            };
+        });
+        
+        mostrarModalStatus("warning", "Restablecer Sistema", "Se eliminarán todos los colores personalizados y nombres editados. ¿Continuar?", async () => {
+            try {
+                localStorage.removeItem('activeModulo');
+                localStorage.removeItem('activeParams');
+
+                await db.collection("configuracion").doc("visual").set(base);
+                mostrarModalStatus("success", "Sistema Reiniciado", "Los valores de fábrica han sido aplicados.");
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+                
+            } catch (e) {
+                mostrarModalStatus("danger", "Error", "No se pudo conectar con la base de datos.");
+            }
+        });
+    }
+
+    const fechaMantenimiento = new Date(2026, 4, 20, 21);
+    const opcionesFormato = { 
+        weekday: 'long', 
+        day: 'numeric', 
+        month: 'long', 
+        hour: '2-digit', 
+        minute: '2-digit' 
+    };
+    
+    const fechaTexto = fechaMantenimiento.toLocaleDateString('es-ES', opcionesFormato);
+    document.getElementById('fecha-aviso').textContent = fechaTexto;
+
+    const ahora = new Date();
+    if (ahora > fechaMantenimiento) {
+        document.querySelector('.banner-mantenimiento').style.display = 'none';
+    }
+
+    function actualizarNombreArchivoCSV(input) {
+        const label = document.getElementById('nombre_archivo_csv');
+        if (input.files.length > 0) {
+            label.innerHTML = `<i class="fas fa-check-circle"></i> Archivo listo: ${input.files[0].name}`;
+        } else {
+            label.innerHTML = "";
+        }
+    }
+
+    async function procesarCSVEquipos() {
+        if (userRole !== "Admin" && !checkPermission("card_cargar_csv", "Cargar Masivo")) {
+            mostrarModalStatus("danger", "Acceso Denegado", "Solo los administradores pueden realizar cargas masivas en el sistema.");
             return;
         }
 
-        // Detectar si el Excel lo exportó separado por comas o punto y coma
-        const separador = lineas[0].includes(';') ? ';' : ',';
+        const input = document.getElementById('file_csv_equipos');
+        if (!input.files || input.files.length === 0) {
+            mostrarModalStatus("warning", "Archivo requerido", "Por favor seleccione un archivo CSV primero.");
+            return;
+        }
+
+        const file = input.files[0];
+        const reader = new FileReader();
+
+        reader.onload = async function(e) {
+            const text = e.target.result;
+            const lineas = text.split(/\r?\n/).filter(l => l.trim() !== '');
+            
+            if (lineas.length <= 1) {
+                mostrarModalStatus("warning", "Archivo vacío", "El CSV no contiene datos válidos o solo tiene la cabecera.");
+                return;
+            }
+
+            const separador = lineas[0].includes(';') ? ';' : ',';
+            
+            mostrarModalStatus("warning", "Procesando", "Leyendo y cargando equipos a la base de datos. Por favor espere...");
+            document.getElementById('alertIconContainer').className = 'icon-circle icon-warning';
+            document.getElementById('alertIcon').className = 'fas fa-spinner fa-spin';
+            document.getElementById('alertButtons').innerHTML = ""; 
+
+            const lotes = [];
+            let loteActual = db.batch();
+            let operaciones = 0;
+            let equiposProcesados = 0;
+
+            for (let i = 1; i < lineas.length; i++) {
+                const valores = lineas[i].split(separador);
+                if (valores.length < 4) continue; 
+
+                let nuevoEquipo = {
+                    nom: (valores[0] || "").trim(),
+                    tip: (valores[1] || "").trim(),
+                    mod: (valores[2] || "").trim(),
+                    inv_num: (valores[3] || "").trim(),
+                    so: (valores[4] || "").trim(),
+                    proc: (valores[5] || "").trim(),
+                    ram: (valores[6] || "").trim(),
+                    disco: (valores[7] || "").trim(),
+                    ip: (valores[8] || "").trim(),
+                    term: (valores[9] || "").trim(),
+                    res: (valores[10] || "").trim(),
+                    dep: (valores[11] || "").trim(),
+                    cor_res: (valores[12] || "").trim().toLowerCase(),
+                    cam: (valores[13] || "").trim(),
+                    sede: (valores[14] || "").trim(),
+                    ext_tel: (valores[15] || "").trim(),
+                    f_ingreso: (valores[16] || "").trim()
+                };
+
+                const docRef = db.collection("inventario").doc();
+                loteActual.set(docRef, nuevoEquipo);
+                operaciones++;
+                equiposProcesados++;
+
+                if (operaciones === 500) {
+                    lotes.push(loteActual);
+                    loteActual = db.batch();
+                    operaciones = 0;
+                }
+            }
+
+            if (operaciones > 0) lotes.push(loteActual);
+
+            try {
+                for (const lote of lotes) {
+                    await lote.commit();
+                }
+                
+                input.value = "";
+                document.getElementById('nombre_archivo_csv').innerText = "";
+                mostrarModalStatus("success", "Carga Exitosa", `Se han registrado ${equiposProcesados} equipos masivamente en el inventario Administrativo.`, null, 4000);
+                
+            } catch (err) {
+                console.error("Error en batch CSV: ", err);
+                mostrarModalStatus("danger", "Error de Base de Datos", "Ocurrió un error en Firebase al intentar guardar los datos masivamente.");
+            }
+        };
         
-        // Transformar la UI al estado de Carga sin cerrar el modal
-        mostrarModalStatus("warning", "Procesando", "Leyendo y cargando equipos a la base de datos. Por favor espere...");
-        document.getElementById('alertIconContainer').className = 'icon-circle icon-warning';
-        document.getElementById('alertIcon').className = 'fas fa-spinner fa-spin';
-        document.getElementById('alertButtons').innerHTML = ""; 
+        reader.readAsText(file, 'UTF-8');
+    }
 
-        // Firebase WriteBatch (Permite escribir masivamente con alta velocidad y seguridad)
-        const lotes = [];
-        let loteActual = db.batch();
-        let operaciones = 0;
-        let equiposProcesados = 0;
+    async function verDetalleImpresora(id) {
+        const d = localData.find(x => x.id === id);
+        document.getElementById('ver_gral_titulo').innerText = "Detalle de Impresora";
+        document.getElementById('ver_gral_contenido').innerHTML = `
+            <p><b>Nombre:</b> ${d.nom}</p>
+            <p><b>IP:</b> ${d.ip}</p>
+            <p><b>Cant. Impresiones:</b> ${d.cant_imp}</p>
+            <p><b>Tipo:</b> ${d.tip}</p>
+            <p><b>Fecha Mantenimiento:</b> ${d.f_mantenimiento}</p>
+        `;
+        document.getElementById('modalVerGeneral').style.display = 'block';
+    }
 
-        // Bucle iterando desde la línea 1 (omitiendo cabeceras en línea 0)
-        for (let i = 1; i < lineas.length; i++) {
-            const valores = lineas[i].split(separador);
-            
-            // Ignorar filas muy cortas o mal formadas
-            if (valores.length < 4) continue; 
-
-            // Construir el objeto exactamente igual a tu BD de Equipos Administrativos
-            let nuevoEquipo = {
-                nom: (valores[0] || "").trim(),
-                tip: (valores[1] || "").trim(),
-                mod: (valores[2] || "").trim(),
-                inv_num: (valores[3] || "").trim(),
-                so: (valores[4] || "").trim(),
-                proc: (valores[5] || "").trim(),
-                ram: (valores[6] || "").trim(),
-                disco: (valores[7] || "").trim(),
-                ip: (valores[8] || "").trim(),
-                term: (valores[9] || "").trim(),
-                res: (valores[10] || "").trim(),
-                dep: (valores[11] || "").trim(),
-                cor_res: (valores[12] || "").trim().toLowerCase(),
-                cam: (valores[13] || "").trim(),
-                sede: (valores[14] || "").trim(),
-                ext_tel: (valores[15] || "").trim(),
-                f_ingreso: (valores[16] || "").trim()
-            };
-
-            const docRef = db.collection("inventario").doc(); // Genera ID automático
-            loteActual.set(docRef, nuevoEquipo);
-            operaciones++;
-            equiposProcesados++;
-
-            // Firebase tiene un límite estricto de 500 operaciones por Batch
-            if (operaciones === 500) {
-                lotes.push(loteActual);
-                loteActual = db.batch();
-                operaciones = 0;
-            }
-        }
-
-        // Empujar cualquier registro sobrante
-        if (operaciones > 0) lotes.push(loteActual);
-
-        try {
-            // Ejecutar las promesas de guardado
-            for (const lote of lotes) {
-                await lote.commit();
-            }
-            
-            // Limpiar la UI
-            input.value = "";
-            document.getElementById('nombre_archivo_csv').innerText = "";
-            
-            // Mostrar éxito usando tu sistema central
-            mostrarModalStatus("success", "Carga Exitosa", `Se han registrado ${equiposProcesados} equipos masivamente en el inventario Administrativo.`, null, 4000);
-            
-        } catch (err) {
-            console.error("Error en batch CSV: ", err);
-            mostrarModalStatus("danger", "Error de Base de Datos", "Ocurrió un error en Firebase al intentar guardar los datos masivamente.");
-        }
-    };
-    
-    // Leer el archivo en texto plano para poder cortarlo
-    reader.readAsText(file, 'UTF-8');
-}
-
-async function verDetalleImpresora(id) {
-    const d = localData.find(x => x.id === id);
-    document.getElementById('ver_gral_titulo').innerText = "Detalle de Impresora";
-    document.getElementById('ver_gral_contenido').innerHTML = `
-        <p><b>Nombre:</b> ${d.nom}</p>
-        <p><b>IP:</b> ${d.ip}</p>
-        <p><b>Cant. Impresiones:</b> ${d.cant_imp}</p>
-        <p><b>Tipo:</b> ${d.tip}</p>
-        <p><b>Fecha Mantenimiento:</b> ${d.f_mantenimiento}</p>
-    `;
-    document.getElementById('modalVerGeneral').style.display = 'block';
-}
-
-// --- DISPARADOR DE ARRANQUE DEL SISTEMA ---
+    // --- DISPARADOR DE ARRANQUE DEL SISTEMA ---
     auth.onAuthStateChanged(async (usuarioFirebase) => {
+        const header = document.getElementById('main_header');
+        const loginScreen = document.getElementById('login');
+        const dashboardContainer = document.getElementById('panel-principal');
+        const statsHeader = document.getElementById('stats_contadores_visibles');
+
         if (usuarioFirebase) {
             user = usuarioFirebase;
             
-            // Forzar visualización del contenedor principal del dashboard
-            document.getElementById('login').style.display = 'none';
-            const dashboardContainer = document.getElementById('dashboard') || document.getElementById('panel-principal');
+            // Ocultar login y mostrar header y dashboard
+            if (loginScreen) loginScreen.style.display = 'none';
+            if (header) header.style.display = 'flex';
             if (dashboardContainer) dashboardContainer.style.display = 'grid';
             
-            // Cargar ecosistema de datos en paralelo para que la app se vea más fluida al refrescar
             await Promise.allSettled([
                 cargarRoles(),
                 cargarYAplicarConfigVisual(),
@@ -4182,17 +3840,17 @@ async function verDetalleImpresora(id) {
             verificarRol();
             restaurarModuloActivo();
         } else {
-            // Si no está logueado, mostrar pantalla limpia de login
             user = null;
             userRole = null;
-            document.getElementById('login').style.display = 'flex';
-            const dashboardContainer = document.getElementById('dashboard') || document.getElementById('panel-principal');
+            
+            // Mostrar login y ocultar interfaz
+            if (loginScreen) loginScreen.style.display = 'flex';
+            if (header) header.style.display = 'none';
             if (dashboardContainer) dashboardContainer.style.display = 'none';
-            const statsHeader = document.getElementById('stats_contadores_visibles');
             if (statsHeader) statsHeader.style.display = 'none';
+            document.querySelectorAll('.modulo').forEach(m => m.style.display = 'none');
         }
     });
 </script>
 </body>
-</div>
 </html>
