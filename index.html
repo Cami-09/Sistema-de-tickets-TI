@@ -47,7 +47,7 @@
             box-sizing: border-box;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             
-            display: none; /* Oculto por defecto para evitar parpadeo inicial */
+            display: none; /* Oculto por defecto para evitar parpadeo */
             justify-content: space-between; 
             align-items: center; 
             box-shadow: 0 10px 30px -15px rgba(15, 23, 42, 0.5); 
@@ -108,7 +108,7 @@
 
         /* --- REDISEÑO PREMIUM PARA EL INICIO DE SESIÓN --- */
         #login { 
-            display: flex; /* Visible por defecto */
+            display: none; /* Oculto inicialmente por CSS para evitar parpadeo si ya hay sesión */
             height: 100vh; 
             width: 100vw;
             position: fixed;
@@ -3826,7 +3826,7 @@
         if (usuarioFirebase) {
             user = usuarioFirebase;
             
-            // Ocultar login y mostrar header y dashboard
+            // Ocultar login y mostrar dashboard y header
             if (loginScreen) loginScreen.style.display = 'none';
             if (header) header.style.display = 'flex';
             if (dashboardContainer) dashboardContainer.style.display = 'grid';
